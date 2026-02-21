@@ -23,11 +23,15 @@ async_session = async_sessionmaker(
 
 
 async def init_db() -> None:
-    """データベースを初期化"""
+    """Alembicマイグレーションで管理するため、テーブル存在チェックのみ行う"""
     import app.infrastructure.models.tables  # noqa: F401
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    async with engine.connect() as conn:
+        await conn.execute(
+            __import__("sqlalchemy").text(
+                "SELECT 1 FROM information_schema.schemata WHERE schema_name = 'heat'"
+            )
+        )
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

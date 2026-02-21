@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://heat_user:heat_user@localhost:5432/heat_db"
     debug: bool = False
+    scrape_interval_sec: float = 2.0
 
 
 settings = Settings()
