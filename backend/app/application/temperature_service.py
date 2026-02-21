@@ -52,8 +52,8 @@ class TemperatureService:
         # Determine which months in range have been fetched
         fetched_set = {(y, m) for y, m in fetched_months}
         required_months = []
-        for y in range(start_year, end_year + 1):
-            for m in range(1, 13):
+        for y in range(end_year, start_year - 1, -1):
+            for m in range(12, 0, -1):
                 if (y, m) not in fetched_set:
                     required_months.append((y, m))
 
