@@ -38,6 +38,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
     x: number;
     y: number;
     text: string;
+    alignRight: boolean;
   } | null>(null);
 
   const grid = useMemo(
@@ -135,16 +136,19 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
         const temp = getCellTemp(cell, tempType);
         const tempStr =
           temp !== null ? `${temp.toFixed(1)}℃` : "データなし";
+        const cursorX = e.clientX - rect.left;
+        const alignRight = cursorX > canvasWidth / 2;
         setTooltip({
-          x: e.clientX - rect.left + 10,
+          x: alignRight ? cursorX - 10 : cursorX + 10,
           y: e.clientY - rect.top - 10,
           text: `${dateStr}: ${tempStr}`,
+          alignRight,
         });
       } else {
         setTooltip(null);
       }
     },
-    [grid, years, startYear, tempType]
+    [grid, years, startYear, tempType, canvasWidth]
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -162,7 +166,11 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
       {tooltip && (
         <div
           className="pointer-events-none absolute rounded bg-black/80 px-2 py-1 text-xs text-white whitespace-nowrap"
-          style={{ left: tooltip.x, top: tooltip.y }}
+          style={
+            tooltip.alignRight
+              ? { right: canvasWidth - tooltip.x, top: tooltip.y }
+              : { left: tooltip.x, top: tooltip.y }
+          }
         >
           {tooltip.text}
         </div>
