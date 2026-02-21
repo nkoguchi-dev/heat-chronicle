@@ -4,11 +4,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { tempToColor } from "../lib/color-scale";
 import {
+  type GridCell,
   type HeatmapGrid,
   buildGrid,
   getMonthStartDays,
 } from "../lib/data-grid";
-import type { TemperatureRecord } from "@/types/api";
+import type { TemperatureRecord, TempType } from "@/types/api";
+
+function getCellTemp(cell: GridCell | undefined, tempType: TempType): number | null {
+  if (!cell) return null;
+  switch (tempType) {
+    case "max": return cell.maxTemp;
+    case "min": return cell.minTemp;
+    case "avg": return cell.avgTemp;
+  }
+}
 
 const CELL_WIDTH = 3;
 const CELL_HEIGHT = 12;
@@ -19,9 +29,10 @@ interface HeatmapProps {
   records: TemperatureRecord[];
   startYear: number;
   endYear: number;
+  tempType: TempType;
 }
 
-export function Heatmap({ records, startYear, endYear }: HeatmapProps) {
+export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tooltip, setTooltip] = useState<{
     x: number;
@@ -81,12 +92,12 @@ export function Heatmap({ records, startYear, endYear }: HeatmapProps) {
           const cell = yearData?.get(day);
           const x = LEFT_MARGIN + day * CELL_WIDTH;
 
-          ctx.fillStyle = tempToColor(cell?.maxTemp ?? null);
+          ctx.fillStyle = tempToColor(getCellTemp(cell, tempType));
           ctx.fillRect(x, y, CELL_WIDTH, CELL_HEIGHT);
         }
       }
     },
-    [canvasWidth, canvasHeight, years, startYear]
+    [canvasWidth, canvasHeight, years, startYear, tempType]
   );
 
   useEffect(() => {
@@ -121,8 +132,9 @@ export function Heatmap({ records, startYear, endYear }: HeatmapProps) {
       if (cell) {
         const d = new Date(cell.date);
         const dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+        const temp = getCellTemp(cell, tempType);
         const tempStr =
-          cell.maxTemp !== null ? `${cell.maxTemp.toFixed(1)}℃` : "データなし";
+          temp !== null ? `${temp.toFixed(1)}℃` : "データなし";
         setTooltip({
           x: e.clientX - rect.left + 10,
           y: e.clientY - rect.top - 10,
@@ -132,7 +144,7 @@ export function Heatmap({ records, startYear, endYear }: HeatmapProps) {
         setTooltip(null);
       }
     },
-    [grid, years, startYear]
+    [grid, years, startYear, tempType]
   );
 
   const handleMouseLeave = useCallback(() => {

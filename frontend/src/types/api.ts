@@ -53,3 +53,11 @@ export interface ErrorEvent {
   year?: number;
   month?: number;
 }
+
+export type TempType = "max" | "min" | "avg";
+
+export const TEMP_TYPE_LABELS: Record<TempType, string> = {
+  max: "最高気温",
+  min: "最低気温",
+  avg: "平均気温",
+};

@@ -8,7 +8,15 @@ import { Heatmap } from "@/features/heatmap/components/Heatmap";
 import { ProgressBar } from "@/features/heatmap/components/ProgressBar";
 import { StationSelector } from "@/features/heatmap/components/StationSelector";
 import { useTemperatureData } from "@/hooks/use-temperature-data";
-import type { Station } from "@/types/api";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { Station, TempType } from "@/types/api";
+import { TEMP_TYPE_LABELS } from "@/types/api";
 
 const DEFAULT_START_YEAR = 1975;
 
@@ -17,6 +25,7 @@ export default function Home() {
   const [selectedStationId, setSelectedStationId] = useState<number | null>(
     null
   );
+  const [tempType, setTempType] = useState<TempType>("max");
   const currentYear = new Date().getFullYear();
   const { records, loading, streaming, progress, error, fetchData } =
     useTemperatureData();
@@ -37,7 +46,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col items-center gap-6 p-8">
       <h1 className="text-2xl font-bold">Heat Chronicle</h1>
       <p className="text-muted-foreground">
-        日本の主要都市における最高気温の長期傾向ヒートマップ
+        日本の主要都市における{TEMP_TYPE_LABELS[tempType]}の長期傾向ヒートマップ
       </p>
 
       <div className="flex items-center gap-4">
@@ -46,6 +55,23 @@ export default function Home() {
           selectedId={selectedStationId}
           onSelect={handleStationSelect}
         />
+        <Select
+          value={tempType}
+          onValueChange={(value) => setTempType(value as TempType)}
+        >
+          <SelectTrigger className="w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.entries(TEMP_TYPE_LABELS) as [TempType, string][]).map(
+              ([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              )
+            )}
+          </SelectContent>
+        </Select>
         {loading && (
           <span className="text-sm text-muted-foreground">読み込み中...</span>
         )}
@@ -65,6 +91,7 @@ export default function Home() {
             records={records}
             startYear={DEFAULT_START_YEAR}
             endYear={currentYear}
+            tempType={tempType}
           />
         </div>
       )}
