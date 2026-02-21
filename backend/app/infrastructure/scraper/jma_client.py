@@ -7,7 +7,7 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://www.data.jma.go.jp/obd/stats/etrn/view"
+BASE_URL = "https://www.data.jma.go.jp/stats/etrn/view"
 
 
 class JmaClient:
@@ -16,6 +16,7 @@ class JmaClient:
         self._client = httpx.AsyncClient(
             timeout=30.0,
             headers={"User-Agent": "heat-chronicle/1.0"},
+            follow_redirects=True,
         )
 
     async def close(self) -> None:
