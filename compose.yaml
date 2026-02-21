@@ -1,0 +1,47 @@
+services:
+  database:
+    container_name: heat-database
+    build:
+      context: ./database
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: bind
+        source: ./database/data
+        target: /var/lib/postgresql/data
+      - type: bind
+        source: ./database/init.sql
+        target: /docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - path: ./database/.env.local
+
+  backend:
+    container_name: heat-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - path: ./backend/.env.local
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      - database
+
+  frontend:
+    container_name: heat-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - backend
