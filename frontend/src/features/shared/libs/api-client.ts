@@ -28,11 +28,12 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const apiClient = {
-  get: async <T>(path: string): Promise<T> => {
+  get: async <T>(path: string, options?: { signal?: AbortSignal }): Promise<T> => {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: options?.signal,
     });
     return handleResponse<T>(response);
   },

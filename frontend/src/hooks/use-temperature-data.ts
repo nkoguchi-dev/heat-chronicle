@@ -25,12 +25,16 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   const [fetching, setFetching] = useState(false);
   const [progress, setProgress] = useState<ProgressEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const cancelRef = useRef(false);
+  const fetchIdRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(
     (stationId: number, startYear: number, endYear: number) => {
       // Cancel any existing fetch sequence
-      cancelRef.current = true;
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const myFetchId = ++fetchIdRef.current;
 
       setLoading(true);
       setFetching(false);
@@ -38,15 +42,13 @@ export function useTemperatureData(): UseTemperatureDataReturn {
       setError(null);
       setRecords([]);
 
-      // Allow cancellation for this new sequence
-      cancelRef.current = false;
-
       apiClient
         .get<TemperatureResponse>(
-          `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`
+          `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`,
+          { signal: controller.signal }
         )
         .then(async (response) => {
-          if (cancelRef.current) return;
+          if (fetchIdRef.current !== myFetchId) return;
 
           setRecords(response.data);
           setLoading(false);
@@ -77,7 +79,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
           const total = monthsToFetch.length;
 
           for (let i = 0; i < monthsToFetch.length; i++) {
-            if (cancelRef.current) break;
+            if (fetchIdRef.current !== myFetchId) break;
 
             const { year, month } = monthsToFetch[i];
             setProgress({ year, month, completed: i, total });
@@ -85,16 +87,20 @@ export function useTemperatureData(): UseTemperatureDataReturn {
             try {
               const monthData =
                 await apiClient.get<MonthTemperatureResponse>(
-                  `/api/temperature/${stationId}/fetch-month?year=${year}&month=${month}`
+                  `/api/temperature/${stationId}/fetch-month?year=${year}&month=${month}`,
+                  { signal: controller.signal }
                 );
 
-              if (cancelRef.current) break;
+              if (fetchIdRef.current !== myFetchId) break;
 
               // 取得した月のデータをマージ
               if (monthData.records.length > 0) {
                 setRecords((prev) => [...prev, ...monthData.records]);
               }
             } catch (err) {
+              if (err instanceof DOMException && err.name === "AbortError") {
+                break;
+              }
               console.error(
                 `Failed to fetch ${year}-${month}:`,
                 err
@@ -103,13 +109,14 @@ export function useTemperatureData(): UseTemperatureDataReturn {
             }
           }
 
-          if (!cancelRef.current) {
+          if (fetchIdRef.current === myFetchId) {
             setFetching(false);
             setProgress(null);
           }
         })
         .catch((err) => {
-          if (!cancelRef.current) {
+          if (err instanceof DOMException && err.name === "AbortError") return;
+          if (fetchIdRef.current === myFetchId) {
             setError(err.message);
             setLoading(false);
           }
