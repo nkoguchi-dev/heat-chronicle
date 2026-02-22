@@ -73,9 +73,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center gap-6 p-8">
+    <div className="flex min-h-screen flex-col items-center gap-4 p-4 md:gap-6 md:p-8">
       <div className="flex w-full items-center justify-center relative">
-        <h1 className="text-2xl font-bold">Heat Chronicle</h1>
+        <h1 className="text-xl font-bold md:text-2xl">Heat Chronicle</h1>
         <div className="absolute right-0">
           <ThemeToggle />
         </div>
@@ -85,7 +85,7 @@ export default function Home() {
         の長期傾向ヒートマップ
       </p>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col items-stretch gap-3 w-full max-w-md md:flex-row md:items-center md:w-auto md:max-w-none md:gap-4">
         <StationSelector
           prefectures={prefectures}
           selectedStationId={selectedStationId}
@@ -97,7 +97,7 @@ export default function Home() {
           value={tempType}
           onValueChange={handleTempTypeChange}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full md:w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -111,7 +111,7 @@ export default function Home() {
           </SelectContent>
         </Select>
         {loading && (
-          <span className="text-sm text-muted-foreground">読み込み中...</span>
+          <span className="text-sm text-muted-foreground text-center">読み込み中...</span>
         )}
       </div>
 
@@ -124,7 +124,7 @@ export default function Home() {
       )}
 
       {records.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="w-full overflow-x-auto">
           <Heatmap
             records={records}
             startYear={DEFAULT_START_YEAR}

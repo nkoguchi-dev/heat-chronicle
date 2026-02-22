@@ -74,12 +74,12 @@ export function StationSelector({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-2 md:flex-row md:items-center">
       <Select
         value={selectedPrecNo?.toString() ?? ""}
         onValueChange={handlePrefectureChange}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full md:w-[180px]">
           <SelectValue placeholder="都道府県を選択" />
         </SelectTrigger>
         <SelectContent>
@@ -96,7 +96,7 @@ export function StationSelector({
         onValueChange={(value) => onSelect(Number(value))}
         disabled={selectedPrecNo === null || loadingStations}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full md:w-[180px]">
           <SelectValue
             placeholder={loadingStations ? "読み込み中..." : "地点を選択"}
           />
