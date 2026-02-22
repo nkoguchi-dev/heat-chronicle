@@ -1,4 +1,4 @@
-name: Build & Push Frontend Image
+name: Deploy Frontend
 
 on:
   push:
@@ -8,70 +8,41 @@ on:
 
 permissions:
   contents: read
-  packages: write
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/heat-chronicle-frontend
+  id-token: write
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Check for frontend changes
-        id: changes
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manual trigger — forcing build"
-            echo "frontend_changed=true" >> "$GITHUB_OUTPUT"
-          elif git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q '^frontend/'; then
-            echo "frontend_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "frontend_changed=false" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
 
-      - name: Set up Docker Buildx
-        if: steps.changes.outputs.frontend_changed == 'true'
-        uses: docker/setup-buildx-action@v3
+      - name: Build
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+        run: npm run build
 
-      - name: Log in to GHCR
-        if: steps.changes.outputs.frontend_changed == 'true'
-        uses: docker/login-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Extract metadata (tags, labels)
-        if: steps.changes.outputs.frontend_changed == 'true'
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest
-            type=sha,prefix=,format=short
-
-      - name: Build and push Docker image
-        if: steps.changes.outputs.frontend_changed == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile.prod
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Skip notification
-        if: steps.changes.outputs.frontend_changed == 'false'
-        run: echo "No frontend changes detected. Skipping build."
+      - name: Deploy to S3 + invalidate CloudFront
+        env:
+          S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+        run: bash scripts/deploy-frontend.sh
