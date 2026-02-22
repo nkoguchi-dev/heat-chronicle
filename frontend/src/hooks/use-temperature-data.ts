@@ -97,6 +97,21 @@ export function useTemperatureData(): UseTemperatureDataReturn {
               if (monthData.records.length > 0) {
                 setRecords((prev) => [...prev, ...monthData.records]);
               }
+
+              // 最後の月以外は1秒待機（レートリミット）
+              if (i < monthsToFetch.length - 1) {
+                await new Promise<void>((resolve, reject) => {
+                  const timer = setTimeout(resolve, 1000);
+                  controller.signal.addEventListener(
+                    "abort",
+                    () => {
+                      clearTimeout(timer);
+                      reject(new DOMException("Aborted", "AbortError"));
+                    },
+                    { once: true }
+                  );
+                });
+              }
             } catch (err) {
               if (err instanceof DOMException && err.name === "AbortError") {
                 break;
