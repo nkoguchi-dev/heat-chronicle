@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from boto3.dynamodb.conditions import Key
 
+from app.config import settings
 from app.domain.schemas import TemperatureRecord
 
 if TYPE_CHECKING:
@@ -14,8 +15,8 @@ if TYPE_CHECKING:
 
 class TemperatureRepository:
     def __init__(self, dynamodb: DynamoDBServiceResource):
-        self.temp_table = dynamodb.Table("daily_temperature")
-        self.log_table = dynamodb.Table("fetch_log")
+        self.temp_table = dynamodb.Table(settings.table_name("daily-temperature"))
+        self.log_table = dynamodb.Table(settings.table_name("fetch-log"))
 
     def get_by_station_and_range(
         self, station_id: int, start_date: str, end_date: str

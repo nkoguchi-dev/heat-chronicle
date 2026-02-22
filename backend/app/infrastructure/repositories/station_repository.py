@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from boto3.dynamodb.conditions import Key
 
+from app.config import settings
 from app.domain.schemas import StationResponse
 
 if TYPE_CHECKING:
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 
 class StationRepository:
     def __init__(self, dynamodb: DynamoDBServiceResource):
-        self.table = dynamodb.Table("stations")
+        self.table = dynamodb.Table(settings.table_name("stations"))
 
     def get_all(self) -> list[StationResponse]:
         items: list[dict] = []

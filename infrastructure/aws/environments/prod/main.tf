@@ -148,6 +148,7 @@ data "aws_iam_policy_document" "github_actions_deploy" {
     actions = [
       "lambda:UpdateFunctionCode",
       "lambda:GetFunction",
+      "lambda:GetFunctionConfiguration",
     ]
     resources = [
       "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${var.system_name}-${var.environment}-backend",

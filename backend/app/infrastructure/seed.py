@@ -2,6 +2,7 @@ import json
 import logging
 from pathlib import Path
 
+from app.config import settings
 from app.infrastructure.database import get_dynamodb_resource
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
 def seed_stations() -> None:
     dynamodb = get_dynamodb_resource()
-    table = dynamodb.Table("stations")
+    table = dynamodb.Table(settings.table_name("stations"))
 
     response = table.scan(Select="COUNT")
     if response["Count"] > 0:

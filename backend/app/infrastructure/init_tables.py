@@ -3,6 +3,7 @@ import time
 
 from botocore.exceptions import ClientError, EndpointConnectionError, ReadTimeoutError
 
+from app.config import settings
 from app.infrastructure.database import get_dynamodb_client
 
 logger = logging.getLogger(__name__)
@@ -31,9 +32,14 @@ def ensure_tables_exist() -> None:
     client = get_dynamodb_client()
     existing = _wait_for_dynamodb(client)
 
-    if "stations" not in existing:
+    stations_table = settings.table_name("stations")
+    temp_table = settings.table_name("daily-temperature")
+    log_table = settings.table_name("fetch-log")
+    jobs_table = settings.table_name("scrape-jobs")
+
+    if stations_table not in existing:
         client.create_table(
-            TableName="stations",
+            TableName=stations_table,
             KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
             AttributeDefinitions=[
                 {"AttributeName": "id", "AttributeType": "N"},
@@ -57,11 +63,11 @@ def ensure_tables_exist() -> None:
                 "WriteCapacityUnits": 5,
             },
         )
-        logger.info("Created table: stations")
+        logger.info("Created table: %s", stations_table)
 
-    if "daily_temperature" not in existing:
+    if temp_table not in existing:
         client.create_table(
-            TableName="daily_temperature",
+            TableName=temp_table,
             KeySchema=[
                 {"AttributeName": "station_id", "KeyType": "HASH"},
                 {"AttributeName": "date", "KeyType": "RANGE"},
@@ -75,11 +81,11 @@ def ensure_tables_exist() -> None:
                 "WriteCapacityUnits": 5,
             },
         )
-        logger.info("Created table: daily_temperature")
+        logger.info("Created table: %s", temp_table)
 
-    if "fetch_log" not in existing:
+    if log_table not in existing:
         client.create_table(
-            TableName="fetch_log",
+            TableName=log_table,
             KeySchema=[
                 {"AttributeName": "station_id", "KeyType": "HASH"},
                 {"AttributeName": "year_month", "KeyType": "RANGE"},
@@ -93,11 +99,11 @@ def ensure_tables_exist() -> None:
                 "WriteCapacityUnits": 5,
             },
         )
-        logger.info("Created table: fetch_log")
+        logger.info("Created table: %s", log_table)
 
-    if "scrape_jobs" not in existing:
+    if jobs_table not in existing:
         client.create_table(
-            TableName="scrape_jobs",
+            TableName=jobs_table,
             KeySchema=[{"AttributeName": "job_id", "KeyType": "HASH"}],
             AttributeDefinitions=[
                 {"AttributeName": "job_id", "AttributeType": "S"},
@@ -108,10 +114,10 @@ def ensure_tables_exist() -> None:
             },
         )
         client.update_time_to_live(
-            TableName="scrape_jobs",
+            TableName=jobs_table,
             TimeToLiveSpecification={
                 "Enabled": True,
                 "AttributeName": "ttl",
             },
         )
-        logger.info("Created table: scrape_jobs")
+        logger.info("Created table: %s", jobs_table)

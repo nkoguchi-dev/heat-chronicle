@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Any
 
 from boto3.dynamodb.conditions import Attr
 
+from app.config import settings
+
 if TYPE_CHECKING:
     from mypy_boto3_dynamodb import DynamoDBServiceResource
 
@@ -17,7 +19,7 @@ JOB_TTL_SECONDS = 3600  # 1 hour
 
 class JobRepository:
     def __init__(self, dynamodb: DynamoDBServiceResource):
-        self.table = dynamodb.Table("scrape_jobs")
+        self.table = dynamodb.Table(settings.table_name("scrape-jobs"))
 
     def create_job(
         self,
