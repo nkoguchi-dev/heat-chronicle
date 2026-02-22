@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.requests import Request
 
+from app.config import settings
 from app.infrastructure.init_tables import ensure_tables_exist
 from app.infrastructure.seed import seed_stations
 from app.presentation.api import hello, prefectures, stations, temperature
@@ -35,7 +36,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.cors_allow_origins.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

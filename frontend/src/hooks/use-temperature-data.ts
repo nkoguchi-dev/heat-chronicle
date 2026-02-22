@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 
 import { apiClient } from "@/features/shared/libs/api-client";
-import { connectSSE } from "@/features/shared/libs/sse-client";
+import { pollJobStatus, startFetchJob } from "@/features/shared/libs/polling-client";
 import type {
   ProgressEvent,
   TemperatureRecord,
@@ -25,14 +25,14 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   const [streaming, setStreaming] = useState(false);
   const [progress, setProgress] = useState<ProgressEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const cancelRef = useRef<(() => void) | null>(null);
 
   const fetchData = useCallback(
     (stationId: number, startYear: number, endYear: number) => {
-      // Close any existing SSE connection
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
+      // Cancel any existing polling
+      if (cancelRef.current) {
+        cancelRef.current();
+        cancelRef.current = null;
       }
 
       setLoading(true);
@@ -46,38 +46,45 @@ export function useTemperatureData(): UseTemperatureDataReturn {
         .get<TemperatureResponse>(
           `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`
         )
-        .then((response) => {
+        .then(async (response) => {
           setRecords(response.data);
           setLoading(false);
 
           if (response.metadata.fetching_required) {
-            // Start SSE streaming for missing data
             setStreaming(true);
-            const es = connectSSE(
-              `/api/temperature/${stationId}/stream?start_year=${startYear}&end_year=${endYear}`,
-              {
-                onProgress: (data) => {
-                  setProgress(data);
-                },
-                onData: (data) => {
-                  setRecords((prev) => [...prev, ...data.records]);
-                },
-                onComplete: () => {
-                  setStreaming(false);
-                  setProgress(null);
-                  eventSourceRef.current = null;
-                },
-                onError: (data) => {
-                  setError(data.message);
-                  if (!data.year) {
-                    // Fatal error, stop streaming
-                    setStreaming(false);
-                    eventSourceRef.current = null;
+
+            try {
+              const job = await startFetchJob(stationId, startYear, endYear);
+              const { promise, cancel } = pollJobStatus(
+                stationId,
+                job.job_id,
+                (status) => {
+                  if (status.new_records.length > 0) {
+                    setRecords((prev) => [...prev, ...status.new_records]);
                   }
-                },
-              }
-            );
-            eventSourceRef.current = es;
+                  if (status.year && status.month) {
+                    setProgress({
+                      year: status.year,
+                      month: status.month,
+                      completed: status.completed,
+                      total: status.total,
+                    });
+                  }
+                }
+              );
+              cancelRef.current = cancel;
+
+              await promise;
+              setStreaming(false);
+              setProgress(null);
+              cancelRef.current = null;
+            } catch (err) {
+              setError(
+                err instanceof Error ? err.message : "Fetch job failed"
+              );
+              setStreaming(false);
+              cancelRef.current = null;
+            }
           }
         })
         .catch((err) => {

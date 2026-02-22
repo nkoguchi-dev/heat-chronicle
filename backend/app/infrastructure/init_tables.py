@@ -94,3 +94,24 @@ def ensure_tables_exist() -> None:
             },
         )
         logger.info("Created table: fetch_log")
+
+    if "scrape_jobs" not in existing:
+        client.create_table(
+            TableName="scrape_jobs",
+            KeySchema=[{"AttributeName": "job_id", "KeyType": "HASH"}],
+            AttributeDefinitions=[
+                {"AttributeName": "job_id", "AttributeType": "S"},
+            ],
+            ProvisionedThroughput={
+                "ReadCapacityUnits": 5,
+                "WriteCapacityUnits": 5,
+            },
+        )
+        client.update_time_to_live(
+            TableName="scrape_jobs",
+            TimeToLiveSpecification={
+                "Enabled": True,
+                "AttributeName": "ttl",
+            },
+        )
+        logger.info("Created table: scrape_jobs")

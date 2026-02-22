@@ -1,0 +1,22 @@
+FROM public.ecr.aws/lambda/python:3.12 AS builder
+
+WORKDIR /app
+
+# Poetry install and dependency export
+RUN pip install poetry
+COPY pyproject.toml poetry.lock* ./
+RUN poetry export -f requirements.txt --without dev -o requirements.txt
+RUN pip install -r requirements.txt -t /opt/python
+
+# ---- Runtime ----
+FROM public.ecr.aws/lambda/python:3.12
+
+# Copy dependencies
+COPY --from=builder /opt/python ${LAMBDA_TASK_ROOT}
+
+# Copy application code
+COPY app/ ${LAMBDA_TASK_ROOT}/app/
+COPY data/ ${LAMBDA_TASK_ROOT}/data/
+
+# Lambda handler
+CMD ["app.handler.handler"]

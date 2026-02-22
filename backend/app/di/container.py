@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.infrastructure.database import get_dynamodb_resource
+from app.infrastructure.repositories.job_repository import JobRepository
 from app.infrastructure.repositories.station_repository import StationRepository
 from app.infrastructure.repositories.temperature_repository import (
     TemperatureRepository,
@@ -17,5 +18,10 @@ def get_temperature_repository() -> TemperatureRepository:
     return TemperatureRepository(get_dynamodb_resource())
 
 
+def get_job_repository() -> JobRepository:
+    return JobRepository(get_dynamodb_resource())
+
+
 StationRepoDep = Annotated[StationRepository, Depends(get_station_repository)]
 TempRepoDep = Annotated[TemperatureRepository, Depends(get_temperature_repository)]
+JobRepoDep = Annotated[JobRepository, Depends(get_job_repository)]

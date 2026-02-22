@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env.local
+.env.*.local
+.mypy_cache/
+.pytest_cache/
+tests/
+integration_tests/
+htmlcov/
+.git
+*.md
+Dockerfile
+Dockerfile.prod

@@ -19,22 +19,28 @@ if TYPE_CHECKING:
 
 
 def get_dynamodb_resource() -> DynamoDBServiceResource:
-    return boto3.resource(
-        "dynamodb",
-        endpoint_url=settings.dynamodb_endpoint_url,
-        region_name=settings.dynamodb_region,
-        aws_access_key_id="dummy",
-        aws_secret_access_key="dummy",
-        config=_dynamo_config,
-    )
+    kwargs: dict = {
+        "region_name": settings.dynamodb_region,
+        "config": _dynamo_config,
+    }
+
+    if settings.dynamodb_endpoint_url:
+        kwargs["endpoint_url"] = settings.dynamodb_endpoint_url
+        kwargs["aws_access_key_id"] = "dummy"
+        kwargs["aws_secret_access_key"] = "dummy"
+
+    return boto3.resource("dynamodb", **kwargs)
 
 
 def get_dynamodb_client() -> DynamoDBClient:
-    return boto3.client(
-        "dynamodb",
-        endpoint_url=settings.dynamodb_endpoint_url,
-        region_name=settings.dynamodb_region,
-        aws_access_key_id="dummy",
-        aws_secret_access_key="dummy",
-        config=_dynamo_config,
-    )
+    kwargs: dict = {
+        "region_name": settings.dynamodb_region,
+        "config": _dynamo_config,
+    }
+
+    if settings.dynamodb_endpoint_url:
+        kwargs["endpoint_url"] = settings.dynamodb_endpoint_url
+        kwargs["aws_access_key_id"] = "dummy"
+        kwargs["aws_secret_access_key"] = "dummy"
+
+    return boto3.client("dynamodb", **kwargs)

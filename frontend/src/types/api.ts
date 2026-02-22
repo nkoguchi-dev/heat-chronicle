@@ -42,21 +42,20 @@ export interface ProgressEvent {
   total: number;
 }
 
-export interface DataEvent {
-  year: number;
-  month: number;
-  records: TemperatureRecord[];
+export interface FetchJobResponse {
+  job_id: string;
+  total_months: number;
 }
 
-export interface CompleteEvent {
-  message: string;
-  total_records: number;
-}
-
-export interface ErrorEvent {
-  message: string;
+export interface JobStatusResponse {
+  status: "in_progress" | "complete" | "error";
+  completed: number;
+  total: number;
   year?: number;
   month?: number;
+  new_records: TemperatureRecord[];
+  total_records?: number;
+  message?: string;
 }
 
 export type TempType = "max" | "min" | "avg";
