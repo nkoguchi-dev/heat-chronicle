@@ -2,9 +2,12 @@ services:
   dynamodb-local:
     image: amazon/dynamodb-local:latest
     container_name: heat-dynamodb
+    user: root
     ports:
       - "8001:8000"
-    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+    volumes:
+      - ./database/data:/home/dynamodblocal/data
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
     working_dir: /home/dynamodblocal
 
   backend:
@@ -37,3 +40,4 @@ services:
     command: ["npm", "run", "dev"]
     depends_on:
       - backend
+
