@@ -26,6 +26,21 @@ module "static_site" {
 }
 
 # -----------------------------------------------------------------------------
+# Backend API (ECR + DynamoDB + Lambda + API Gateway)
+# -----------------------------------------------------------------------------
+module "backend_api" {
+  source = "../../modules/backend_api"
+
+  system_name      = var.system_name
+  environment      = var.environment
+  aws_region       = var.aws_region
+  domain_name      = var.domain_name
+  api_domain_name  = var.api_domain_name
+  hosted_zone_name = var.hosted_zone_name
+  tags             = local.tags
+}
+
+# -----------------------------------------------------------------------------
 # GitHub Actions OIDC Provider
 # -----------------------------------------------------------------------------
 data "aws_caller_identity" "current" {}
@@ -98,6 +113,44 @@ data "aws_iam_policy_document" "github_actions_deploy" {
     ]
     resources = [
       module.static_site.cloudfront_distribution_arn,
+    ]
+  }
+
+  # ECR authentication
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken",
+    ]
+    resources = ["*"]
+  }
+
+  # ECR repository operations
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:PutImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+    ]
+    resources = [
+      module.backend_api.ecr_repository_arn,
+    ]
+  }
+
+  # Lambda deploy
+  statement {
+    effect = "Allow"
+    actions = [
+      "lambda:UpdateFunctionCode",
+      "lambda:GetFunction",
+    ]
+    resources = [
+      module.backend_api.lambda_function_arn,
     ]
   }
 }

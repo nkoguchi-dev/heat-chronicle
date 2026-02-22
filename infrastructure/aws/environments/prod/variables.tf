@@ -33,3 +33,9 @@ variable "hosted_zone_name" {
   type        = string
   default     = "koppepan.org"
 }
+
+variable "api_domain_name" {
+  description = "Custom domain name for the backend API"
+  type        = string
+  default     = "api.heat-chronicle.koppepan.org"
+}
