@@ -50,7 +50,6 @@ out/
 
 # Database
 *.db
-data/
 database/data/
 
 # OS

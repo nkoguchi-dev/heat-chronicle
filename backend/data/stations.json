@@ -1,0 +1,6855 @@
+[
+  {
+    "id": 1,
+    "station_name": "札幌",
+    "prec_no": 14,
+    "block_no": "47412",
+    "station_type": "s"
+  },
+  {
+    "id": 2,
+    "station_name": "仙台",
+    "prec_no": 34,
+    "block_no": "47590",
+    "station_type": "s"
+  },
+  {
+    "id": 3,
+    "station_name": "さいたま",
+    "prec_no": 43,
+    "block_no": "0363",
+    "station_type": "a"
+  },
+  {
+    "id": 4,
+    "station_name": "東京",
+    "prec_no": 44,
+    "block_no": "47662",
+    "station_type": "s"
+  },
+  {
+    "id": 5,
+    "station_name": "新潟",
+    "prec_no": 54,
+    "block_no": "47604",
+    "station_type": "s"
+  },
+  {
+    "id": 6,
+    "station_name": "名古屋",
+    "prec_no": 51,
+    "block_no": "47636",
+    "station_type": "s"
+  },
+  {
+    "id": 7,
+    "station_name": "大阪",
+    "prec_no": 62,
+    "block_no": "47772",
+    "station_type": "s"
+  },
+  {
+    "id": 8,
+    "station_name": "広島",
+    "prec_no": 67,
+    "block_no": "47765",
+    "station_type": "s"
+  },
+  {
+    "id": 9,
+    "station_name": "高松",
+    "prec_no": 72,
+    "block_no": "47891",
+    "station_type": "s"
+  },
+  {
+    "id": 10,
+    "station_name": "福岡",
+    "prec_no": 82,
+    "block_no": "47807",
+    "station_type": "s"
+  },
+  {
+    "id": 11,
+    "station_name": "鹿児島",
+    "prec_no": 88,
+    "block_no": "47827",
+    "station_type": "s"
+  },
+  {
+    "id": 12,
+    "station_name": "那覇",
+    "prec_no": 91,
+    "block_no": "47936",
+    "station_type": "s"
+  },
+  {
+    "id": 13,
+    "station_name": "中頓別",
+    "prec_no": 11,
+    "block_no": "1051",
+    "station_type": "a"
+  },
+  {
+    "id": 14,
+    "station_name": "北見枝幸",
+    "prec_no": 11,
+    "block_no": "47402",
+    "station_type": "s"
+  },
+  {
+    "id": 15,
+    "station_name": "声問",
+    "prec_no": 11,
+    "block_no": "1528",
+    "station_type": "a"
+  },
+  {
+    "id": 16,
+    "station_name": "宗谷岬",
+    "prec_no": 11,
+    "block_no": "1284",
+    "station_type": "a"
+  },
+  {
+    "id": 17,
+    "station_name": "幌泊",
+    "prec_no": 11,
+    "block_no": "1593",
+    "station_type": "a"
+  },
+  {
+    "id": 18,
+    "station_name": "本泊",
+    "prec_no": 11,
+    "block_no": "1512",
+    "station_type": "a"
+  },
+  {
+    "id": 19,
+    "station_name": "歌登",
+    "prec_no": 11,
+    "block_no": "0005",
+    "station_type": "a"
+  },
+  {
+    "id": 20,
+    "station_name": "沓形",
+    "prec_no": 11,
+    "block_no": "0002",
+    "station_type": "a"
+  },
+  {
+    "id": 21,
+    "station_name": "沼川",
+    "prec_no": 11,
+    "block_no": "1203",
+    "station_type": "a"
+  },
+  {
+    "id": 22,
+    "station_name": "浜頓別",
+    "prec_no": 11,
+    "block_no": "0003",
+    "station_type": "a"
+  },
+  {
+    "id": 23,
+    "station_name": "浜鬼志別",
+    "prec_no": 11,
+    "block_no": "1285",
+    "station_type": "a"
+  },
+  {
+    "id": 24,
+    "station_name": "礼文",
+    "prec_no": 11,
+    "block_no": "1546",
+    "station_type": "a"
+  },
+  {
+    "id": 25,
+    "station_name": "稚内",
+    "prec_no": 11,
+    "block_no": "47401",
+    "station_type": "s"
+  },
+  {
+    "id": 26,
+    "station_name": "船泊",
+    "prec_no": 11,
+    "block_no": "1207",
+    "station_type": "a"
+  },
+  {
+    "id": 27,
+    "station_name": "豊富",
+    "prec_no": 11,
+    "block_no": "1054",
+    "station_type": "a"
+  },
+  {
+    "id": 28,
+    "station_name": "上富良野",
+    "prec_no": 12,
+    "block_no": "1190",
+    "station_type": "a"
+  },
+  {
+    "id": 29,
+    "station_name": "上川",
+    "prec_no": 12,
+    "block_no": "0015",
+    "station_type": "a"
+  },
+  {
+    "id": 30,
+    "station_name": "下川",
+    "prec_no": 12,
+    "block_no": "0010",
+    "station_type": "a"
+  },
+  {
+    "id": 31,
+    "station_name": "中川",
+    "prec_no": 12,
+    "block_no": "1201",
+    "station_type": "a"
+  },
+  {
+    "id": 32,
+    "station_name": "占冠",
+    "prec_no": 12,
+    "block_no": "1189",
+    "station_type": "a"
+  },
+  {
+    "id": 33,
+    "station_name": "名寄",
+    "prec_no": 12,
+    "block_no": "0008",
+    "station_type": "a"
+  },
+  {
+    "id": 34,
+    "station_name": "和寒",
+    "prec_no": 12,
+    "block_no": "1055",
+    "station_type": "a"
+  },
+  {
+    "id": 35,
+    "station_name": "士別",
+    "prec_no": 12,
+    "block_no": "0011",
+    "station_type": "a"
+  },
+  {
+    "id": 36,
+    "station_name": "富良野",
+    "prec_no": 12,
+    "block_no": "0021",
+    "station_type": "a"
+  },
+  {
+    "id": 37,
+    "station_name": "幌加内",
+    "prec_no": 12,
+    "block_no": "1053",
+    "station_type": "a"
+  },
+  {
+    "id": 38,
+    "station_name": "幾寅",
+    "prec_no": 12,
+    "block_no": "1188",
+    "station_type": "a"
+  },
+  {
+    "id": 39,
+    "station_name": "志比内",
+    "prec_no": 12,
+    "block_no": "1185",
+    "station_type": "a"
+  },
+  {
+    "id": 40,
+    "station_name": "旭川",
+    "prec_no": 12,
+    "block_no": "47407",
+    "station_type": "s"
+  },
+  {
+    "id": 41,
+    "station_name": "朝日",
+    "prec_no": 12,
+    "block_no": "1047",
+    "station_type": "a"
+  },
+  {
+    "id": 42,
+    "station_name": "朱鞠内",
+    "prec_no": 12,
+    "block_no": "1279",
+    "station_type": "a"
+  },
+  {
+    "id": 43,
+    "station_name": "東川",
+    "prec_no": 12,
+    "block_no": "1184",
+    "station_type": "a"
+  },
+  {
+    "id": 44,
+    "station_name": "東神楽",
+    "prec_no": 12,
+    "block_no": "1458",
+    "station_type": "a"
+  },
+  {
+    "id": 45,
+    "station_name": "比布",
+    "prec_no": 12,
+    "block_no": "1048",
+    "station_type": "a"
+  },
+  {
+    "id": 46,
+    "station_name": "江丹別",
+    "prec_no": 12,
+    "block_no": "1191",
+    "station_type": "a"
+  },
+  {
+    "id": 47,
+    "station_name": "美深",
+    "prec_no": 12,
+    "block_no": "0006",
+    "station_type": "a"
+  },
+  {
+    "id": 48,
+    "station_name": "美瑛",
+    "prec_no": 12,
+    "block_no": "1052",
+    "station_type": "a"
+  },
+  {
+    "id": 49,
+    "station_name": "音威子府",
+    "prec_no": 12,
+    "block_no": "1197",
+    "station_type": "a"
+  },
+  {
+    "id": 50,
+    "station_name": "麓郷",
+    "prec_no": 12,
+    "block_no": "1280",
+    "station_type": "a"
+  },
+  {
+    "id": 51,
+    "station_name": "初山別",
+    "prec_no": 13,
+    "block_no": "1216",
+    "station_type": "a"
+  },
+  {
+    "id": 52,
+    "station_name": "増毛",
+    "prec_no": 13,
+    "block_no": "0028",
+    "station_type": "a"
+  },
+  {
+    "id": 53,
+    "station_name": "天塩",
+    "prec_no": 13,
+    "block_no": "0024",
+    "station_type": "a"
+  },
+  {
+    "id": 54,
+    "station_name": "幌糠",
+    "prec_no": 13,
+    "block_no": "1218",
+    "station_type": "a"
+  },
+  {
+    "id": 55,
+    "station_name": "焼尻",
+    "prec_no": 13,
+    "block_no": "1213",
+    "station_type": "a"
+  },
+  {
+    "id": 56,
+    "station_name": "留萌",
+    "prec_no": 13,
+    "block_no": "47406",
+    "station_type": "s"
+  },
+  {
+    "id": 57,
+    "station_name": "羽幌",
+    "prec_no": 13,
+    "block_no": "47404",
+    "station_type": "s"
+  },
+  {
+    "id": 58,
+    "station_name": "達布",
+    "prec_no": 13,
+    "block_no": "1217",
+    "station_type": "a"
+  },
+  {
+    "id": 59,
+    "station_name": "遠別",
+    "prec_no": 13,
+    "block_no": "0025",
+    "station_type": "a"
+  },
+  {
+    "id": 60,
+    "station_name": "千歳",
+    "prec_no": 14,
+    "block_no": "1459",
+    "station_type": "a"
+  },
+  {
+    "id": 61,
+    "station_name": "厚田",
+    "prec_no": 14,
+    "block_no": "1194",
+    "station_type": "a"
+  },
+  {
+    "id": 62,
+    "station_name": "山口",
+    "prec_no": 14,
+    "block_no": "0031",
+    "station_type": "a"
+  },
+  {
+    "id": 63,
+    "station_name": "恵庭島松",
+    "prec_no": 14,
+    "block_no": "0035",
+    "station_type": "a"
+  },
+  {
+    "id": 64,
+    "station_name": "支笏湖畔",
+    "prec_no": 14,
+    "block_no": "0037",
+    "station_type": "a"
+  },
+  {
+    "id": 65,
+    "station_name": "新篠津",
+    "prec_no": 14,
+    "block_no": "0030",
+    "station_type": "a"
+  },
+  {
+    "id": 66,
+    "station_name": "江別",
+    "prec_no": 14,
+    "block_no": "1507",
+    "station_type": "a"
+  },
+  {
+    "id": 67,
+    "station_name": "浜益",
+    "prec_no": 14,
+    "block_no": "1193",
+    "station_type": "a"
+  },
+  {
+    "id": 68,
+    "station_name": "石狩",
+    "prec_no": 14,
+    "block_no": "1085",
+    "station_type": "a"
+  },
+  {
+    "id": 69,
+    "station_name": "西野幌",
+    "prec_no": 14,
+    "block_no": "1076",
+    "station_type": "a"
+  },
+  {
+    "id": 70,
+    "station_name": "夕張",
+    "prec_no": 15,
+    "block_no": "0049",
+    "station_type": "a"
+  },
+  {
+    "id": 71,
+    "station_name": "岩見沢",
+    "prec_no": 15,
+    "block_no": "47413",
+    "station_type": "s"
+  },
+  {
+    "id": 72,
+    "station_name": "月形",
+    "prec_no": 15,
+    "block_no": "0999",
+    "station_type": "a"
+  },
+  {
+    "id": 73,
+    "station_name": "深川",
+    "prec_no": 15,
+    "block_no": "0039",
+    "station_type": "a"
+  },
+  {
+    "id": 74,
+    "station_name": "滝川",
+    "prec_no": 15,
+    "block_no": "0041",
+    "station_type": "a"
+  },
+  {
+    "id": 75,
+    "station_name": "石狩沼田",
+    "prec_no": 15,
+    "block_no": "0038",
+    "station_type": "a"
+  },
+  {
+    "id": 76,
+    "station_name": "秩父別",
+    "prec_no": 15,
+    "block_no": "1674",
+    "station_type": "a"
+  },
+  {
+    "id": 77,
+    "station_name": "空知吉野",
+    "prec_no": 15,
+    "block_no": "1287",
+    "station_type": "a"
+  },
+  {
+    "id": 78,
+    "station_name": "美唄",
+    "prec_no": 15,
+    "block_no": "0044",
+    "station_type": "a"
+  },
+  {
+    "id": 79,
+    "station_name": "芦別",
+    "prec_no": 15,
+    "block_no": "0043",
+    "station_type": "a"
+  },
+  {
+    "id": 80,
+    "station_name": "長沼",
+    "prec_no": 15,
+    "block_no": "0047",
+    "station_type": "a"
+  },
+  {
+    "id": 81,
+    "station_name": "余市",
+    "prec_no": 16,
+    "block_no": "0052",
+    "station_type": "a"
+  },
+  {
+    "id": 82,
+    "station_name": "倶知安",
+    "prec_no": 16,
+    "block_no": "47433",
+    "station_type": "s"
+  },
+  {
+    "id": 83,
+    "station_name": "共和",
+    "prec_no": 16,
+    "block_no": "0054",
+    "station_type": "a"
+  },
+  {
+    "id": 84,
+    "station_name": "喜茂別",
+    "prec_no": 16,
+    "block_no": "0060",
+    "station_type": "a"
+  },
+  {
+    "id": 85,
+    "station_name": "寿都",
+    "prec_no": 16,
+    "block_no": "47421",
+    "station_type": "s"
+  },
+  {
+    "id": 86,
+    "station_name": "小樽",
+    "prec_no": 16,
+    "block_no": "47411",
+    "station_type": "s"
+  },
+  {
+    "id": 87,
+    "station_name": "真狩",
+    "prec_no": 16,
+    "block_no": "1072",
+    "station_type": "a"
+  },
+  {
+    "id": 88,
+    "station_name": "神恵内",
+    "prec_no": 16,
+    "block_no": "1208",
+    "station_type": "a"
+  },
+  {
+    "id": 89,
+    "station_name": "美国",
+    "prec_no": 16,
+    "block_no": "0051",
+    "station_type": "a"
+  },
+  {
+    "id": 90,
+    "station_name": "蘭越",
+    "prec_no": 16,
+    "block_no": "0055",
+    "station_type": "a"
+  },
+  {
+    "id": 91,
+    "station_name": "黒松内",
+    "prec_no": 16,
+    "block_no": "0061",
+    "station_type": "a"
+  },
+  {
+    "id": 92,
+    "station_name": "佐呂間",
+    "prec_no": 17,
+    "block_no": "0070",
+    "station_type": "a"
+  },
+  {
+    "id": 93,
+    "station_name": "北見",
+    "prec_no": 17,
+    "block_no": "0074",
+    "station_type": "a"
+  },
+  {
+    "id": 94,
+    "station_name": "境野",
+    "prec_no": 17,
+    "block_no": "1209",
+    "station_type": "a"
+  },
+  {
+    "id": 95,
+    "station_name": "女満別",
+    "prec_no": 17,
+    "block_no": "1460",
+    "station_type": "a"
+  },
+  {
+    "id": 96,
+    "station_name": "宇登呂",
+    "prec_no": 17,
+    "block_no": "0981",
+    "station_type": "a"
+  },
+  {
+    "id": 97,
+    "station_name": "小清水",
+    "prec_no": 17,
+    "block_no": "0075",
+    "station_type": "a"
+  },
+  {
+    "id": 98,
+    "station_name": "常呂",
+    "prec_no": 17,
+    "block_no": "0068",
+    "station_type": "a"
+  },
+  {
+    "id": 99,
+    "station_name": "斜里",
+    "prec_no": 17,
+    "block_no": "0076",
+    "station_type": "a"
+  },
+  {
+    "id": 100,
+    "station_name": "津別",
+    "prec_no": 17,
+    "block_no": "0082",
+    "station_type": "a"
+  },
+  {
+    "id": 101,
+    "station_name": "湧別",
+    "prec_no": 17,
+    "block_no": "0065",
+    "station_type": "a"
+  },
+  {
+    "id": 102,
+    "station_name": "滝上",
+    "prec_no": 17,
+    "block_no": "0066",
+    "station_type": "a"
+  },
+  {
+    "id": 103,
+    "station_name": "生田原",
+    "prec_no": 17,
+    "block_no": "0072",
+    "station_type": "a"
+  },
+  {
+    "id": 104,
+    "station_name": "留辺蘂",
+    "prec_no": 17,
+    "block_no": "0077",
+    "station_type": "a"
+  },
+  {
+    "id": 105,
+    "station_name": "白滝",
+    "prec_no": 17,
+    "block_no": "1092",
+    "station_type": "a"
+  },
+  {
+    "id": 106,
+    "station_name": "紋別",
+    "prec_no": 17,
+    "block_no": "47435",
+    "station_type": "s"
+  },
+  {
+    "id": 107,
+    "station_name": "紋別小向",
+    "prec_no": 17,
+    "block_no": "1487",
+    "station_type": "a"
+  },
+  {
+    "id": 108,
+    "station_name": "網走",
+    "prec_no": 17,
+    "block_no": "47409",
+    "station_type": "s"
+  },
+  {
+    "id": 109,
+    "station_name": "美幌",
+    "prec_no": 17,
+    "block_no": "0079",
+    "station_type": "a"
+  },
+  {
+    "id": 110,
+    "station_name": "興部",
+    "prec_no": 17,
+    "block_no": "0063",
+    "station_type": "a"
+  },
+  {
+    "id": 111,
+    "station_name": "西興部",
+    "prec_no": 17,
+    "block_no": "1073",
+    "station_type": "a"
+  },
+  {
+    "id": 112,
+    "station_name": "遠軽",
+    "prec_no": 17,
+    "block_no": "0069",
+    "station_type": "a"
+  },
+  {
+    "id": 113,
+    "station_name": "雄武",
+    "prec_no": 17,
+    "block_no": "47405",
+    "station_type": "s"
+  },
+  {
+    "id": 114,
+    "station_name": "上標津",
+    "prec_no": 18,
+    "block_no": "1547",
+    "station_type": "a"
+  },
+  {
+    "id": 115,
+    "station_name": "中標津",
+    "prec_no": 18,
+    "block_no": "0086",
+    "station_type": "a"
+  },
+  {
+    "id": 116,
+    "station_name": "別海",
+    "prec_no": 18,
+    "block_no": "0088",
+    "station_type": "a"
+  },
+  {
+    "id": 117,
+    "station_name": "厚床",
+    "prec_no": 18,
+    "block_no": "1196",
+    "station_type": "a"
+  },
+  {
+    "id": 118,
+    "station_name": "根室",
+    "prec_no": 18,
+    "block_no": "47420",
+    "station_type": "s"
+  },
+  {
+    "id": 119,
+    "station_name": "根室中標津",
+    "prec_no": 18,
+    "block_no": "1489",
+    "station_type": "a"
+  },
+  {
+    "id": 120,
+    "station_name": "標津",
+    "prec_no": 18,
+    "block_no": "0085",
+    "station_type": "a"
+  },
+  {
+    "id": 121,
+    "station_name": "納沙布",
+    "prec_no": 18,
+    "block_no": "1056",
+    "station_type": "a"
+  },
+  {
+    "id": 122,
+    "station_name": "羅臼",
+    "prec_no": 18,
+    "block_no": "0084",
+    "station_type": "a"
+  },
+  {
+    "id": 123,
+    "station_name": "計根別",
+    "prec_no": 18,
+    "block_no": "0087",
+    "station_type": "a"
+  },
+  {
+    "id": 124,
+    "station_name": "中徹別",
+    "prec_no": 19,
+    "block_no": "0095",
+    "station_type": "a"
+  },
+  {
+    "id": 125,
+    "station_name": "太田",
+    "prec_no": 19,
+    "block_no": "1192",
+    "station_type": "a"
+  },
+  {
+    "id": 126,
+    "station_name": "川湯",
+    "prec_no": 19,
+    "block_no": "0090",
+    "station_type": "a"
+  },
+  {
+    "id": 127,
+    "station_name": "弟子屈",
+    "prec_no": 19,
+    "block_no": "1187",
+    "station_type": "a"
+  },
+  {
+    "id": 128,
+    "station_name": "榊町",
+    "prec_no": 19,
+    "block_no": "1195",
+    "station_type": "a"
+  },
+  {
+    "id": 129,
+    "station_name": "標茶",
+    "prec_no": 19,
+    "block_no": "0093",
+    "station_type": "a"
+  },
+  {
+    "id": 130,
+    "station_name": "白糠",
+    "prec_no": 19,
+    "block_no": "0098",
+    "station_type": "a"
+  },
+  {
+    "id": 131,
+    "station_name": "知方学",
+    "prec_no": 19,
+    "block_no": "1283",
+    "station_type": "a"
+  },
+  {
+    "id": 132,
+    "station_name": "釧路",
+    "prec_no": 19,
+    "block_no": "47418",
+    "station_type": "s"
+  },
+  {
+    "id": 133,
+    "station_name": "阿寒湖畔",
+    "prec_no": 19,
+    "block_no": "0091",
+    "station_type": "a"
+  },
+  {
+    "id": 134,
+    "station_name": "鶴丘",
+    "prec_no": 19,
+    "block_no": "1461",
+    "station_type": "a"
+  },
+  {
+    "id": 135,
+    "station_name": "鶴居",
+    "prec_no": 19,
+    "block_no": "1186",
+    "station_type": "a"
+  },
+  {
+    "id": 136,
+    "station_name": "ぬかびら源泉郷",
+    "prec_no": 20,
+    "block_no": "0103",
+    "station_type": "a"
+  },
+  {
+    "id": 137,
+    "station_name": "上士幌",
+    "prec_no": 20,
+    "block_no": "0107",
+    "station_type": "a"
+  },
+  {
+    "id": 138,
+    "station_name": "上札内",
+    "prec_no": 20,
+    "block_no": "1210",
+    "station_type": "a"
+  },
+  {
+    "id": 139,
+    "station_name": "大樹",
+    "prec_no": 20,
+    "block_no": "0121",
+    "station_type": "a"
+  },
+  {
+    "id": 140,
+    "station_name": "大津",
+    "prec_no": 20,
+    "block_no": "1214",
+    "station_type": "a"
+  },
+  {
+    "id": 141,
+    "station_name": "帯広",
+    "prec_no": 20,
+    "block_no": "47417",
+    "station_type": "s"
+  },
+  {
+    "id": 142,
+    "station_name": "帯広泉",
+    "prec_no": 20,
+    "block_no": "1510",
+    "station_type": "a"
+  },
+  {
+    "id": 143,
+    "station_name": "広尾",
+    "prec_no": 20,
+    "block_no": "47440",
+    "station_type": "s"
+  },
+  {
+    "id": 144,
+    "station_name": "新得",
+    "prec_no": 20,
+    "block_no": "0113",
+    "station_type": "a"
+  },
+  {
+    "id": 145,
+    "station_name": "更別",
+    "prec_no": 20,
+    "block_no": "1211",
+    "station_type": "a"
+  },
+  {
+    "id": 146,
+    "station_name": "本別",
+    "prec_no": 20,
+    "block_no": "0112",
+    "station_type": "a"
+  },
+  {
+    "id": 147,
+    "station_name": "池田",
+    "prec_no": 20,
+    "block_no": "0117",
+    "station_type": "a"
+  },
+  {
+    "id": 148,
+    "station_name": "浦幌",
+    "prec_no": 20,
+    "block_no": "0118",
+    "station_type": "a"
+  },
+  {
+    "id": 149,
+    "station_name": "糠内",
+    "prec_no": 20,
+    "block_no": "1286",
+    "station_type": "a"
+  },
+  {
+    "id": 150,
+    "station_name": "芽室",
+    "prec_no": 20,
+    "block_no": "0115",
+    "station_type": "a"
+  },
+  {
+    "id": 151,
+    "station_name": "足寄",
+    "prec_no": 20,
+    "block_no": "0109",
+    "station_type": "a"
+  },
+  {
+    "id": 152,
+    "station_name": "陸別",
+    "prec_no": 20,
+    "block_no": "0101",
+    "station_type": "a"
+  },
+  {
+    "id": 153,
+    "station_name": "駒場",
+    "prec_no": 20,
+    "block_no": "1204",
+    "station_type": "a"
+  },
+  {
+    "id": 154,
+    "station_name": "鹿追",
+    "prec_no": 20,
+    "block_no": "0114",
+    "station_type": "a"
+  },
+  {
+    "id": 155,
+    "station_name": "伊達",
+    "prec_no": 21,
+    "block_no": "0132",
+    "station_type": "a"
+  },
+  {
+    "id": 156,
+    "station_name": "厚真",
+    "prec_no": 21,
+    "block_no": "0124",
+    "station_type": "a"
+  },
+  {
+    "id": 157,
+    "station_name": "大岸",
+    "prec_no": 21,
+    "block_no": "0128",
+    "station_type": "a"
+  },
+  {
+    "id": 158,
+    "station_name": "大滝",
+    "prec_no": 21,
+    "block_no": "1067",
+    "station_type": "a"
+  },
+  {
+    "id": 159,
+    "station_name": "室蘭",
+    "prec_no": 21,
+    "block_no": "47423",
+    "station_type": "s"
+  },
+  {
+    "id": 160,
+    "station_name": "森野",
+    "prec_no": 21,
+    "block_no": "0126",
+    "station_type": "a"
+  },
+  {
+    "id": 161,
+    "station_name": "登別",
+    "prec_no": 21,
+    "block_no": "0134",
+    "station_type": "a"
+  },
+  {
+    "id": 162,
+    "station_name": "白老",
+    "prec_no": 21,
+    "block_no": "0130",
+    "station_type": "a"
+  },
+  {
+    "id": 163,
+    "station_name": "穂別",
+    "prec_no": 21,
+    "block_no": "0125",
+    "station_type": "a"
+  },
+  {
+    "id": 164,
+    "station_name": "苫小牧",
+    "prec_no": 21,
+    "block_no": "47424",
+    "station_type": "s"
+  },
+  {
+    "id": 165,
+    "station_name": "鵡川",
+    "prec_no": 21,
+    "block_no": "0131",
+    "station_type": "a"
+  },
+  {
+    "id": 166,
+    "station_name": "えりも岬",
+    "prec_no": 22,
+    "block_no": "1340",
+    "station_type": "a"
+  },
+  {
+    "id": 167,
+    "station_name": "三石",
+    "prec_no": 22,
+    "block_no": "1198",
+    "station_type": "a"
+  },
+  {
+    "id": 168,
+    "station_name": "中杵臼",
+    "prec_no": 22,
+    "block_no": "1288",
+    "station_type": "a"
+  },
+  {
+    "id": 169,
+    "station_name": "新和",
+    "prec_no": 22,
+    "block_no": "0137",
+    "station_type": "a"
+  },
+  {
+    "id": 170,
+    "station_name": "日高",
+    "prec_no": 22,
+    "block_no": "1202",
+    "station_type": "a"
+  },
+  {
+    "id": 171,
+    "station_name": "日高門別",
+    "prec_no": 22,
+    "block_no": "0136",
+    "station_type": "a"
+  },
+  {
+    "id": 172,
+    "station_name": "浦河",
+    "prec_no": 22,
+    "block_no": "47426",
+    "station_type": "s"
+  },
+  {
+    "id": 173,
+    "station_name": "静内",
+    "prec_no": 22,
+    "block_no": "0140",
+    "station_type": "a"
+  },
+  {
+    "id": 174,
+    "station_name": "八雲",
+    "prec_no": 23,
+    "block_no": "0144",
+    "station_type": "a"
+  },
+  {
+    "id": 175,
+    "station_name": "函館",
+    "prec_no": 23,
+    "block_no": "47430",
+    "station_type": "s"
+  },
+  {
+    "id": 176,
+    "station_name": "北斗",
+    "prec_no": 23,
+    "block_no": "0148",
+    "station_type": "a"
+  },
+  {
+    "id": 177,
+    "station_name": "川汲",
+    "prec_no": 23,
+    "block_no": "0147",
+    "station_type": "a"
+  },
+  {
+    "id": 178,
+    "station_name": "木古内",
+    "prec_no": 23,
+    "block_no": "0917",
+    "station_type": "a"
+  },
+  {
+    "id": 179,
+    "station_name": "松前",
+    "prec_no": 23,
+    "block_no": "0152",
+    "station_type": "a"
+  },
+  {
+    "id": 180,
+    "station_name": "森",
+    "prec_no": 23,
+    "block_no": "0145",
+    "station_type": "a"
+  },
+  {
+    "id": 181,
+    "station_name": "熊石",
+    "prec_no": 23,
+    "block_no": "0155",
+    "station_type": "a"
+  },
+  {
+    "id": 182,
+    "station_name": "長万部",
+    "prec_no": 23,
+    "block_no": "0143",
+    "station_type": "a"
+  },
+  {
+    "id": 183,
+    "station_name": "高松",
+    "prec_no": 23,
+    "block_no": "1462",
+    "station_type": "a"
+  },
+  {
+    "id": 184,
+    "station_name": "せたな",
+    "prec_no": 24,
+    "block_no": "0153",
+    "station_type": "a"
+  },
+  {
+    "id": 185,
+    "station_name": "今金",
+    "prec_no": 24,
+    "block_no": "0154",
+    "station_type": "a"
+  },
+  {
+    "id": 186,
+    "station_name": "奥尻",
+    "prec_no": 24,
+    "block_no": "1199",
+    "station_type": "a"
+  },
+  {
+    "id": 187,
+    "station_name": "江差",
+    "prec_no": 24,
+    "block_no": "47428",
+    "station_type": "s"
+  },
+  {
+    "id": 188,
+    "station_name": "米岡",
+    "prec_no": 24,
+    "block_no": "1513",
+    "station_type": "a"
+  },
+  {
+    "id": 189,
+    "station_name": "鶉",
+    "prec_no": 24,
+    "block_no": "1200",
+    "station_type": "a"
+  },
+  {
+    "id": 190,
+    "station_name": "むつ",
+    "prec_no": 31,
+    "block_no": "47576",
+    "station_type": "s"
+  },
+  {
+    "id": 191,
+    "station_name": "三戸",
+    "prec_no": 31,
+    "block_no": "0179",
+    "station_type": "a"
+  },
+  {
+    "id": 192,
+    "station_name": "三沢",
+    "prec_no": 31,
+    "block_no": "0169",
+    "station_type": "a"
+  },
+  {
+    "id": 193,
+    "station_name": "五所川原",
+    "prec_no": 31,
+    "block_no": "0164",
+    "station_type": "a"
+  },
+  {
+    "id": 194,
+    "station_name": "今別",
+    "prec_no": 31,
+    "block_no": "1026",
+    "station_type": "a"
+  },
+  {
+    "id": 195,
+    "station_name": "休屋",
+    "prec_no": 31,
+    "block_no": "0177",
+    "station_type": "a"
+  },
+  {
+    "id": 196,
+    "station_name": "八戸",
+    "prec_no": 31,
+    "block_no": "47581",
+    "station_type": "s"
+  },
+  {
+    "id": 197,
+    "station_name": "六ケ所",
+    "prec_no": 31,
+    "block_no": "1027",
+    "station_type": "a"
+  },
+  {
+    "id": 198,
+    "station_name": "十和田",
+    "prec_no": 31,
+    "block_no": "0172",
+    "station_type": "a"
+  },
+  {
+    "id": 199,
+    "station_name": "大間",
+    "prec_no": 31,
+    "block_no": "1041",
+    "station_type": "a"
+  },
+  {
+    "id": 200,
+    "station_name": "小田野沢",
+    "prec_no": 31,
+    "block_no": "1122",
+    "station_type": "a"
+  },
+  {
+    "id": 201,
+    "station_name": "市浦",
+    "prec_no": 31,
+    "block_no": "1119",
+    "station_type": "a"
+  },
+  {
+    "id": 202,
+    "station_name": "弘前",
+    "prec_no": 31,
+    "block_no": "0166",
+    "station_type": "a"
+  },
+  {
+    "id": 203,
+    "station_name": "深浦",
+    "prec_no": 31,
+    "block_no": "47574",
+    "station_type": "s"
+  },
+  {
+    "id": 204,
+    "station_name": "碇ケ関",
+    "prec_no": 31,
+    "block_no": "0175",
+    "station_type": "a"
+  },
+  {
+    "id": 205,
+    "station_name": "脇野沢",
+    "prec_no": 31,
+    "block_no": "1124",
+    "station_type": "a"
+  },
+  {
+    "id": 206,
+    "station_name": "蟹田",
+    "prec_no": 31,
+    "block_no": "0160",
+    "station_type": "a"
+  },
+  {
+    "id": 207,
+    "station_name": "酸ケ湯",
+    "prec_no": 31,
+    "block_no": "1079",
+    "station_type": "a"
+  },
+  {
+    "id": 208,
+    "station_name": "野辺地",
+    "prec_no": 31,
+    "block_no": "0162",
+    "station_type": "a"
+  },
+  {
+    "id": 209,
+    "station_name": "青森",
+    "prec_no": 31,
+    "block_no": "47575",
+    "station_type": "s"
+  },
+  {
+    "id": 210,
+    "station_name": "青森大谷",
+    "prec_no": 31,
+    "block_no": "1495",
+    "station_type": "a"
+  },
+  {
+    "id": 211,
+    "station_name": "鰺ケ沢",
+    "prec_no": 31,
+    "block_no": "0163",
+    "station_type": "a"
+  },
+  {
+    "id": 212,
+    "station_name": "黒石",
+    "prec_no": 31,
+    "block_no": "0167",
+    "station_type": "a"
+  },
+  {
+    "id": 213,
+    "station_name": "にかほ",
+    "prec_no": 32,
+    "block_no": "0199",
+    "station_type": "a"
+  },
+  {
+    "id": 214,
+    "station_name": "五城目",
+    "prec_no": 32,
+    "block_no": "0188",
+    "station_type": "a"
+  },
+  {
+    "id": 215,
+    "station_name": "八幡平",
+    "prec_no": 32,
+    "block_no": "1289",
+    "station_type": "a"
+  },
+  {
+    "id": 216,
+    "station_name": "八森",
+    "prec_no": 32,
+    "block_no": "1043",
+    "station_type": "a"
+  },
+  {
+    "id": 217,
+    "station_name": "大曲",
+    "prec_no": 32,
+    "block_no": "0195",
+    "station_type": "a"
+  },
+  {
+    "id": 218,
+    "station_name": "大正寺",
+    "prec_no": 32,
+    "block_no": "1050",
+    "station_type": "a"
+  },
+  {
+    "id": 219,
+    "station_name": "大潟",
+    "prec_no": 32,
+    "block_no": "1035",
+    "station_type": "a"
+  },
+  {
+    "id": 220,
+    "station_name": "大館",
+    "prec_no": 32,
+    "block_no": "0912",
+    "station_type": "a"
+  },
+  {
+    "id": 221,
+    "station_name": "岩見三内",
+    "prec_no": 32,
+    "block_no": "0192",
+    "station_type": "a"
+  },
+  {
+    "id": 222,
+    "station_name": "本荘",
+    "prec_no": 32,
+    "block_no": "0196",
+    "station_type": "a"
+  },
+  {
+    "id": 223,
+    "station_name": "東由利",
+    "prec_no": 32,
+    "block_no": "1117",
+    "station_type": "a"
+  },
+  {
+    "id": 224,
+    "station_name": "横手",
+    "prec_no": 32,
+    "block_no": "0198",
+    "station_type": "a"
+  },
+  {
+    "id": 225,
+    "station_name": "湯の岱",
+    "prec_no": 32,
+    "block_no": "0204",
+    "station_type": "a"
+  },
+  {
+    "id": 226,
+    "station_name": "湯沢",
+    "prec_no": 32,
+    "block_no": "0202",
+    "station_type": "a"
+  },
+  {
+    "id": 227,
+    "station_name": "湯瀬",
+    "prec_no": 32,
+    "block_no": "0186",
+    "station_type": "a"
+  },
+  {
+    "id": 228,
+    "station_name": "田沢湖",
+    "prec_no": 32,
+    "block_no": "0194",
+    "station_type": "a"
+  },
+  {
+    "id": 229,
+    "station_name": "男鹿",
+    "prec_no": 32,
+    "block_no": "1036",
+    "station_type": "a"
+  },
+  {
+    "id": 230,
+    "station_name": "矢島",
+    "prec_no": 32,
+    "block_no": "0200",
+    "station_type": "a"
+  },
+  {
+    "id": 231,
+    "station_name": "秋田",
+    "prec_no": 32,
+    "block_no": "47582",
+    "station_type": "s"
+  },
+  {
+    "id": 232,
+    "station_name": "能代",
+    "prec_no": 32,
+    "block_no": "0183",
+    "station_type": "a"
+  },
+  {
+    "id": 233,
+    "station_name": "脇神",
+    "prec_no": 32,
+    "block_no": "1463",
+    "station_type": "a"
+  },
+  {
+    "id": 234,
+    "station_name": "角館",
+    "prec_no": 32,
+    "block_no": "0193",
+    "station_type": "a"
+  },
+  {
+    "id": 235,
+    "station_name": "阿仁合",
+    "prec_no": 32,
+    "block_no": "1131",
+    "station_type": "a"
+  },
+  {
+    "id": 236,
+    "station_name": "雄和",
+    "prec_no": 32,
+    "block_no": "1511",
+    "station_type": "a"
+  },
+  {
+    "id": 237,
+    "station_name": "鷹巣",
+    "prec_no": 32,
+    "block_no": "0184",
+    "station_type": "a"
+  },
+  {
+    "id": 238,
+    "station_name": "鹿角",
+    "prec_no": 32,
+    "block_no": "0185",
+    "station_type": "a"
+  },
+  {
+    "id": 239,
+    "station_name": "一関",
+    "prec_no": 33,
+    "block_no": "0238",
+    "station_type": "a"
+  },
+  {
+    "id": 240,
+    "station_name": "久慈",
+    "prec_no": 33,
+    "block_no": "0209",
+    "station_type": "a"
+  },
+  {
+    "id": 241,
+    "station_name": "二戸",
+    "prec_no": 33,
+    "block_no": "0207",
+    "station_type": "a"
+  },
+  {
+    "id": 242,
+    "station_name": "住田",
+    "prec_no": 33,
+    "block_no": "1206",
+    "station_type": "a"
+  },
+  {
+    "id": 243,
+    "station_name": "北上",
+    "prec_no": 33,
+    "block_no": "0230",
+    "station_type": "a"
+  },
+  {
+    "id": 244,
+    "station_name": "区界",
+    "prec_no": 33,
+    "block_no": "1447",
+    "station_type": "a"
+  },
+  {
+    "id": 245,
+    "station_name": "千厩",
+    "prec_no": 33,
+    "block_no": "0239",
+    "station_type": "a"
+  },
+  {
+    "id": 246,
+    "station_name": "大船渡",
+    "prec_no": 33,
+    "block_no": "47512",
+    "station_type": "s"
+  },
+  {
+    "id": 247,
+    "station_name": "大迫",
+    "prec_no": 33,
+    "block_no": "0228",
+    "station_type": "a"
+  },
+  {
+    "id": 248,
+    "station_name": "奥中山",
+    "prec_no": 33,
+    "block_no": "1215",
+    "station_type": "a"
+  },
+  {
+    "id": 249,
+    "station_name": "好摩",
+    "prec_no": 33,
+    "block_no": "1032",
+    "station_type": "a"
+  },
+  {
+    "id": 250,
+    "station_name": "宮古",
+    "prec_no": 33,
+    "block_no": "47585",
+    "station_type": "s"
+  },
+  {
+    "id": 251,
+    "station_name": "小本",
+    "prec_no": 33,
+    "block_no": "1212",
+    "station_type": "a"
+  },
+  {
+    "id": 252,
+    "station_name": "山形",
+    "prec_no": 33,
+    "block_no": "1219",
+    "station_type": "a"
+  },
+  {
+    "id": 253,
+    "station_name": "山田",
+    "prec_no": 33,
+    "block_no": "1033",
+    "station_type": "a"
+  },
+  {
+    "id": 254,
+    "station_name": "岩手松尾",
+    "prec_no": 33,
+    "block_no": "0214",
+    "station_type": "a"
+  },
+  {
+    "id": 255,
+    "station_name": "岩泉",
+    "prec_no": 33,
+    "block_no": "0218",
+    "station_type": "a"
+  },
+  {
+    "id": 256,
+    "station_name": "川井",
+    "prec_no": 33,
+    "block_no": "1224",
+    "station_type": "a"
+  },
+  {
+    "id": 257,
+    "station_name": "新町",
+    "prec_no": 33,
+    "block_no": "1628",
+    "station_type": "a"
+  },
+  {
+    "id": 258,
+    "station_name": "普代",
+    "prec_no": 33,
+    "block_no": "1123",
+    "station_type": "a"
+  },
+  {
+    "id": 259,
+    "station_name": "江刺",
+    "prec_no": 33,
+    "block_no": "0236",
+    "station_type": "a"
+  },
+  {
+    "id": 260,
+    "station_name": "沢内",
+    "prec_no": 33,
+    "block_no": "1118",
+    "station_type": "a"
+  },
+  {
+    "id": 261,
+    "station_name": "湯田",
+    "prec_no": 33,
+    "block_no": "0229",
+    "station_type": "a"
+  },
+  {
+    "id": 262,
+    "station_name": "盛岡",
+    "prec_no": 33,
+    "block_no": "47584",
+    "station_type": "s"
+  },
+  {
+    "id": 263,
+    "station_name": "種市",
+    "prec_no": 33,
+    "block_no": "0205",
+    "station_type": "a"
+  },
+  {
+    "id": 264,
+    "station_name": "紫波",
+    "prec_no": 33,
+    "block_no": "1128",
+    "station_type": "a"
+  },
+  {
+    "id": 265,
+    "station_name": "花巻",
+    "prec_no": 33,
+    "block_no": "0227",
+    "station_type": "a"
+  },
+  {
+    "id": 266,
+    "station_name": "若柳",
+    "prec_no": 33,
+    "block_no": "0235",
+    "station_type": "a"
+  },
+  {
+    "id": 267,
+    "station_name": "荒屋",
+    "prec_no": 33,
+    "block_no": "1120",
+    "station_type": "a"
+  },
+  {
+    "id": 268,
+    "station_name": "葛巻",
+    "prec_no": 33,
+    "block_no": "0211",
+    "station_type": "a"
+  },
+  {
+    "id": 269,
+    "station_name": "薮川",
+    "prec_no": 33,
+    "block_no": "1078",
+    "station_type": "a"
+  },
+  {
+    "id": 270,
+    "station_name": "軽米",
+    "prec_no": 33,
+    "block_no": "0206",
+    "station_type": "a"
+  },
+  {
+    "id": 271,
+    "station_name": "遠野",
+    "prec_no": 33,
+    "block_no": "0231",
+    "station_type": "a"
+  },
+  {
+    "id": 272,
+    "station_name": "釜石",
+    "prec_no": 33,
+    "block_no": "0233",
+    "station_type": "a"
+  },
+  {
+    "id": 273,
+    "station_name": "門馬",
+    "prec_no": 33,
+    "block_no": "1225",
+    "station_type": "a"
+  },
+  {
+    "id": 274,
+    "station_name": "陸前高田",
+    "prec_no": 33,
+    "block_no": "1629",
+    "station_type": "a"
+  },
+  {
+    "id": 275,
+    "station_name": "雫石",
+    "prec_no": 33,
+    "block_no": "0221",
+    "station_type": "a"
+  },
+  {
+    "id": 276,
+    "station_name": "丸森",
+    "prec_no": 34,
+    "block_no": "1220",
+    "station_type": "a"
+  },
+  {
+    "id": 277,
+    "station_name": "亘理",
+    "prec_no": 34,
+    "block_no": "0257",
+    "station_type": "a"
+  },
+  {
+    "id": 278,
+    "station_name": "古川",
+    "prec_no": 34,
+    "block_no": "0247",
+    "station_type": "a"
+  },
+  {
+    "id": 279,
+    "station_name": "名取",
+    "prec_no": 34,
+    "block_no": "1464",
+    "station_type": "a"
+  },
+  {
+    "id": 280,
+    "station_name": "塩釜",
+    "prec_no": 34,
+    "block_no": "1030",
+    "station_type": "a"
+  },
+  {
+    "id": 281,
+    "station_name": "大衡",
+    "prec_no": 34,
+    "block_no": "0248",
+    "station_type": "a"
+  },
+  {
+    "id": 282,
+    "station_name": "女川",
+    "prec_no": 34,
+    "block_no": "1626",
+    "station_type": "a"
+  },
+  {
+    "id": 283,
+    "station_name": "川崎",
+    "prec_no": 34,
+    "block_no": "0254",
+    "station_type": "a"
+  },
+  {
+    "id": 284,
+    "station_name": "川渡",
+    "prec_no": 34,
+    "block_no": "0243",
+    "station_type": "a"
+  },
+  {
+    "id": 285,
+    "station_name": "志津川",
+    "prec_no": 34,
+    "block_no": "0246",
+    "station_type": "a"
+  },
+  {
+    "id": 286,
+    "station_name": "新川",
+    "prec_no": 34,
+    "block_no": "0251",
+    "station_type": "a"
+  },
+  {
+    "id": 287,
+    "station_name": "東松島",
+    "prec_no": 34,
+    "block_no": "1631",
+    "station_type": "a"
+  },
+  {
+    "id": 288,
+    "station_name": "桃生",
+    "prec_no": 34,
+    "block_no": "1630",
+    "station_type": "a"
+  },
+  {
+    "id": 289,
+    "station_name": "気仙沼",
+    "prec_no": 34,
+    "block_no": "0242",
+    "station_type": "a"
+  },
+  {
+    "id": 290,
+    "station_name": "江ノ島",
+    "prec_no": 34,
+    "block_no": "1290",
+    "station_type": "a"
+  },
+  {
+    "id": 291,
+    "station_name": "白石",
+    "prec_no": 34,
+    "block_no": "0256",
+    "station_type": "a"
+  },
+  {
+    "id": 292,
+    "station_name": "石巻",
+    "prec_no": 34,
+    "block_no": "47592",
+    "station_type": "s"
+  },
+  {
+    "id": 293,
+    "station_name": "築館",
+    "prec_no": 34,
+    "block_no": "0244",
+    "station_type": "a"
+  },
+  {
+    "id": 294,
+    "station_name": "米山",
+    "prec_no": 34,
+    "block_no": "1029",
+    "station_type": "a"
+  },
+  {
+    "id": 295,
+    "station_name": "蔵王",
+    "prec_no": 34,
+    "block_no": "1564",
+    "station_type": "a"
+  },
+  {
+    "id": 296,
+    "station_name": "駒ノ湯",
+    "prec_no": 34,
+    "block_no": "1126",
+    "station_type": "a"
+  },
+  {
+    "id": 297,
+    "station_name": "鹿島台",
+    "prec_no": 34,
+    "block_no": "0249",
+    "station_type": "a"
+  },
+  {
+    "id": 298,
+    "station_name": "向町",
+    "prec_no": 35,
+    "block_no": "0910",
+    "station_type": "a"
+  },
+  {
+    "id": 299,
+    "station_name": "大井沢",
+    "prec_no": 35,
+    "block_no": "1292",
+    "station_type": "a"
+  },
+  {
+    "id": 300,
+    "station_name": "小国",
+    "prec_no": 35,
+    "block_no": "0277",
+    "station_type": "a"
+  },
+  {
+    "id": 301,
+    "station_name": "尾花沢",
+    "prec_no": 35,
+    "block_no": "1039",
+    "station_type": "a"
+  },
+  {
+    "id": 302,
+    "station_name": "山形",
+    "prec_no": 35,
+    "block_no": "47588",
+    "station_type": "s"
+  },
+  {
+    "id": 303,
+    "station_name": "左沢",
+    "prec_no": 35,
+    "block_no": "0272",
+    "station_type": "a"
+  },
+  {
+    "id": 304,
+    "station_name": "差首鍋",
+    "prec_no": 35,
+    "block_no": "0260",
+    "station_type": "a"
+  },
+  {
+    "id": 305,
+    "station_name": "新庄",
+    "prec_no": 35,
+    "block_no": "47520",
+    "station_type": "s"
+  },
+  {
+    "id": 306,
+    "station_name": "村山",
+    "prec_no": 35,
+    "block_no": "1539",
+    "station_type": "a"
+  },
+  {
+    "id": 307,
+    "station_name": "東根",
+    "prec_no": 35,
+    "block_no": "1488",
+    "station_type": "a"
+  },
+  {
+    "id": 308,
+    "station_name": "楯岡",
+    "prec_no": 35,
+    "block_no": "0271",
+    "station_type": "a"
+  },
+  {
+    "id": 309,
+    "station_name": "浜中",
+    "prec_no": 35,
+    "block_no": "1465",
+    "station_type": "a"
+  },
+  {
+    "id": 310,
+    "station_name": "狩川",
+    "prec_no": 35,
+    "block_no": "0264",
+    "station_type": "a"
+  },
+  {
+    "id": 311,
+    "station_name": "米沢",
+    "prec_no": 35,
+    "block_no": "0279",
+    "station_type": "a"
+  },
+  {
+    "id": 312,
+    "station_name": "肘折",
+    "prec_no": 35,
+    "block_no": "1125",
+    "station_type": "a"
+  },
+  {
+    "id": 313,
+    "station_name": "酒田",
+    "prec_no": 35,
+    "block_no": "47587",
+    "station_type": "s"
+  },
+  {
+    "id": 314,
+    "station_name": "金山",
+    "prec_no": 35,
+    "block_no": "0262",
+    "station_type": "a"
+  },
+  {
+    "id": 315,
+    "station_name": "長井",
+    "prec_no": 35,
+    "block_no": "0275",
+    "station_type": "a"
+  },
+  {
+    "id": 316,
+    "station_name": "飛島",
+    "prec_no": 35,
+    "block_no": "1291",
+    "station_type": "a"
+  },
+  {
+    "id": 317,
+    "station_name": "高峰",
+    "prec_no": 35,
+    "block_no": "0278",
+    "station_type": "a"
+  },
+  {
+    "id": 318,
+    "station_name": "高畠",
+    "prec_no": 35,
+    "block_no": "1132",
+    "station_type": "a"
+  },
+  {
+    "id": 319,
+    "station_name": "鶴岡",
+    "prec_no": 35,
+    "block_no": "0263",
+    "station_type": "a"
+  },
+  {
+    "id": 320,
+    "station_name": "鼠ケ関",
+    "prec_no": 35,
+    "block_no": "1040",
+    "station_type": "a"
+  },
+  {
+    "id": 321,
+    "station_name": "上遠野",
+    "prec_no": 36,
+    "block_no": "1127",
+    "station_type": "a"
+  },
+  {
+    "id": 322,
+    "station_name": "二本松",
+    "prec_no": 36,
+    "block_no": "0291",
+    "station_type": "a"
+  },
+  {
+    "id": 323,
+    "station_name": "南郷",
+    "prec_no": 36,
+    "block_no": "0301",
+    "station_type": "a"
+  },
+  {
+    "id": 324,
+    "station_name": "古殿",
+    "prec_no": 36,
+    "block_no": "1634",
+    "station_type": "a"
+  },
+  {
+    "id": 325,
+    "station_name": "只見",
+    "prec_no": 36,
+    "block_no": "0297",
+    "station_type": "a"
+  },
+  {
+    "id": 326,
+    "station_name": "喜多方",
+    "prec_no": 36,
+    "block_no": "0286",
+    "station_type": "a"
+  },
+  {
+    "id": 327,
+    "station_name": "小名浜",
+    "prec_no": 36,
+    "block_no": "47598",
+    "station_type": "s"
+  },
+  {
+    "id": 328,
+    "station_name": "小野新町",
+    "prec_no": 36,
+    "block_no": "0304",
+    "station_type": "a"
+  },
+  {
+    "id": 329,
+    "station_name": "山田",
+    "prec_no": 36,
+    "block_no": "1607",
+    "station_type": "a"
+  },
+  {
+    "id": 330,
+    "station_name": "川内",
+    "prec_no": 36,
+    "block_no": "1129",
+    "station_type": "a"
+  },
+  {
+    "id": 331,
+    "station_name": "広野",
+    "prec_no": 36,
+    "block_no": "1034",
+    "station_type": "a"
+  },
+  {
+    "id": 332,
+    "station_name": "新地",
+    "prec_no": 36,
+    "block_no": "1633",
+    "station_type": "a"
+  },
+  {
+    "id": 333,
+    "station_name": "東白川",
+    "prec_no": 36,
+    "block_no": "0312",
+    "station_type": "a"
+  },
+  {
+    "id": 334,
+    "station_name": "桧原",
+    "prec_no": 36,
+    "block_no": "1282",
+    "station_type": "a"
+  },
+  {
+    "id": 335,
+    "station_name": "桧枝岐",
+    "prec_no": 36,
+    "block_no": "1295",
+    "station_type": "a"
+  },
+  {
+    "id": 336,
+    "station_name": "梁川",
+    "prec_no": 36,
+    "block_no": "0281",
+    "station_type": "a"
+  },
+  {
+    "id": 337,
+    "station_name": "浪江",
+    "prec_no": 36,
+    "block_no": "0295",
+    "station_type": "a"
+  },
+  {
+    "id": 338,
+    "station_name": "湯本",
+    "prec_no": 36,
+    "block_no": "1294",
+    "station_type": "a"
+  },
+  {
+    "id": 339,
+    "station_name": "猪苗代",
+    "prec_no": 36,
+    "block_no": "0290",
+    "station_type": "a"
+  },
+  {
+    "id": 340,
+    "station_name": "玉川",
+    "prec_no": 36,
+    "block_no": "1466",
+    "station_type": "a"
+  },
+  {
+    "id": 341,
+    "station_name": "田島",
+    "prec_no": 36,
+    "block_no": "0303",
+    "station_type": "a"
+  },
+  {
+    "id": 342,
+    "station_name": "白河",
+    "prec_no": 36,
+    "block_no": "47597",
+    "station_type": "s"
+  },
+  {
+    "id": 343,
+    "station_name": "相馬",
+    "prec_no": 36,
+    "block_no": "0285",
+    "station_type": "a"
+  },
+  {
+    "id": 344,
+    "station_name": "石川",
+    "prec_no": 36,
+    "block_no": "0307",
+    "station_type": "a"
+  },
+  {
+    "id": 345,
+    "station_name": "福島",
+    "prec_no": 36,
+    "block_no": "47595",
+    "station_type": "s"
+  },
+  {
+    "id": 346,
+    "station_name": "船引",
+    "prec_no": 36,
+    "block_no": "0294",
+    "station_type": "a"
+  },
+  {
+    "id": 347,
+    "station_name": "若松",
+    "prec_no": 36,
+    "block_no": "47570",
+    "station_type": "s"
+  },
+  {
+    "id": 348,
+    "station_name": "茂庭",
+    "prec_no": 36,
+    "block_no": "1293",
+    "station_type": "a"
+  },
+  {
+    "id": 349,
+    "station_name": "西会津",
+    "prec_no": 36,
+    "block_no": "1031",
+    "station_type": "a"
+  },
+  {
+    "id": 350,
+    "station_name": "郡山",
+    "prec_no": 36,
+    "block_no": "0299",
+    "station_type": "a"
+  },
+  {
+    "id": 351,
+    "station_name": "金山",
+    "prec_no": 36,
+    "block_no": "1044",
+    "station_type": "a"
+  },
+  {
+    "id": 352,
+    "station_name": "飯舘",
+    "prec_no": 36,
+    "block_no": "1130",
+    "station_type": "a"
+  },
+  {
+    "id": 353,
+    "station_name": "鷲倉",
+    "prec_no": 36,
+    "block_no": "1116",
+    "station_type": "a"
+  },
+  {
+    "id": 354,
+    "station_name": "つくば（館野）",
+    "prec_no": 40,
+    "block_no": "47646",
+    "station_type": "s"
+  },
+  {
+    "id": 355,
+    "station_name": "下妻",
+    "prec_no": 40,
+    "block_no": "0322",
+    "station_type": "a"
+  },
+  {
+    "id": 356,
+    "station_name": "下館",
+    "prec_no": 40,
+    "block_no": "1530",
+    "station_type": "a"
+  },
+  {
+    "id": 357,
+    "station_name": "北茨城",
+    "prec_no": 40,
+    "block_no": "0315",
+    "station_type": "a"
+  },
+  {
+    "id": 358,
+    "station_name": "古河",
+    "prec_no": 40,
+    "block_no": "0320",
+    "station_type": "a"
+  },
+  {
+    "id": 359,
+    "station_name": "土浦",
+    "prec_no": 40,
+    "block_no": "0324",
+    "station_type": "a"
+  },
+  {
+    "id": 360,
+    "station_name": "大子",
+    "prec_no": 40,
+    "block_no": "0316",
+    "station_type": "a"
+  },
+  {
+    "id": 361,
+    "station_name": "常総",
+    "prec_no": 40,
+    "block_no": "1661",
+    "station_type": "a"
+  },
+  {
+    "id": 362,
+    "station_name": "常陸大宮",
+    "prec_no": 40,
+    "block_no": "1331",
+    "station_type": "a"
+  },
+  {
+    "id": 363,
+    "station_name": "日立",
+    "prec_no": 40,
+    "block_no": "1011",
+    "station_type": "a"
+  },
+  {
+    "id": 364,
+    "station_name": "水戸",
+    "prec_no": 40,
+    "block_no": "47629",
+    "station_type": "s"
+  },
+  {
+    "id": 365,
+    "station_name": "笠間",
+    "prec_no": 40,
+    "block_no": "0318",
+    "station_type": "a"
+  },
+  {
+    "id": 366,
+    "station_name": "筑波山",
+    "prec_no": 40,
+    "block_no": "1082",
+    "station_type": "a"
+  },
+  {
+    "id": 367,
+    "station_name": "鉾田",
+    "prec_no": 40,
+    "block_no": "1245",
+    "station_type": "a"
+  },
+  {
+    "id": 368,
+    "station_name": "高萩",
+    "prec_no": 40,
+    "block_no": "1635",
+    "station_type": "a"
+  },
+  {
+    "id": 369,
+    "station_name": "鹿嶋",
+    "prec_no": 40,
+    "block_no": "0325",
+    "station_type": "a"
+  },
+  {
+    "id": 370,
+    "station_name": "龍ケ崎",
+    "prec_no": 40,
+    "block_no": "1014",
+    "station_type": "a"
+  },
+  {
+    "id": 371,
+    "station_name": "五十里",
+    "prec_no": 41,
+    "block_no": "1015",
+    "station_type": "a"
+  },
+  {
+    "id": 372,
+    "station_name": "今市",
+    "prec_no": 41,
+    "block_no": "1333",
+    "station_type": "a"
+  },
+  {
+    "id": 373,
+    "station_name": "佐野",
+    "prec_no": 41,
+    "block_no": "1018",
+    "station_type": "a"
+  },
+  {
+    "id": 374,
+    "station_name": "土呂部",
+    "prec_no": 41,
+    "block_no": "1221",
+    "station_type": "a"
+  },
+  {
+    "id": 375,
+    "station_name": "塩谷",
+    "prec_no": 41,
+    "block_no": "1334",
+    "station_type": "a"
+  },
+  {
+    "id": 376,
+    "station_name": "大田原",
+    "prec_no": 41,
+    "block_no": "0331",
+    "station_type": "a"
+  },
+  {
+    "id": 377,
+    "station_name": "奥日光（日光）",
+    "prec_no": 41,
+    "block_no": "47690",
+    "station_type": "s"
+  },
+  {
+    "id": 378,
+    "station_name": "宇都宮",
+    "prec_no": 41,
+    "block_no": "47615",
+    "station_type": "s"
+  },
+  {
+    "id": 379,
+    "station_name": "小山",
+    "prec_no": 41,
+    "block_no": "0341",
+    "station_type": "a"
+  },
+  {
+    "id": 380,
+    "station_name": "日光東町",
+    "prec_no": 41,
+    "block_no": "1675",
+    "station_type": "a"
+  },
+  {
+    "id": 381,
+    "station_name": "烏山",
+    "prec_no": 41,
+    "block_no": "1017",
+    "station_type": "a"
+  },
+  {
+    "id": 382,
+    "station_name": "真岡",
+    "prec_no": 41,
+    "block_no": "0338",
+    "station_type": "a"
+  },
+  {
+    "id": 383,
+    "station_name": "那須烏山",
+    "prec_no": 41,
+    "block_no": "1605",
+    "station_type": "a"
+  },
+  {
+    "id": 384,
+    "station_name": "那須高原",
+    "prec_no": 41,
+    "block_no": "0326",
+    "station_type": "a"
+  },
+  {
+    "id": 385,
+    "station_name": "鹿沼",
+    "prec_no": 41,
+    "block_no": "0335",
+    "station_type": "a"
+  },
+  {
+    "id": 386,
+    "station_name": "黒磯",
+    "prec_no": 41,
+    "block_no": "0329",
+    "station_type": "a"
+  },
+  {
+    "id": 387,
+    "station_name": "みなかみ",
+    "prec_no": 42,
+    "block_no": "1019",
+    "station_type": "a"
+  },
+  {
+    "id": 388,
+    "station_name": "上里見",
+    "prec_no": 42,
+    "block_no": "0353",
+    "station_type": "a"
+  },
+  {
+    "id": 389,
+    "station_name": "中之条",
+    "prec_no": 42,
+    "block_no": "1020",
+    "station_type": "a"
+  },
+  {
+    "id": 390,
+    "station_name": "伊勢崎",
+    "prec_no": 42,
+    "block_no": "1021",
+    "station_type": "a"
+  },
+  {
+    "id": 391,
+    "station_name": "前橋",
+    "prec_no": 42,
+    "block_no": "47624",
+    "station_type": "s"
+  },
+  {
+    "id": 392,
+    "station_name": "桐生",
+    "prec_no": 42,
+    "block_no": "0351",
+    "station_type": "a"
+  },
+  {
+    "id": 393,
+    "station_name": "沼田",
+    "prec_no": 42,
+    "block_no": "0346",
+    "station_type": "a"
+  },
+  {
+    "id": 394,
+    "station_name": "田代",
+    "prec_no": 42,
+    "block_no": "0348",
+    "station_type": "a"
+  },
+  {
+    "id": 395,
+    "station_name": "神流",
+    "prec_no": 42,
+    "block_no": "1223",
+    "station_type": "a"
+  },
+  {
+    "id": 396,
+    "station_name": "草津",
+    "prec_no": 42,
+    "block_no": "0343",
+    "station_type": "a"
+  },
+  {
+    "id": 397,
+    "station_name": "藤原",
+    "prec_no": 42,
+    "block_no": "1222",
+    "station_type": "a"
+  },
+  {
+    "id": 398,
+    "station_name": "西野牧",
+    "prec_no": 42,
+    "block_no": "0354",
+    "station_type": "a"
+  },
+  {
+    "id": 399,
+    "station_name": "館林",
+    "prec_no": 42,
+    "block_no": "0356",
+    "station_type": "a"
+  },
+  {
+    "id": 400,
+    "station_name": "久喜",
+    "prec_no": 43,
+    "block_no": "0359",
+    "station_type": "a"
+  },
+  {
+    "id": 401,
+    "station_name": "寄居",
+    "prec_no": 43,
+    "block_no": "1009",
+    "station_type": "a"
+  },
+  {
+    "id": 402,
+    "station_name": "所沢",
+    "prec_no": 43,
+    "block_no": "1070",
+    "station_type": "a"
+  },
+  {
+    "id": 403,
+    "station_name": "熊谷",
+    "prec_no": 43,
+    "block_no": "47626",
+    "station_type": "s"
+  },
+  {
+    "id": 404,
+    "station_name": "秩父",
+    "prec_no": 43,
+    "block_no": "47641",
+    "station_type": "s"
+  },
+  {
+    "id": 405,
+    "station_name": "越谷",
+    "prec_no": 43,
+    "block_no": "0364",
+    "station_type": "a"
+  },
+  {
+    "id": 406,
+    "station_name": "鳩山",
+    "prec_no": 43,
+    "block_no": "1232",
+    "station_type": "a"
+  },
+  {
+    "id": 407,
+    "station_name": "三宅伊豆",
+    "prec_no": 44,
+    "block_no": "1525",
+    "station_type": "a"
+  },
+  {
+    "id": 408,
+    "station_name": "三宅坪田",
+    "prec_no": 44,
+    "block_no": "1506",
+    "station_type": "a"
+  },
+  {
+    "id": 409,
+    "station_name": "三宅島",
+    "prec_no": 44,
+    "block_no": "47677",
+    "station_type": "s"
+  },
+  {
+    "id": 410,
+    "station_name": "三宅島阿古",
+    "prec_no": 44,
+    "block_no": "1509",
+    "station_type": "a"
+  },
+  {
+    "id": 411,
+    "station_name": "八丈島",
+    "prec_no": 44,
+    "block_no": "47678",
+    "station_type": "s"
+  },
+  {
+    "id": 412,
+    "station_name": "八王子",
+    "prec_no": 44,
+    "block_no": "0366",
+    "station_type": "a"
+  },
+  {
+    "id": 413,
+    "station_name": "八重見ヶ原",
+    "prec_no": 44,
+    "block_no": "1468",
+    "station_type": "a"
+  },
+  {
+    "id": 414,
+    "station_name": "南鳥島",
+    "prec_no": 44,
+    "block_no": "47991",
+    "station_type": "s"
+  },
+  {
+    "id": 415,
+    "station_name": "大島",
+    "prec_no": 44,
+    "block_no": "47675",
+    "station_type": "s"
+  },
+  {
+    "id": 416,
+    "station_name": "大島北ノ山",
+    "prec_no": 44,
+    "block_no": "1467",
+    "station_type": "a"
+  },
+  {
+    "id": 417,
+    "station_name": "小河内",
+    "prec_no": 44,
+    "block_no": "0365",
+    "station_type": "a"
+  },
+  {
+    "id": 418,
+    "station_name": "府中",
+    "prec_no": 44,
+    "block_no": "1133",
+    "station_type": "a"
+  },
+  {
+    "id": 419,
+    "station_name": "新島",
+    "prec_no": 44,
+    "block_no": "1134",
+    "station_type": "a"
+  },
+  {
+    "id": 420,
+    "station_name": "新島",
+    "prec_no": 44,
+    "block_no": "1522",
+    "station_type": "a"
+  },
+  {
+    "id": 421,
+    "station_name": "江戸川臨海",
+    "prec_no": 44,
+    "block_no": "0370",
+    "station_type": "a"
+  },
+  {
+    "id": 422,
+    "station_name": "父島",
+    "prec_no": 44,
+    "block_no": "47971",
+    "station_type": "s"
+  },
+  {
+    "id": 423,
+    "station_name": "神津島",
+    "prec_no": 44,
+    "block_no": "1523",
+    "station_type": "a"
+  },
+  {
+    "id": 424,
+    "station_name": "練馬",
+    "prec_no": 44,
+    "block_no": "1002",
+    "station_type": "a"
+  },
+  {
+    "id": 425,
+    "station_name": "羽田",
+    "prec_no": 44,
+    "block_no": "0371",
+    "station_type": "a"
+  },
+  {
+    "id": 426,
+    "station_name": "青梅",
+    "prec_no": 44,
+    "block_no": "1001",
+    "station_type": "a"
+  },
+  {
+    "id": 427,
+    "station_name": "佐倉",
+    "prec_no": 45,
+    "block_no": "0916",
+    "station_type": "a"
+  },
+  {
+    "id": 428,
+    "station_name": "勝浦",
+    "prec_no": 45,
+    "block_no": "47674",
+    "station_type": "s"
+  },
+  {
+    "id": 429,
+    "station_name": "千葉",
+    "prec_no": 45,
+    "block_no": "47682",
+    "station_type": "s"
+  },
+  {
+    "id": 430,
+    "station_name": "坂畑",
+    "prec_no": 45,
+    "block_no": "1241",
+    "station_type": "a"
+  },
+  {
+    "id": 431,
+    "station_name": "成田",
+    "prec_no": 45,
+    "block_no": "0378",
+    "station_type": "a"
+  },
+  {
+    "id": 432,
+    "station_name": "我孫子",
+    "prec_no": 45,
+    "block_no": "0376",
+    "station_type": "a"
+  },
+  {
+    "id": 433,
+    "station_name": "木更津",
+    "prec_no": 45,
+    "block_no": "0382",
+    "station_type": "a"
+  },
+  {
+    "id": 434,
+    "station_name": "横芝光",
+    "prec_no": 45,
+    "block_no": "1003",
+    "station_type": "a"
+  },
+  {
+    "id": 435,
+    "station_name": "牛久",
+    "prec_no": 45,
+    "block_no": "1238",
+    "station_type": "a"
+  },
+  {
+    "id": 436,
+    "station_name": "船橋",
+    "prec_no": 45,
+    "block_no": "1236",
+    "station_type": "a"
+  },
+  {
+    "id": 437,
+    "station_name": "茂原",
+    "prec_no": 45,
+    "block_no": "0381",
+    "station_type": "a"
+  },
+  {
+    "id": 438,
+    "station_name": "銚子",
+    "prec_no": 45,
+    "block_no": "47648",
+    "station_type": "s"
+  },
+  {
+    "id": 439,
+    "station_name": "館山",
+    "prec_no": 45,
+    "block_no": "47672",
+    "station_type": "s"
+  },
+  {
+    "id": 440,
+    "station_name": "香取",
+    "prec_no": 45,
+    "block_no": "0375",
+    "station_type": "a"
+  },
+  {
+    "id": 441,
+    "station_name": "鴨川",
+    "prec_no": 45,
+    "block_no": "0384",
+    "station_type": "a"
+  },
+  {
+    "id": 442,
+    "station_name": "三浦",
+    "prec_no": 46,
+    "block_no": "0392",
+    "station_type": "a"
+  },
+  {
+    "id": 443,
+    "station_name": "小田原",
+    "prec_no": 46,
+    "block_no": "1008",
+    "station_type": "a"
+  },
+  {
+    "id": 444,
+    "station_name": "横浜",
+    "prec_no": 46,
+    "block_no": "47670",
+    "station_type": "s"
+  },
+  {
+    "id": 445,
+    "station_name": "江ノ島",
+    "prec_no": 46,
+    "block_no": "0391",
+    "station_type": "a"
+  },
+  {
+    "id": 446,
+    "station_name": "海老名",
+    "prec_no": 46,
+    "block_no": "0388",
+    "station_type": "a"
+  },
+  {
+    "id": 447,
+    "station_name": "辻堂",
+    "prec_no": 46,
+    "block_no": "1443",
+    "station_type": "a"
+  },
+  {
+    "id": 448,
+    "station_name": "上田",
+    "prec_no": 48,
+    "block_no": "0402",
+    "station_type": "a"
+  },
+  {
+    "id": 449,
+    "station_name": "伊那",
+    "prec_no": 48,
+    "block_no": "1445",
+    "station_type": "a"
+  },
+  {
+    "id": 450,
+    "station_name": "佐久",
+    "prec_no": 48,
+    "block_no": "0408",
+    "station_type": "a"
+  },
+  {
+    "id": 451,
+    "station_name": "信州新町",
+    "prec_no": 48,
+    "block_no": "0400",
+    "station_type": "a"
+  },
+  {
+    "id": 452,
+    "station_name": "信濃町",
+    "prec_no": 48,
+    "block_no": "0394",
+    "station_type": "a"
+  },
+  {
+    "id": 453,
+    "station_name": "南信濃",
+    "prec_no": 48,
+    "block_no": "1323",
+    "station_type": "a"
+  },
+  {
+    "id": 454,
+    "station_name": "南木曽",
+    "prec_no": 48,
+    "block_no": "1022",
+    "station_type": "a"
+  },
+  {
+    "id": 455,
+    "station_name": "原村",
+    "prec_no": 48,
+    "block_no": "0414",
+    "station_type": "a"
+  },
+  {
+    "id": 456,
+    "station_name": "大町",
+    "prec_no": 48,
+    "block_no": "0399",
+    "station_type": "a"
+  },
+  {
+    "id": 457,
+    "station_name": "奈川",
+    "prec_no": 48,
+    "block_no": "1312",
+    "station_type": "a"
+  },
+  {
+    "id": 458,
+    "station_name": "木曽平沢",
+    "prec_no": 48,
+    "block_no": "0413",
+    "station_type": "a"
+  },
+  {
+    "id": 459,
+    "station_name": "木曽福島",
+    "prec_no": 48,
+    "block_no": "0417",
+    "station_type": "a"
+  },
+  {
+    "id": 460,
+    "station_name": "木祖薮原",
+    "prec_no": 48,
+    "block_no": "1666",
+    "station_type": "a"
+  },
+  {
+    "id": 461,
+    "station_name": "東御",
+    "prec_no": 48,
+    "block_no": "0993",
+    "station_type": "a"
+  },
+  {
+    "id": 462,
+    "station_name": "松本",
+    "prec_no": 48,
+    "block_no": "47618",
+    "station_type": "s"
+  },
+  {
+    "id": 463,
+    "station_name": "松本今井",
+    "prec_no": 48,
+    "block_no": "1529",
+    "station_type": "a"
+  },
+  {
+    "id": 464,
+    "station_name": "浪合",
+    "prec_no": 48,
+    "block_no": "1317",
+    "station_type": "a"
+  },
+  {
+    "id": 465,
+    "station_name": "白馬",
+    "prec_no": 48,
+    "block_no": "0396",
+    "station_type": "a"
+  },
+  {
+    "id": 466,
+    "station_name": "穂高",
+    "prec_no": 48,
+    "block_no": "0404",
+    "station_type": "a"
+  },
+  {
+    "id": 467,
+    "station_name": "立科",
+    "prec_no": 48,
+    "block_no": "1300",
+    "station_type": "a"
+  },
+  {
+    "id": 468,
+    "station_name": "菅平",
+    "prec_no": 48,
+    "block_no": "0992",
+    "station_type": "a"
+  },
+  {
+    "id": 469,
+    "station_name": "諏訪",
+    "prec_no": 48,
+    "block_no": "47620",
+    "station_type": "s"
+  },
+  {
+    "id": 470,
+    "station_name": "軽井沢",
+    "prec_no": 48,
+    "block_no": "47622",
+    "station_type": "s"
+  },
+  {
+    "id": 471,
+    "station_name": "辰野",
+    "prec_no": 48,
+    "block_no": "1319",
+    "station_type": "a"
+  },
+  {
+    "id": 472,
+    "station_name": "野沢温泉",
+    "prec_no": 48,
+    "block_no": "0393",
+    "station_type": "a"
+  },
+  {
+    "id": 473,
+    "station_name": "野辺山",
+    "prec_no": 48,
+    "block_no": "0415",
+    "station_type": "a"
+  },
+  {
+    "id": 474,
+    "station_name": "長野",
+    "prec_no": 48,
+    "block_no": "47610",
+    "station_type": "s"
+  },
+  {
+    "id": 475,
+    "station_name": "開田高原",
+    "prec_no": 48,
+    "block_no": "1314",
+    "station_type": "a"
+  },
+  {
+    "id": 476,
+    "station_name": "飯山",
+    "prec_no": 48,
+    "block_no": "0395",
+    "station_type": "a"
+  },
+  {
+    "id": 477,
+    "station_name": "飯島",
+    "prec_no": 48,
+    "block_no": "0424",
+    "station_type": "a"
+  },
+  {
+    "id": 478,
+    "station_name": "飯田",
+    "prec_no": 48,
+    "block_no": "47637",
+    "station_type": "s"
+  },
+  {
+    "id": 479,
+    "station_name": "高遠",
+    "prec_no": 48,
+    "block_no": "0418",
+    "station_type": "a"
+  },
+  {
+    "id": 480,
+    "station_name": "切石",
+    "prec_no": 49,
+    "block_no": "1234",
+    "station_type": "a"
+  },
+  {
+    "id": 481,
+    "station_name": "勝沼",
+    "prec_no": 49,
+    "block_no": "0433",
+    "station_type": "a"
+  },
+  {
+    "id": 482,
+    "station_name": "南部",
+    "prec_no": 49,
+    "block_no": "0439",
+    "station_type": "a"
+  },
+  {
+    "id": 483,
+    "station_name": "古関",
+    "prec_no": 49,
+    "block_no": "0436",
+    "station_type": "a"
+  },
+  {
+    "id": 484,
+    "station_name": "大月",
+    "prec_no": 49,
+    "block_no": "0434",
+    "station_type": "a"
+  },
+  {
+    "id": 485,
+    "station_name": "大泉",
+    "prec_no": 49,
+    "block_no": "1023",
+    "station_type": "a"
+  },
+  {
+    "id": 486,
+    "station_name": "富士山",
+    "prec_no": 49,
+    "block_no": "47639",
+    "station_type": "s"
+  },
+  {
+    "id": 487,
+    "station_name": "山中",
+    "prec_no": 49,
+    "block_no": "0438",
+    "station_type": "a"
+  },
+  {
+    "id": 488,
+    "station_name": "河口湖",
+    "prec_no": 49,
+    "block_no": "47640",
+    "station_type": "s"
+  },
+  {
+    "id": 489,
+    "station_name": "甲府",
+    "prec_no": 49,
+    "block_no": "47638",
+    "station_type": "s"
+  },
+  {
+    "id": 490,
+    "station_name": "韮崎",
+    "prec_no": 49,
+    "block_no": "1024",
+    "station_type": "a"
+  },
+  {
+    "id": 491,
+    "station_name": "三島",
+    "prec_no": 50,
+    "block_no": "47657",
+    "station_type": "s"
+  },
+  {
+    "id": 492,
+    "station_name": "井川",
+    "prec_no": 50,
+    "block_no": "1338",
+    "station_type": "a"
+  },
+  {
+    "id": 493,
+    "station_name": "佐久間",
+    "prec_no": 50,
+    "block_no": "0986",
+    "station_type": "a"
+  },
+  {
+    "id": 494,
+    "station_name": "天竜",
+    "prec_no": 50,
+    "block_no": "0451",
+    "station_type": "a"
+  },
+  {
+    "id": 495,
+    "station_name": "富士",
+    "prec_no": 50,
+    "block_no": "0442",
+    "station_type": "a"
+  },
+  {
+    "id": 496,
+    "station_name": "富士山",
+    "prec_no": 50,
+    "block_no": "47639",
+    "station_type": "s"
+  },
+  {
+    "id": 497,
+    "station_name": "川根本町",
+    "prec_no": 50,
+    "block_no": "0445",
+    "station_type": "a"
+  },
+  {
+    "id": 498,
+    "station_name": "御前崎",
+    "prec_no": 50,
+    "block_no": "47655",
+    "station_type": "s"
+  },
+  {
+    "id": 499,
+    "station_name": "御殿場",
+    "prec_no": 50,
+    "block_no": "0441",
+    "station_type": "a"
+  },
+  {
+    "id": 500,
+    "station_name": "松崎",
+    "prec_no": 50,
+    "block_no": "0456",
+    "station_type": "a"
+  },
+  {
+    "id": 501,
+    "station_name": "浜松",
+    "prec_no": 50,
+    "block_no": "47654",
+    "station_type": "s"
+  },
+  {
+    "id": 502,
+    "station_name": "清水",
+    "prec_no": 50,
+    "block_no": "1243",
+    "station_type": "a"
+  },
+  {
+    "id": 503,
+    "station_name": "熱海伊豆山",
+    "prec_no": 50,
+    "block_no": "1673",
+    "station_type": "a"
+  },
+  {
+    "id": 504,
+    "station_name": "石廊崎",
+    "prec_no": 50,
+    "block_no": "47666",
+    "station_type": "s"
+  },
+  {
+    "id": 505,
+    "station_name": "磐田",
+    "prec_no": 50,
+    "block_no": "1244",
+    "station_type": "a"
+  },
+  {
+    "id": 506,
+    "station_name": "稲取",
+    "prec_no": 50,
+    "block_no": "0457",
+    "station_type": "a"
+  },
+  {
+    "id": 507,
+    "station_name": "網代",
+    "prec_no": 50,
+    "block_no": "47668",
+    "station_type": "s"
+  },
+  {
+    "id": 508,
+    "station_name": "菊川牧之原",
+    "prec_no": 50,
+    "block_no": "1335",
+    "station_type": "a"
+  },
+  {
+    "id": 509,
+    "station_name": "静岡",
+    "prec_no": 50,
+    "block_no": "47656",
+    "station_type": "s"
+  },
+  {
+    "id": 510,
+    "station_name": "静岡空港",
+    "prec_no": 50,
+    "block_no": "1601",
+    "station_type": "a"
+  },
+  {
+    "id": 511,
+    "station_name": "セントレア",
+    "prec_no": 51,
+    "block_no": "1555",
+    "station_type": "a"
+  },
+  {
+    "id": 512,
+    "station_name": "伊良湖",
+    "prec_no": 51,
+    "block_no": "47653",
+    "station_type": "s"
+  },
+  {
+    "id": 513,
+    "station_name": "南知多",
+    "prec_no": 51,
+    "block_no": "0984",
+    "station_type": "a"
+  },
+  {
+    "id": 514,
+    "station_name": "大府",
+    "prec_no": 51,
+    "block_no": "1638",
+    "station_type": "a"
+  },
+  {
+    "id": 515,
+    "station_name": "岡崎",
+    "prec_no": 51,
+    "block_no": "0467",
+    "station_type": "a"
+  },
+  {
+    "id": 516,
+    "station_name": "愛西",
+    "prec_no": 51,
+    "block_no": "1346",
+    "station_type": "a"
+  },
+  {
+    "id": 517,
+    "station_name": "新城",
+    "prec_no": 51,
+    "block_no": "1541",
+    "station_type": "a"
+  },
+  {
+    "id": 518,
+    "station_name": "東海",
+    "prec_no": 51,
+    "block_no": "0465",
+    "station_type": "a"
+  },
+  {
+    "id": 519,
+    "station_name": "稲武",
+    "prec_no": 51,
+    "block_no": "0982",
+    "station_type": "a"
+  },
+  {
+    "id": 520,
+    "station_name": "蒲郡",
+    "prec_no": 51,
+    "block_no": "1344",
+    "station_type": "a"
+  },
+  {
+    "id": 521,
+    "station_name": "豊山",
+    "prec_no": 51,
+    "block_no": "0461",
+    "station_type": "a"
+  },
+  {
+    "id": 522,
+    "station_name": "豊橋",
+    "prec_no": 51,
+    "block_no": "0470",
+    "station_type": "a"
+  },
+  {
+    "id": 523,
+    "station_name": "豊田",
+    "prec_no": 51,
+    "block_no": "0464",
+    "station_type": "a"
+  },
+  {
+    "id": 524,
+    "station_name": "鳳来",
+    "prec_no": 51,
+    "block_no": "1341",
+    "station_type": "a"
+  },
+  {
+    "id": 525,
+    "station_name": "中津川",
+    "prec_no": 52,
+    "block_no": "0494",
+    "station_type": "a"
+  },
+  {
+    "id": 526,
+    "station_name": "八幡",
+    "prec_no": 52,
+    "block_no": "0485",
+    "station_type": "a"
+  },
+  {
+    "id": 527,
+    "station_name": "六厩",
+    "prec_no": 52,
+    "block_no": "1305",
+    "station_type": "a"
+  },
+  {
+    "id": 528,
+    "station_name": "多治見",
+    "prec_no": 52,
+    "block_no": "1058",
+    "station_type": "a"
+  },
+  {
+    "id": 529,
+    "station_name": "大垣",
+    "prec_no": 52,
+    "block_no": "0496",
+    "station_type": "a"
+  },
+  {
+    "id": 530,
+    "station_name": "宮之前",
+    "prec_no": 52,
+    "block_no": "1311",
+    "station_type": "a"
+  },
+  {
+    "id": 531,
+    "station_name": "宮地",
+    "prec_no": 52,
+    "block_no": "1066",
+    "station_type": "a"
+  },
+  {
+    "id": 532,
+    "station_name": "岐阜",
+    "prec_no": 52,
+    "block_no": "47632",
+    "station_type": "s"
+  },
+  {
+    "id": 533,
+    "station_name": "恵那",
+    "prec_no": 52,
+    "block_no": "0493",
+    "station_type": "a"
+  },
+  {
+    "id": 534,
+    "station_name": "揖斐川",
+    "prec_no": 52,
+    "block_no": "1301",
+    "station_type": "a"
+  },
+  {
+    "id": 535,
+    "station_name": "栃尾",
+    "prec_no": 52,
+    "block_no": "1061",
+    "station_type": "a"
+  },
+  {
+    "id": 536,
+    "station_name": "樽見",
+    "prec_no": 52,
+    "block_no": "0486",
+    "station_type": "a"
+  },
+  {
+    "id": 537,
+    "station_name": "河合",
+    "prec_no": 52,
+    "block_no": "1308",
+    "station_type": "a"
+  },
+  {
+    "id": 538,
+    "station_name": "白川",
+    "prec_no": 52,
+    "block_no": "1306",
+    "station_type": "a"
+  },
+  {
+    "id": 539,
+    "station_name": "白鳥",
+    "prec_no": 52,
+    "block_no": "0482",
+    "station_type": "a"
+  },
+  {
+    "id": 540,
+    "station_name": "神岡",
+    "prec_no": 52,
+    "block_no": "0473",
+    "station_type": "a"
+  },
+  {
+    "id": 541,
+    "station_name": "美濃",
+    "prec_no": 52,
+    "block_no": "1057",
+    "station_type": "a"
+  },
+  {
+    "id": 542,
+    "station_name": "美濃加茂",
+    "prec_no": 52,
+    "block_no": "0491",
+    "station_type": "a"
+  },
+  {
+    "id": 543,
+    "station_name": "萩原",
+    "prec_no": 52,
+    "block_no": "0483",
+    "station_type": "a"
+  },
+  {
+    "id": 544,
+    "station_name": "金山",
+    "prec_no": 52,
+    "block_no": "0487",
+    "station_type": "a"
+  },
+  {
+    "id": 545,
+    "station_name": "長滝",
+    "prec_no": 52,
+    "block_no": "1299",
+    "station_type": "a"
+  },
+  {
+    "id": 546,
+    "station_name": "関ケ原",
+    "prec_no": 52,
+    "block_no": "0495",
+    "station_type": "a"
+  },
+  {
+    "id": 547,
+    "station_name": "高山",
+    "prec_no": 52,
+    "block_no": "47617",
+    "station_type": "s"
+  },
+  {
+    "id": 548,
+    "station_name": "黒川",
+    "prec_no": 52,
+    "block_no": "1313",
+    "station_type": "a"
+  },
+  {
+    "id": 549,
+    "station_name": "上野",
+    "prec_no": 53,
+    "block_no": "47649",
+    "station_type": "s"
+  },
+  {
+    "id": 550,
+    "station_name": "亀山",
+    "prec_no": 53,
+    "block_no": "0503",
+    "station_type": "a"
+  },
+  {
+    "id": 551,
+    "station_name": "南伊勢",
+    "prec_no": 53,
+    "block_no": "1258",
+    "station_type": "a"
+  },
+  {
+    "id": 552,
+    "station_name": "四日市",
+    "prec_no": 53,
+    "block_no": "47684",
+    "station_type": "s"
+  },
+  {
+    "id": 553,
+    "station_name": "小俣",
+    "prec_no": 53,
+    "block_no": "0509",
+    "station_type": "a"
+  },
+  {
+    "id": 554,
+    "station_name": "尾鷲",
+    "prec_no": 53,
+    "block_no": "47663",
+    "station_type": "s"
+  },
+  {
+    "id": 555,
+    "station_name": "桑名",
+    "prec_no": 53,
+    "block_no": "0500",
+    "station_type": "a"
+  },
+  {
+    "id": 556,
+    "station_name": "津",
+    "prec_no": 53,
+    "block_no": "47651",
+    "station_type": "s"
+  },
+  {
+    "id": 557,
+    "station_name": "熊野",
+    "prec_no": 53,
+    "block_no": "0514",
+    "station_type": "a"
+  },
+  {
+    "id": 558,
+    "station_name": "熊野新鹿",
+    "prec_no": 53,
+    "block_no": "1532",
+    "station_type": "a"
+  },
+  {
+    "id": 559,
+    "station_name": "粥見",
+    "prec_no": 53,
+    "block_no": "0510",
+    "station_type": "a"
+  },
+  {
+    "id": 560,
+    "station_name": "紀伊長島",
+    "prec_no": 53,
+    "block_no": "1349",
+    "station_type": "a"
+  },
+  {
+    "id": 561,
+    "station_name": "鳥羽",
+    "prec_no": 53,
+    "block_no": "1230",
+    "station_type": "a"
+  },
+  {
+    "id": 562,
+    "station_name": "三条",
+    "prec_no": 54,
+    "block_no": "0525",
+    "station_type": "a"
+  },
+  {
+    "id": 563,
+    "station_name": "下関",
+    "prec_no": 54,
+    "block_no": "1060",
+    "station_type": "a"
+  },
+  {
+    "id": 564,
+    "station_name": "両津",
+    "prec_no": 54,
+    "block_no": "0518",
+    "station_type": "a"
+  },
+  {
+    "id": 565,
+    "station_name": "中条",
+    "prec_no": 54,
+    "block_no": "1318",
+    "station_type": "a"
+  },
+  {
+    "id": 566,
+    "station_name": "十日町",
+    "prec_no": 54,
+    "block_no": "0537",
+    "station_type": "a"
+  },
+  {
+    "id": 567,
+    "station_name": "大潟",
+    "prec_no": 54,
+    "block_no": "1302",
+    "station_type": "a"
+  },
+  {
+    "id": 568,
+    "station_name": "守門",
+    "prec_no": 54,
+    "block_no": "0997",
+    "station_type": "a"
+  },
+  {
+    "id": 569,
+    "station_name": "安塚",
+    "prec_no": 54,
+    "block_no": "0536",
+    "station_type": "a"
+  },
+  {
+    "id": 570,
+    "station_name": "寺泊",
+    "prec_no": 54,
+    "block_no": "0524",
+    "station_type": "a"
+  },
+  {
+    "id": 571,
+    "station_name": "小出",
+    "prec_no": 54,
+    "block_no": "0534",
+    "station_type": "a"
+  },
+  {
+    "id": 572,
+    "station_name": "巻",
+    "prec_no": 54,
+    "block_no": "0522",
+    "station_type": "a"
+  },
+  {
+    "id": 573,
+    "station_name": "弾崎",
+    "prec_no": 54,
+    "block_no": "1315",
+    "station_type": "a"
+  },
+  {
+    "id": 574,
+    "station_name": "新津",
+    "prec_no": 54,
+    "block_no": "0521",
+    "station_type": "a"
+  },
+  {
+    "id": 575,
+    "station_name": "村上",
+    "prec_no": 54,
+    "block_no": "0515",
+    "station_type": "a"
+  },
+  {
+    "id": 576,
+    "station_name": "松浜",
+    "prec_no": 54,
+    "block_no": "1469",
+    "station_type": "a"
+  },
+  {
+    "id": 577,
+    "station_name": "柏崎",
+    "prec_no": 54,
+    "block_no": "0532",
+    "station_type": "a"
+  },
+  {
+    "id": 578,
+    "station_name": "津南",
+    "prec_no": 54,
+    "block_no": "0543",
+    "station_type": "a"
+  },
+  {
+    "id": 579,
+    "station_name": "津川",
+    "prec_no": 54,
+    "block_no": "0527",
+    "station_type": "a"
+  },
+  {
+    "id": 580,
+    "station_name": "湯沢",
+    "prec_no": 54,
+    "block_no": "0544",
+    "station_type": "a"
+  },
+  {
+    "id": 581,
+    "station_name": "相川",
+    "prec_no": 54,
+    "block_no": "47602",
+    "station_type": "s"
+  },
+  {
+    "id": 582,
+    "station_name": "秋津",
+    "prec_no": 54,
+    "block_no": "1514",
+    "station_type": "a"
+  },
+  {
+    "id": 583,
+    "station_name": "粟島",
+    "prec_no": 54,
+    "block_no": "0995",
+    "station_type": "a"
+  },
+  {
+    "id": 584,
+    "station_name": "糸魚川",
+    "prec_no": 54,
+    "block_no": "0539",
+    "station_type": "a"
+  },
+  {
+    "id": 585,
+    "station_name": "羽茂",
+    "prec_no": 54,
+    "block_no": "0996",
+    "station_type": "a"
+  },
+  {
+    "id": 586,
+    "station_name": "能生",
+    "prec_no": 54,
+    "block_no": "0540",
+    "station_type": "a"
+  },
+  {
+    "id": 587,
+    "station_name": "長岡",
+    "prec_no": 54,
+    "block_no": "0529",
+    "station_type": "a"
+  },
+  {
+    "id": 588,
+    "station_name": "関山",
+    "prec_no": 54,
+    "block_no": "0998",
+    "station_type": "a"
+  },
+  {
+    "id": 589,
+    "station_name": "高田",
+    "prec_no": 54,
+    "block_no": "47612",
+    "station_type": "s"
+  },
+  {
+    "id": 590,
+    "station_name": "上市",
+    "prec_no": 55,
+    "block_no": "0553",
+    "station_type": "a"
+  },
+  {
+    "id": 591,
+    "station_name": "伏木",
+    "prec_no": 55,
+    "block_no": "47606",
+    "station_type": "s"
+  },
+  {
+    "id": 592,
+    "station_name": "八尾",
+    "prec_no": 55,
+    "block_no": "0555",
+    "station_type": "a"
+  },
+  {
+    "id": 593,
+    "station_name": "南砺高宮",
+    "prec_no": 55,
+    "block_no": "0554",
+    "station_type": "a"
+  },
+  {
+    "id": 594,
+    "station_name": "富山",
+    "prec_no": 55,
+    "block_no": "47607",
+    "station_type": "s"
+  },
+  {
+    "id": 595,
+    "station_name": "朝日",
+    "prec_no": 55,
+    "block_no": "0546",
+    "station_type": "a"
+  },
+  {
+    "id": 596,
+    "station_name": "氷見",
+    "prec_no": 55,
+    "block_no": "1309",
+    "station_type": "a"
+  },
+  {
+    "id": 597,
+    "station_name": "砺波",
+    "prec_no": 55,
+    "block_no": "0552",
+    "station_type": "a"
+  },
+  {
+    "id": 598,
+    "station_name": "秋ヶ島",
+    "prec_no": 55,
+    "block_no": "1533",
+    "station_type": "a"
+  },
+  {
+    "id": 599,
+    "station_name": "魚津",
+    "prec_no": 55,
+    "block_no": "0547",
+    "station_type": "a"
+  },
+  {
+    "id": 600,
+    "station_name": "かほく",
+    "prec_no": 56,
+    "block_no": "0567",
+    "station_type": "a"
+  },
+  {
+    "id": 601,
+    "station_name": "七尾",
+    "prec_no": 56,
+    "block_no": "0565",
+    "station_type": "a"
+  },
+  {
+    "id": 602,
+    "station_name": "三井",
+    "prec_no": 56,
+    "block_no": "1544",
+    "station_type": "a"
+  },
+  {
+    "id": 603,
+    "station_name": "加賀中津原",
+    "prec_no": 56,
+    "block_no": "0571",
+    "station_type": "a"
+  },
+  {
+    "id": 604,
+    "station_name": "小松",
+    "prec_no": 56,
+    "block_no": "1324",
+    "station_type": "a"
+  },
+  {
+    "id": 605,
+    "station_name": "志賀",
+    "prec_no": 56,
+    "block_no": "0564",
+    "station_type": "a"
+  },
+  {
+    "id": 606,
+    "station_name": "珠洲",
+    "prec_no": 56,
+    "block_no": "0560",
+    "station_type": "a"
+  },
+  {
+    "id": 607,
+    "station_name": "白山河内",
+    "prec_no": 56,
+    "block_no": "0973",
+    "station_type": "a"
+  },
+  {
+    "id": 608,
+    "station_name": "羽咋",
+    "prec_no": 56,
+    "block_no": "0566",
+    "station_type": "a"
+  },
+  {
+    "id": 609,
+    "station_name": "輪島",
+    "prec_no": 56,
+    "block_no": "47600",
+    "station_type": "s"
+  },
+  {
+    "id": 610,
+    "station_name": "金沢",
+    "prec_no": 56,
+    "block_no": "47605",
+    "station_type": "s"
+  },
+  {
+    "id": 611,
+    "station_name": "三国",
+    "prec_no": 57,
+    "block_no": "1071",
+    "station_type": "a"
+  },
+  {
+    "id": 612,
+    "station_name": "今庄",
+    "prec_no": 57,
+    "block_no": "0577",
+    "station_type": "a"
+  },
+  {
+    "id": 613,
+    "station_name": "勝山",
+    "prec_no": 57,
+    "block_no": "1226",
+    "station_type": "a"
+  },
+  {
+    "id": 614,
+    "station_name": "大野",
+    "prec_no": 57,
+    "block_no": "0573",
+    "station_type": "a"
+  },
+  {
+    "id": 615,
+    "station_name": "小浜",
+    "prec_no": 57,
+    "block_no": "0579",
+    "station_type": "a"
+  },
+  {
+    "id": 616,
+    "station_name": "敦賀",
+    "prec_no": 57,
+    "block_no": "47631",
+    "station_type": "s"
+  },
+  {
+    "id": 617,
+    "station_name": "春江",
+    "prec_no": 57,
+    "block_no": "1537",
+    "station_type": "a"
+  },
+  {
+    "id": 618,
+    "station_name": "福井",
+    "prec_no": 57,
+    "block_no": "47616",
+    "station_type": "s"
+  },
+  {
+    "id": 619,
+    "station_name": "美浜",
+    "prec_no": 57,
+    "block_no": "1010",
+    "station_type": "a"
+  },
+  {
+    "id": 620,
+    "station_name": "越廼",
+    "prec_no": 57,
+    "block_no": "1316",
+    "station_type": "a"
+  },
+  {
+    "id": 621,
+    "station_name": "今津",
+    "prec_no": 60,
+    "block_no": "0580",
+    "station_type": "a"
+  },
+  {
+    "id": 622,
+    "station_name": "伊吹山",
+    "prec_no": 60,
+    "block_no": "47751",
+    "station_type": "s"
+  },
+  {
+    "id": 623,
+    "station_name": "信楽",
+    "prec_no": 60,
+    "block_no": "0964",
+    "station_type": "a"
+  },
+  {
+    "id": 624,
+    "station_name": "南小松",
+    "prec_no": 60,
+    "block_no": "1083",
+    "station_type": "a"
+  },
+  {
+    "id": 625,
+    "station_name": "土山",
+    "prec_no": 60,
+    "block_no": "0587",
+    "station_type": "a"
+  },
+  {
+    "id": 626,
+    "station_name": "大津",
+    "prec_no": 60,
+    "block_no": "0586",
+    "station_type": "a"
+  },
+  {
+    "id": 627,
+    "station_name": "彦根",
+    "prec_no": 60,
+    "block_no": "47761",
+    "station_type": "s"
+  },
+  {
+    "id": 628,
+    "station_name": "東近江",
+    "prec_no": 60,
+    "block_no": "0963",
+    "station_type": "a"
+  },
+  {
+    "id": 629,
+    "station_name": "米原",
+    "prec_no": 60,
+    "block_no": "1524",
+    "station_type": "a"
+  },
+  {
+    "id": 630,
+    "station_name": "長浜",
+    "prec_no": 60,
+    "block_no": "0976",
+    "station_type": "a"
+  },
+  {
+    "id": 631,
+    "station_name": "京田辺",
+    "prec_no": 61,
+    "block_no": "0598",
+    "station_type": "a"
+  },
+  {
+    "id": 632,
+    "station_name": "京都",
+    "prec_no": 61,
+    "block_no": "47759",
+    "station_type": "s"
+  },
+  {
+    "id": 633,
+    "station_name": "園部",
+    "prec_no": 61,
+    "block_no": "0596",
+    "station_type": "a"
+  },
+  {
+    "id": 634,
+    "station_name": "宮津",
+    "prec_no": 61,
+    "block_no": "0589",
+    "station_type": "a"
+  },
+  {
+    "id": 635,
+    "station_name": "福知山",
+    "prec_no": 61,
+    "block_no": "0593",
+    "station_type": "a"
+  },
+  {
+    "id": 636,
+    "station_name": "美山",
+    "prec_no": 61,
+    "block_no": "1303",
+    "station_type": "a"
+  },
+  {
+    "id": 637,
+    "station_name": "舞鶴",
+    "prec_no": 61,
+    "block_no": "47750",
+    "station_type": "s"
+  },
+  {
+    "id": 638,
+    "station_name": "間人",
+    "prec_no": 61,
+    "block_no": "0965",
+    "station_type": "a"
+  },
+  {
+    "id": 639,
+    "station_name": "八尾",
+    "prec_no": 62,
+    "block_no": "1470",
+    "station_type": "a"
+  },
+  {
+    "id": 640,
+    "station_name": "堺",
+    "prec_no": 62,
+    "block_no": "1062",
+    "station_type": "a"
+  },
+  {
+    "id": 641,
+    "station_name": "枚方",
+    "prec_no": 62,
+    "block_no": "1065",
+    "station_type": "a"
+  },
+  {
+    "id": 642,
+    "station_name": "熊取",
+    "prec_no": 62,
+    "block_no": "0606",
+    "station_type": "a"
+  },
+  {
+    "id": 643,
+    "station_name": "生駒山",
+    "prec_no": 62,
+    "block_no": "0604",
+    "station_type": "a"
+  },
+  {
+    "id": 644,
+    "station_name": "能勢",
+    "prec_no": 62,
+    "block_no": "0600",
+    "station_type": "a"
+  },
+  {
+    "id": 645,
+    "station_name": "豊中",
+    "prec_no": 62,
+    "block_no": "0602",
+    "station_type": "a"
+  },
+  {
+    "id": 646,
+    "station_name": "関空島",
+    "prec_no": 62,
+    "block_no": "1471",
+    "station_type": "a"
+  },
+  {
+    "id": 647,
+    "station_name": "一宮",
+    "prec_no": 63,
+    "block_no": "0615",
+    "station_type": "a"
+  },
+  {
+    "id": 648,
+    "station_name": "三木",
+    "prec_no": 63,
+    "block_no": "1227",
+    "station_type": "a"
+  },
+  {
+    "id": 649,
+    "station_name": "三田",
+    "prec_no": 63,
+    "block_no": "0969",
+    "station_type": "a"
+  },
+  {
+    "id": 650,
+    "station_name": "上郡",
+    "prec_no": 63,
+    "block_no": "0619",
+    "station_type": "a"
+  },
+  {
+    "id": 651,
+    "station_name": "兎和野高原",
+    "prec_no": 63,
+    "block_no": "0977",
+    "station_type": "a"
+  },
+  {
+    "id": 652,
+    "station_name": "南淡",
+    "prec_no": 63,
+    "block_no": "1337",
+    "station_type": "a"
+  },
+  {
+    "id": 653,
+    "station_name": "和田山",
+    "prec_no": 63,
+    "block_no": "0612",
+    "station_type": "a"
+  },
+  {
+    "id": 654,
+    "station_name": "姫路",
+    "prec_no": 63,
+    "block_no": "47769",
+    "station_type": "s"
+  },
+  {
+    "id": 655,
+    "station_name": "家島",
+    "prec_no": 63,
+    "block_no": "0624",
+    "station_type": "a"
+  },
+  {
+    "id": 656,
+    "station_name": "明石",
+    "prec_no": 63,
+    "block_no": "0625",
+    "station_type": "a"
+  },
+  {
+    "id": 657,
+    "station_name": "柏原",
+    "prec_no": 63,
+    "block_no": "0614",
+    "station_type": "a"
+  },
+  {
+    "id": 658,
+    "station_name": "洲本",
+    "prec_no": 63,
+    "block_no": "47776",
+    "station_type": "s"
+  },
+  {
+    "id": 659,
+    "station_name": "生野",
+    "prec_no": 63,
+    "block_no": "0613",
+    "station_type": "a"
+  },
+  {
+    "id": 660,
+    "station_name": "神戸",
+    "prec_no": 63,
+    "block_no": "47770",
+    "station_type": "s"
+  },
+  {
+    "id": 661,
+    "station_name": "神戸空港",
+    "prec_no": 63,
+    "block_no": "1587",
+    "station_type": "a"
+  },
+  {
+    "id": 662,
+    "station_name": "福崎",
+    "prec_no": 63,
+    "block_no": "0968",
+    "station_type": "a"
+  },
+  {
+    "id": 663,
+    "station_name": "西脇",
+    "prec_no": 63,
+    "block_no": "0956",
+    "station_type": "a"
+  },
+  {
+    "id": 664,
+    "station_name": "豊岡",
+    "prec_no": 63,
+    "block_no": "47747",
+    "station_type": "s"
+  },
+  {
+    "id": 665,
+    "station_name": "郡家",
+    "prec_no": 63,
+    "block_no": "0970",
+    "station_type": "a"
+  },
+  {
+    "id": 666,
+    "station_name": "香住",
+    "prec_no": 63,
+    "block_no": "0607",
+    "station_type": "a"
+  },
+  {
+    "id": 667,
+    "station_name": "上北山",
+    "prec_no": 64,
+    "block_no": "0957",
+    "station_type": "a"
+  },
+  {
+    "id": 668,
+    "station_name": "五條",
+    "prec_no": 64,
+    "block_no": "0635",
+    "station_type": "a"
+  },
+  {
+    "id": 669,
+    "station_name": "大宇陀",
+    "prec_no": 64,
+    "block_no": "0633",
+    "station_type": "a"
+  },
+  {
+    "id": 670,
+    "station_name": "奈良",
+    "prec_no": 64,
+    "block_no": "47780",
+    "station_type": "s"
+  },
+  {
+    "id": 671,
+    "station_name": "針",
+    "prec_no": 64,
+    "block_no": "0630",
+    "station_type": "a"
+  },
+  {
+    "id": 672,
+    "station_name": "風屋",
+    "prec_no": 64,
+    "block_no": "1228",
+    "station_type": "a"
+  },
+  {
+    "id": 673,
+    "station_name": "かつらぎ",
+    "prec_no": 65,
+    "block_no": "1342",
+    "station_type": "a"
+  },
+  {
+    "id": 674,
+    "station_name": "南紀白浜",
+    "prec_no": 65,
+    "block_no": "1589",
+    "station_type": "a"
+  },
+  {
+    "id": 675,
+    "station_name": "友ケ島",
+    "prec_no": 65,
+    "block_no": "1457",
+    "station_type": "a"
+  },
+  {
+    "id": 676,
+    "station_name": "和歌山",
+    "prec_no": 65,
+    "block_no": "47777",
+    "station_type": "s"
+  },
+  {
+    "id": 677,
+    "station_name": "川辺",
+    "prec_no": 65,
+    "block_no": "1485",
+    "station_type": "a"
+  },
+  {
+    "id": 678,
+    "station_name": "御坊",
+    "prec_no": 65,
+    "block_no": "0647",
+    "station_type": "a"
+  },
+  {
+    "id": 679,
+    "station_name": "新宮",
+    "prec_no": 65,
+    "block_no": "0649",
+    "station_type": "a"
+  },
+  {
+    "id": 680,
+    "station_name": "栗栖川",
+    "prec_no": 65,
+    "block_no": "0971",
+    "station_type": "a"
+  },
+  {
+    "id": 681,
+    "station_name": "清水",
+    "prec_no": 65,
+    "block_no": "1063",
+    "station_type": "a"
+  },
+  {
+    "id": 682,
+    "station_name": "潮岬",
+    "prec_no": 65,
+    "block_no": "47778",
+    "station_type": "s"
+  },
+  {
+    "id": 683,
+    "station_name": "白浜",
+    "prec_no": 65,
+    "block_no": "0650",
+    "station_type": "a"
+  },
+  {
+    "id": 684,
+    "station_name": "西川",
+    "prec_no": 65,
+    "block_no": "1347",
+    "station_type": "a"
+  },
+  {
+    "id": 685,
+    "station_name": "高野山",
+    "prec_no": 65,
+    "block_no": "0645",
+    "station_type": "a"
+  },
+  {
+    "id": 686,
+    "station_name": "龍神",
+    "prec_no": 65,
+    "block_no": "1089",
+    "station_type": "a"
+  },
+  {
+    "id": 687,
+    "station_name": "上長田",
+    "prec_no": 66,
+    "block_no": "1328",
+    "station_type": "a"
+  },
+  {
+    "id": 688,
+    "station_name": "久世",
+    "prec_no": 66,
+    "block_no": "0656",
+    "station_type": "a"
+  },
+  {
+    "id": 689,
+    "station_name": "今岡",
+    "prec_no": 66,
+    "block_no": "0655",
+    "station_type": "a"
+  },
+  {
+    "id": 690,
+    "station_name": "倉敷",
+    "prec_no": 66,
+    "block_no": "0669",
+    "station_type": "a"
+  },
+  {
+    "id": 691,
+    "station_name": "千屋",
+    "prec_no": 66,
+    "block_no": "1330",
+    "station_type": "a"
+  },
+  {
+    "id": 692,
+    "station_name": "和気",
+    "prec_no": 66,
+    "block_no": "0664",
+    "station_type": "a"
+  },
+  {
+    "id": 693,
+    "station_name": "奈義",
+    "prec_no": 66,
+    "block_no": "1140",
+    "station_type": "a"
+  },
+  {
+    "id": 694,
+    "station_name": "岡山",
+    "prec_no": 66,
+    "block_no": "47768",
+    "station_type": "s"
+  },
+  {
+    "id": 695,
+    "station_name": "新見",
+    "prec_no": 66,
+    "block_no": "0658",
+    "station_type": "a"
+  },
+  {
+    "id": 696,
+    "station_name": "日応寺",
+    "prec_no": 66,
+    "block_no": "1531",
+    "station_type": "a"
+  },
+  {
+    "id": 697,
+    "station_name": "津山",
+    "prec_no": 66,
+    "block_no": "47756",
+    "station_type": "s"
+  },
+  {
+    "id": 698,
+    "station_name": "玉野",
+    "prec_no": 66,
+    "block_no": "0670",
+    "station_type": "a"
+  },
+  {
+    "id": 699,
+    "station_name": "福渡",
+    "prec_no": 66,
+    "block_no": "0663",
+    "station_type": "a"
+  },
+  {
+    "id": 700,
+    "station_name": "笠岡",
+    "prec_no": 66,
+    "block_no": "0919",
+    "station_type": "a"
+  },
+  {
+    "id": 701,
+    "station_name": "虫明",
+    "prec_no": 66,
+    "block_no": "0668",
+    "station_type": "a"
+  },
+  {
+    "id": 702,
+    "station_name": "高梁",
+    "prec_no": 66,
+    "block_no": "0930",
+    "station_type": "a"
+  },
+  {
+    "id": 703,
+    "station_name": "三入",
+    "prec_no": 67,
+    "block_no": "0950",
+    "station_type": "a"
+  },
+  {
+    "id": 704,
+    "station_name": "三次",
+    "prec_no": 67,
+    "block_no": "0674",
+    "station_type": "a"
+  },
+  {
+    "id": 705,
+    "station_name": "世羅",
+    "prec_no": 67,
+    "block_no": "0681",
+    "station_type": "a"
+  },
+  {
+    "id": 706,
+    "station_name": "久比",
+    "prec_no": 67,
+    "block_no": "0953",
+    "station_type": "a"
+  },
+  {
+    "id": 707,
+    "station_name": "加計",
+    "prec_no": 67,
+    "block_no": "0677",
+    "station_type": "a"
+  },
+  {
+    "id": 708,
+    "station_name": "呉",
+    "prec_no": 67,
+    "block_no": "47766",
+    "station_type": "s"
+  },
+  {
+    "id": 709,
+    "station_name": "呉市蒲刈",
+    "prec_no": 67,
+    "block_no": "1606",
+    "station_type": "a"
+  },
+  {
+    "id": 710,
+    "station_name": "大朝",
+    "prec_no": 67,
+    "block_no": "0676",
+    "station_type": "a"
+  },
+  {
+    "id": 711,
+    "station_name": "大竹",
+    "prec_no": 67,
+    "block_no": "0688",
+    "station_type": "a"
+  },
+  {
+    "id": 712,
+    "station_name": "庄原",
+    "prec_no": 67,
+    "block_no": "0675",
+    "station_type": "a"
+  },
+  {
+    "id": 713,
+    "station_name": "府中",
+    "prec_no": 67,
+    "block_no": "0951",
+    "station_type": "a"
+  },
+  {
+    "id": 714,
+    "station_name": "廿日市津田",
+    "prec_no": 67,
+    "block_no": "1326",
+    "station_type": "a"
+  },
+  {
+    "id": 715,
+    "station_name": "本郷",
+    "prec_no": 67,
+    "block_no": "1472",
+    "station_type": "a"
+  },
+  {
+    "id": 716,
+    "station_name": "東広島",
+    "prec_no": 67,
+    "block_no": "0683",
+    "station_type": "a"
+  },
+  {
+    "id": 717,
+    "station_name": "油木",
+    "prec_no": 67,
+    "block_no": "1325",
+    "station_type": "a"
+  },
+  {
+    "id": 718,
+    "station_name": "生口島",
+    "prec_no": 67,
+    "block_no": "0687",
+    "station_type": "a"
+  },
+  {
+    "id": 719,
+    "station_name": "福山",
+    "prec_no": 67,
+    "block_no": "47767",
+    "station_type": "s"
+  },
+  {
+    "id": 720,
+    "station_name": "竹原",
+    "prec_no": 67,
+    "block_no": "0686",
+    "station_type": "a"
+  },
+  {
+    "id": 721,
+    "station_name": "高野",
+    "prec_no": 67,
+    "block_no": "0947",
+    "station_type": "a"
+  },
+  {
+    "id": 722,
+    "station_name": "六日市",
+    "prec_no": 68,
+    "block_no": "1322",
+    "station_type": "a"
+  },
+  {
+    "id": 723,
+    "station_name": "出雲",
+    "prec_no": 68,
+    "block_no": "1310",
+    "station_type": "a"
+  },
+  {
+    "id": 724,
+    "station_name": "吉賀",
+    "prec_no": 68,
+    "block_no": "1592",
+    "station_type": "a"
+  },
+  {
+    "id": 725,
+    "station_name": "大田",
+    "prec_no": 68,
+    "block_no": "0697",
+    "station_type": "a"
+  },
+  {
+    "id": 726,
+    "station_name": "川本",
+    "prec_no": 68,
+    "block_no": "0701",
+    "station_type": "a"
+  },
+  {
+    "id": 727,
+    "station_name": "弥栄",
+    "prec_no": 68,
+    "block_no": "1321",
+    "station_type": "a"
+  },
+  {
+    "id": 728,
+    "station_name": "掛合",
+    "prec_no": 68,
+    "block_no": "0698",
+    "station_type": "a"
+  },
+  {
+    "id": 729,
+    "station_name": "斐川",
+    "prec_no": 68,
+    "block_no": "0694",
+    "station_type": "a"
+  },
+  {
+    "id": 730,
+    "station_name": "松江",
+    "prec_no": 68,
+    "block_no": "47741",
+    "station_type": "s"
+  },
+  {
+    "id": 731,
+    "station_name": "横田",
+    "prec_no": 68,
+    "block_no": "0699",
+    "station_type": "a"
+  },
+  {
+    "id": 732,
+    "station_name": "津和野",
+    "prec_no": 68,
+    "block_no": "0707",
+    "station_type": "a"
+  },
+  {
+    "id": 733,
+    "station_name": "浜田",
+    "prec_no": 68,
+    "block_no": "47755",
+    "station_type": "s"
+  },
+  {
+    "id": 734,
+    "station_name": "海士",
+    "prec_no": 68,
+    "block_no": "1307",
+    "station_type": "a"
+  },
+  {
+    "id": 735,
+    "station_name": "瑞穂",
+    "prec_no": 68,
+    "block_no": "1094",
+    "station_type": "a"
+  },
+  {
+    "id": 736,
+    "station_name": "益田",
+    "prec_no": 68,
+    "block_no": "0704",
+    "station_type": "a"
+  },
+  {
+    "id": 737,
+    "station_name": "西郷",
+    "prec_no": 68,
+    "block_no": "47740",
+    "station_type": "s"
+  },
+  {
+    "id": 738,
+    "station_name": "西郷岬",
+    "prec_no": 68,
+    "block_no": "1473",
+    "station_type": "a"
+  },
+  {
+    "id": 739,
+    "station_name": "赤名",
+    "prec_no": 68,
+    "block_no": "1320",
+    "station_type": "a"
+  },
+  {
+    "id": 740,
+    "station_name": "高津",
+    "prec_no": 68,
+    "block_no": "1474",
+    "station_type": "a"
+  },
+  {
+    "id": 741,
+    "station_name": "鹿島",
+    "prec_no": 68,
+    "block_no": "0693",
+    "station_type": "a"
+  },
+  {
+    "id": 742,
+    "station_name": "倉吉",
+    "prec_no": 69,
+    "block_no": "0713",
+    "station_type": "a"
+  },
+  {
+    "id": 743,
+    "station_name": "塩津",
+    "prec_no": 69,
+    "block_no": "1231",
+    "station_type": "a"
+  },
+  {
+    "id": 744,
+    "station_name": "境",
+    "prec_no": 69,
+    "block_no": "47742",
+    "station_type": "s"
+  },
+  {
+    "id": 745,
+    "station_name": "岩井",
+    "prec_no": 69,
+    "block_no": "0711",
+    "station_type": "a"
+  },
+  {
+    "id": 746,
+    "station_name": "智頭",
+    "prec_no": 69,
+    "block_no": "0718",
+    "station_type": "a"
+  },
+  {
+    "id": 747,
+    "station_name": "湖山",
+    "prec_no": 69,
+    "block_no": "1519",
+    "station_type": "a"
+  },
+  {
+    "id": 748,
+    "station_name": "米子",
+    "prec_no": 69,
+    "block_no": "47744",
+    "station_type": "s"
+  },
+  {
+    "id": 749,
+    "station_name": "茶屋",
+    "prec_no": 69,
+    "block_no": "1304",
+    "station_type": "a"
+  },
+  {
+    "id": 750,
+    "station_name": "青谷",
+    "prec_no": 69,
+    "block_no": "0709",
+    "station_type": "a"
+  },
+  {
+    "id": 751,
+    "station_name": "鳥取",
+    "prec_no": 69,
+    "block_no": "47746",
+    "station_type": "s"
+  },
+  {
+    "id": 752,
+    "station_name": "京上",
+    "prec_no": 71,
+    "block_no": "1252",
+    "station_type": "a"
+  },
+  {
+    "id": 753,
+    "station_name": "剣山",
+    "prec_no": 71,
+    "block_no": "47894",
+    "station_type": "s"
+  },
+  {
+    "id": 754,
+    "station_name": "宍喰",
+    "prec_no": 71,
+    "block_no": "0725",
+    "station_type": "a"
+  },
+  {
+    "id": 755,
+    "station_name": "徳島",
+    "prec_no": 71,
+    "block_no": "47895",
+    "station_type": "s"
+  },
+  {
+    "id": 756,
+    "station_name": "日和佐",
+    "prec_no": 71,
+    "block_no": "0724",
+    "station_type": "a"
+  },
+  {
+    "id": 757,
+    "station_name": "木頭",
+    "prec_no": 71,
+    "block_no": "1352",
+    "station_type": "a"
+  },
+  {
+    "id": 758,
+    "station_name": "東祖谷",
+    "prec_no": 71,
+    "block_no": "1677",
+    "station_type": "a"
+  },
+  {
+    "id": 759,
+    "station_name": "池田",
+    "prec_no": 71,
+    "block_no": "0720",
+    "station_type": "a"
+  },
+  {
+    "id": 760,
+    "station_name": "海陽",
+    "prec_no": 71,
+    "block_no": "1604",
+    "station_type": "a"
+  },
+  {
+    "id": 761,
+    "station_name": "穴吹",
+    "prec_no": 71,
+    "block_no": "0972",
+    "station_type": "a"
+  },
+  {
+    "id": 762,
+    "station_name": "蒲生田",
+    "prec_no": 71,
+    "block_no": "1242",
+    "station_type": "a"
+  },
+  {
+    "id": 763,
+    "station_name": "内海",
+    "prec_no": 72,
+    "block_no": "0726",
+    "station_type": "a"
+  },
+  {
+    "id": 764,
+    "station_name": "多度津",
+    "prec_no": 72,
+    "block_no": "47890",
+    "station_type": "s"
+  },
+  {
+    "id": 765,
+    "station_name": "引田",
+    "prec_no": 72,
+    "block_no": "0730",
+    "station_type": "a"
+  },
+  {
+    "id": 766,
+    "station_name": "滝宮",
+    "prec_no": 72,
+    "block_no": "0729",
+    "station_type": "a"
+  },
+  {
+    "id": 767,
+    "station_name": "財田",
+    "prec_no": 72,
+    "block_no": "1239",
+    "station_type": "a"
+  },
+  {
+    "id": 768,
+    "station_name": "香南",
+    "prec_no": 72,
+    "block_no": "1475",
+    "station_type": "a"
+  },
+  {
+    "id": 769,
+    "station_name": "三崎",
+    "prec_no": 73,
+    "block_no": "0960",
+    "station_type": "a"
+  },
+  {
+    "id": 770,
+    "station_name": "久万",
+    "prec_no": 73,
+    "block_no": "0741",
+    "station_type": "a"
+  },
+  {
+    "id": 771,
+    "station_name": "今治",
+    "prec_no": 73,
+    "block_no": "1077",
+    "station_type": "a"
+  },
+  {
+    "id": 772,
+    "station_name": "四国中央",
+    "prec_no": 73,
+    "block_no": "0735",
+    "station_type": "a"
+  },
+  {
+    "id": 773,
+    "station_name": "大三島",
+    "prec_no": 73,
+    "block_no": "0732",
+    "station_type": "a"
+  },
+  {
+    "id": 774,
+    "station_name": "大洲",
+    "prec_no": 73,
+    "block_no": "0959",
+    "station_type": "a"
+  },
+  {
+    "id": 775,
+    "station_name": "宇和",
+    "prec_no": 73,
+    "block_no": "0961",
+    "station_type": "a"
+  },
+  {
+    "id": 776,
+    "station_name": "宇和島",
+    "prec_no": 73,
+    "block_no": "47892",
+    "station_type": "s"
+  },
+  {
+    "id": 777,
+    "station_name": "御荘",
+    "prec_no": 73,
+    "block_no": "0745",
+    "station_type": "a"
+  },
+  {
+    "id": 778,
+    "station_name": "新居浜",
+    "prec_no": 73,
+    "block_no": "0734",
+    "station_type": "a"
+  },
+  {
+    "id": 779,
+    "station_name": "松山",
+    "prec_no": 73,
+    "block_no": "47887",
+    "station_type": "s"
+  },
+  {
+    "id": 780,
+    "station_name": "松山南吉田",
+    "prec_no": 73,
+    "block_no": "1521",
+    "station_type": "a"
+  },
+  {
+    "id": 781,
+    "station_name": "瀬戸",
+    "prec_no": 73,
+    "block_no": "1456",
+    "station_type": "a"
+  },
+  {
+    "id": 782,
+    "station_name": "西条",
+    "prec_no": 73,
+    "block_no": "0958",
+    "station_type": "a"
+  },
+  {
+    "id": 783,
+    "station_name": "近永",
+    "prec_no": 73,
+    "block_no": "1350",
+    "station_type": "a"
+  },
+  {
+    "id": 784,
+    "station_name": "長浜",
+    "prec_no": 73,
+    "block_no": "0739",
+    "station_type": "a"
+  },
+  {
+    "id": 785,
+    "station_name": "中村",
+    "prec_no": 74,
+    "block_no": "0763",
+    "station_type": "a"
+  },
+  {
+    "id": 786,
+    "station_name": "佐賀",
+    "prec_no": 74,
+    "block_no": "1233",
+    "station_type": "a"
+  },
+  {
+    "id": 787,
+    "station_name": "南国",
+    "prec_no": 74,
+    "block_no": "0751",
+    "station_type": "a"
+  },
+  {
+    "id": 788,
+    "station_name": "南国日章",
+    "prec_no": 74,
+    "block_no": "1476",
+    "station_type": "a"
+  },
+  {
+    "id": 789,
+    "station_name": "大栃",
+    "prec_no": 74,
+    "block_no": "1229",
+    "station_type": "a"
+  },
+  {
+    "id": 790,
+    "station_name": "安芸",
+    "prec_no": 74,
+    "block_no": "0755",
+    "station_type": "a"
+  },
+  {
+    "id": 791,
+    "station_name": "室戸岬",
+    "prec_no": 74,
+    "block_no": "47899",
+    "station_type": "s"
+  },
+  {
+    "id": 792,
+    "station_name": "宿毛",
+    "prec_no": 74,
+    "block_no": "47897",
+    "station_type": "s"
+  },
+  {
+    "id": 793,
+    "station_name": "後免",
+    "prec_no": 74,
+    "block_no": "1249",
+    "station_type": "a"
+  },
+  {
+    "id": 794,
+    "station_name": "本山",
+    "prec_no": 74,
+    "block_no": "0746",
+    "station_type": "a"
+  },
+  {
+    "id": 795,
+    "station_name": "本川",
+    "prec_no": 74,
+    "block_no": "1351",
+    "station_type": "a"
+  },
+  {
+    "id": 796,
+    "station_name": "梼原",
+    "prec_no": 74,
+    "block_no": "0921",
+    "station_type": "a"
+  },
+  {
+    "id": 797,
+    "station_name": "江川崎",
+    "prec_no": 74,
+    "block_no": "1235",
+    "station_type": "a"
+  },
+  {
+    "id": 798,
+    "station_name": "清水",
+    "prec_no": 74,
+    "block_no": "47898",
+    "station_type": "s"
+  },
+  {
+    "id": 799,
+    "station_name": "窪川",
+    "prec_no": 74,
+    "block_no": "0758",
+    "station_type": "a"
+  },
+  {
+    "id": 800,
+    "station_name": "須崎",
+    "prec_no": 74,
+    "block_no": "0756",
+    "station_type": "a"
+  },
+  {
+    "id": 801,
+    "station_name": "高知",
+    "prec_no": 74,
+    "block_no": "47893",
+    "station_type": "s"
+  },
+  {
+    "id": 802,
+    "station_name": "下松",
+    "prec_no": 81,
+    "block_no": "0776",
+    "station_type": "a"
+  },
+  {
+    "id": 803,
+    "station_name": "下関",
+    "prec_no": 81,
+    "block_no": "47762",
+    "station_type": "s"
+  },
+  {
+    "id": 804,
+    "station_name": "宇部",
+    "prec_no": 81,
+    "block_no": "0778",
+    "station_type": "a"
+  },
+  {
+    "id": 805,
+    "station_name": "安下庄",
+    "prec_no": 81,
+    "block_no": "0779",
+    "station_type": "a"
+  },
+  {
+    "id": 806,
+    "station_name": "山口",
+    "prec_no": 81,
+    "block_no": "47784",
+    "station_type": "s"
+  },
+  {
+    "id": 807,
+    "station_name": "岩国",
+    "prec_no": 81,
+    "block_no": "0940",
+    "station_type": "a"
+  },
+  {
+    "id": 808,
+    "station_name": "広瀬",
+    "prec_no": 81,
+    "block_no": "0771",
+    "station_type": "a"
+  },
+  {
+    "id": 809,
+    "station_name": "徳佐",
+    "prec_no": 81,
+    "block_no": "0767",
+    "station_type": "a"
+  },
+  {
+    "id": 810,
+    "station_name": "柳井",
+    "prec_no": 81,
+    "block_no": "0942",
+    "station_type": "a"
+  },
+  {
+    "id": 811,
+    "station_name": "油谷",
+    "prec_no": 81,
+    "block_no": "0939",
+    "station_type": "a"
+  },
+  {
+    "id": 812,
+    "station_name": "玖珂",
+    "prec_no": 81,
+    "block_no": "0913",
+    "station_type": "a"
+  },
+  {
+    "id": 813,
+    "station_name": "秋吉台",
+    "prec_no": 81,
+    "block_no": "0769",
+    "station_type": "a"
+  },
+  {
+    "id": 814,
+    "station_name": "萩",
+    "prec_no": 81,
+    "block_no": "47754",
+    "station_type": "s"
+  },
+  {
+    "id": 815,
+    "station_name": "豊田",
+    "prec_no": 81,
+    "block_no": "0772",
+    "station_type": "a"
+  },
+  {
+    "id": 816,
+    "station_name": "防府",
+    "prec_no": 81,
+    "block_no": "0775",
+    "station_type": "a"
+  },
+  {
+    "id": 817,
+    "station_name": "須佐",
+    "prec_no": 81,
+    "block_no": "0765",
+    "station_type": "a"
+  },
+  {
+    "id": 818,
+    "station_name": "久留米",
+    "prec_no": 82,
+    "block_no": "0790",
+    "station_type": "a"
+  },
+  {
+    "id": 819,
+    "station_name": "八幡",
+    "prec_no": 82,
+    "block_no": "0780",
+    "station_type": "a"
+  },
+  {
+    "id": 820,
+    "station_name": "前原",
+    "prec_no": 82,
+    "block_no": "0785",
+    "station_type": "a"
+  },
+  {
+    "id": 821,
+    "station_name": "博多",
+    "prec_no": 82,
+    "block_no": "1477",
+    "station_type": "a"
+  },
+  {
+    "id": 822,
+    "station_name": "大牟田",
+    "prec_no": 82,
+    "block_no": "0793",
+    "station_type": "a"
+  },
+  {
+    "id": 823,
+    "station_name": "太宰府",
+    "prec_no": 82,
+    "block_no": "1141",
+    "station_type": "a"
+  },
+  {
+    "id": 824,
+    "station_name": "宗像",
+    "prec_no": 82,
+    "block_no": "0943",
+    "station_type": "a"
+  },
+  {
+    "id": 825,
+    "station_name": "曽根",
+    "prec_no": 82,
+    "block_no": "1527",
+    "station_type": "a"
+  },
+  {
+    "id": 826,
+    "station_name": "朝倉",
+    "prec_no": 82,
+    "block_no": "0788",
+    "station_type": "a"
+  },
+  {
+    "id": 827,
+    "station_name": "添田",
+    "prec_no": 82,
+    "block_no": "1046",
+    "station_type": "a"
+  },
+  {
+    "id": 828,
+    "station_name": "空港北町",
+    "prec_no": 82,
+    "block_no": "1590",
+    "station_type": "a"
+  },
+  {
+    "id": 829,
+    "station_name": "行橋",
+    "prec_no": 82,
+    "block_no": "0782",
+    "station_type": "a"
+  },
+  {
+    "id": 830,
+    "station_name": "飯塚",
+    "prec_no": 82,
+    "block_no": "47809",
+    "station_type": "s"
+  },
+  {
+    "id": 831,
+    "station_name": "黒木",
+    "prec_no": 82,
+    "block_no": "0792",
+    "station_type": "a"
+  },
+  {
+    "id": 832,
+    "station_name": "中津",
+    "prec_no": 83,
+    "block_no": "0794",
+    "station_type": "a"
+  },
+  {
+    "id": 833,
+    "station_name": "佐伯",
+    "prec_no": 83,
+    "block_no": "0808",
+    "station_type": "a"
+  },
+  {
+    "id": 834,
+    "station_name": "国見",
+    "prec_no": 83,
+    "block_no": "1137",
+    "station_type": "a"
+  },
+  {
+    "id": 835,
+    "station_name": "大分",
+    "prec_no": 83,
+    "block_no": "47815",
+    "station_type": "s"
+  },
+  {
+    "id": 836,
+    "station_name": "宇目",
+    "prec_no": 83,
+    "block_no": "1142",
+    "station_type": "a"
+  },
+  {
+    "id": 837,
+    "station_name": "日田",
+    "prec_no": 83,
+    "block_no": "47814",
+    "station_type": "s"
+  },
+  {
+    "id": 838,
+    "station_name": "杵築",
+    "prec_no": 83,
+    "block_no": "1237",
+    "station_type": "a"
+  },
+  {
+    "id": 839,
+    "station_name": "武蔵",
+    "prec_no": 83,
+    "block_no": "0796",
+    "station_type": "a"
+  },
+  {
+    "id": 840,
+    "station_name": "湯布院",
+    "prec_no": 83,
+    "block_no": "0799",
+    "station_type": "a"
+  },
+  {
+    "id": 841,
+    "station_name": "犬飼",
+    "prec_no": 83,
+    "block_no": "0805",
+    "station_type": "a"
+  },
+  {
+    "id": 842,
+    "station_name": "玖珠",
+    "prec_no": 83,
+    "block_no": "0932",
+    "station_type": "a"
+  },
+  {
+    "id": 843,
+    "station_name": "竹田",
+    "prec_no": 83,
+    "block_no": "0806",
+    "station_type": "a"
+  },
+  {
+    "id": 844,
+    "station_name": "蒲江",
+    "prec_no": 83,
+    "block_no": "0810",
+    "station_type": "a"
+  },
+  {
+    "id": 845,
+    "station_name": "豊後高田",
+    "prec_no": 83,
+    "block_no": "0795",
+    "station_type": "a"
+  },
+  {
+    "id": 846,
+    "station_name": "院内",
+    "prec_no": 83,
+    "block_no": "0931",
+    "station_type": "a"
+  },
+  {
+    "id": 847,
+    "station_name": "上大津",
+    "prec_no": 84,
+    "block_no": "1479",
+    "station_type": "a"
+  },
+  {
+    "id": 848,
+    "station_name": "佐世保",
+    "prec_no": 84,
+    "block_no": "47812",
+    "station_type": "s"
+  },
+  {
+    "id": 849,
+    "station_name": "佐須奈",
+    "prec_no": 84,
+    "block_no": "0811",
+    "station_type": "a"
+  },
+  {
+    "id": 850,
+    "station_name": "厳原",
+    "prec_no": 84,
+    "block_no": "47800",
+    "station_type": "s"
+  },
+  {
+    "id": 851,
+    "station_name": "口之津",
+    "prec_no": 84,
+    "block_no": "0922",
+    "station_type": "a"
+  },
+  {
+    "id": 852,
+    "station_name": "大村",
+    "prec_no": 84,
+    "block_no": "1084",
+    "station_type": "a"
+  },
+  {
+    "id": 853,
+    "station_name": "大瀬戸",
+    "prec_no": 84,
+    "block_no": "0817",
+    "station_type": "a"
+  },
+  {
+    "id": 854,
+    "station_name": "小値賀",
+    "prec_no": 84,
+    "block_no": "1535",
+    "station_type": "a"
+  },
+  {
+    "id": 855,
+    "station_name": "島原",
+    "prec_no": 84,
+    "block_no": "0962",
+    "station_type": "a"
+  },
+  {
+    "id": 856,
+    "station_name": "平戸",
+    "prec_no": 84,
+    "block_no": "47805",
+    "station_type": "s"
+  },
+  {
+    "id": 857,
+    "station_name": "有川",
+    "prec_no": 84,
+    "block_no": "1138",
+    "station_type": "a"
+  },
+  {
+    "id": 858,
+    "station_name": "松浦",
+    "prec_no": 84,
+    "block_no": "0814",
+    "station_type": "a"
+  },
+  {
+    "id": 859,
+    "station_name": "石田",
+    "prec_no": 84,
+    "block_no": "1478",
+    "station_type": "a"
+  },
+  {
+    "id": 860,
+    "station_name": "福江",
+    "prec_no": 84,
+    "block_no": "47843",
+    "station_type": "s"
+  },
+  {
+    "id": 861,
+    "station_name": "絹笠山",
+    "prec_no": 84,
+    "block_no": "1676",
+    "station_type": "a"
+  },
+  {
+    "id": 862,
+    "station_name": "美津島",
+    "prec_no": 84,
+    "block_no": "1538",
+    "station_type": "a"
+  },
+  {
+    "id": 863,
+    "station_name": "脇岬",
+    "prec_no": 84,
+    "block_no": "1670",
+    "station_type": "a"
+  },
+  {
+    "id": 864,
+    "station_name": "芦辺",
+    "prec_no": 84,
+    "block_no": "1144",
+    "station_type": "a"
+  },
+  {
+    "id": 865,
+    "station_name": "西海",
+    "prec_no": 84,
+    "block_no": "1672",
+    "station_type": "a"
+  },
+  {
+    "id": 866,
+    "station_name": "野母崎",
+    "prec_no": 84,
+    "block_no": "1441",
+    "station_type": "a"
+  },
+  {
+    "id": 867,
+    "station_name": "長崎",
+    "prec_no": 84,
+    "block_no": "47817",
+    "station_type": "s"
+  },
+  {
+    "id": 868,
+    "station_name": "雲仙岳",
+    "prec_no": 84,
+    "block_no": "47818",
+    "station_type": "s"
+  },
+  {
+    "id": 869,
+    "station_name": "頭ヶ島",
+    "prec_no": 84,
+    "block_no": "1536",
+    "station_type": "a"
+  },
+  {
+    "id": 870,
+    "station_name": "鰐浦",
+    "prec_no": 84,
+    "block_no": "1453",
+    "station_type": "a"
+  },
+  {
+    "id": 871,
+    "station_name": "伊万里",
+    "prec_no": 85,
+    "block_no": "1075",
+    "station_type": "a"
+  },
+  {
+    "id": 872,
+    "station_name": "佐賀",
+    "prec_no": 85,
+    "block_no": "47813",
+    "station_type": "s"
+  },
+  {
+    "id": 873,
+    "station_name": "唐津",
+    "prec_no": 85,
+    "block_no": "1610",
+    "station_type": "a"
+  },
+  {
+    "id": 874,
+    "station_name": "嬉野",
+    "prec_no": 85,
+    "block_no": "0830",
+    "station_type": "a"
+  },
+  {
+    "id": 875,
+    "station_name": "川副",
+    "prec_no": 85,
+    "block_no": "1480",
+    "station_type": "a"
+  },
+  {
+    "id": 876,
+    "station_name": "枝去木",
+    "prec_no": 85,
+    "block_no": "0824",
+    "station_type": "a"
+  },
+  {
+    "id": 877,
+    "station_name": "白石",
+    "prec_no": 85,
+    "block_no": "0829",
+    "station_type": "a"
+  },
+  {
+    "id": 878,
+    "station_name": "三角",
+    "prec_no": 86,
+    "block_no": "1081",
+    "station_type": "a"
+  },
+  {
+    "id": 879,
+    "station_name": "上",
+    "prec_no": 86,
+    "block_no": "0926",
+    "station_type": "a"
+  },
+  {
+    "id": 880,
+    "station_name": "人吉",
+    "prec_no": 86,
+    "block_no": "47824",
+    "station_type": "s"
+  },
+  {
+    "id": 881,
+    "station_name": "八代",
+    "prec_no": 86,
+    "block_no": "0846",
+    "station_type": "a"
+  },
+  {
+    "id": 882,
+    "station_name": "南小国",
+    "prec_no": 86,
+    "block_no": "0833",
+    "station_type": "a"
+  },
+  {
+    "id": 883,
+    "station_name": "南阿蘇",
+    "prec_no": 86,
+    "block_no": "1660",
+    "station_type": "a"
+  },
+  {
+    "id": 884,
+    "station_name": "岱明",
+    "prec_no": 86,
+    "block_no": "0834",
+    "station_type": "a"
+  },
+  {
+    "id": 885,
+    "station_name": "本渡",
+    "prec_no": 86,
+    "block_no": "0845",
+    "station_type": "a"
+  },
+  {
+    "id": 886,
+    "station_name": "松島",
+    "prec_no": 86,
+    "block_no": "0843",
+    "station_type": "a"
+  },
+  {
+    "id": 887,
+    "station_name": "水俣",
+    "prec_no": 86,
+    "block_no": "0924",
+    "station_type": "a"
+  },
+  {
+    "id": 888,
+    "station_name": "熊本",
+    "prec_no": 86,
+    "block_no": "47819",
+    "station_type": "s"
+  },
+  {
+    "id": 889,
+    "station_name": "牛深",
+    "prec_no": 86,
+    "block_no": "47838",
+    "station_type": "s"
+  },
+  {
+    "id": 890,
+    "station_name": "甲佐",
+    "prec_no": 86,
+    "block_no": "0842",
+    "station_type": "a"
+  },
+  {
+    "id": 891,
+    "station_name": "益城",
+    "prec_no": 86,
+    "block_no": "0923",
+    "station_type": "a"
+  },
+  {
+    "id": 892,
+    "station_name": "菊池",
+    "prec_no": 86,
+    "block_no": "0835",
+    "station_type": "a"
+  },
+  {
+    "id": 893,
+    "station_name": "阿蘇乙姫",
+    "prec_no": 86,
+    "block_no": "1240",
+    "station_type": "a"
+  },
+  {
+    "id": 894,
+    "station_name": "阿蘇山",
+    "prec_no": 86,
+    "block_no": "47821",
+    "station_type": "s"
+  },
+  {
+    "id": 895,
+    "station_name": "高森",
+    "prec_no": 86,
+    "block_no": "0840",
+    "station_type": "a"
+  },
+  {
+    "id": 896,
+    "station_name": "鹿北",
+    "prec_no": 86,
+    "block_no": "0832",
+    "station_type": "a"
+  },
+  {
+    "id": 897,
+    "station_name": "串間",
+    "prec_no": 87,
+    "block_no": "0872",
+    "station_type": "a"
+  },
+  {
+    "id": 898,
+    "station_name": "加久藤",
+    "prec_no": 87,
+    "block_no": "0860",
+    "station_type": "a"
+  },
+  {
+    "id": 899,
+    "station_name": "古江",
+    "prec_no": 87,
+    "block_no": "1135",
+    "station_type": "a"
+  },
+  {
+    "id": 900,
+    "station_name": "宮崎",
+    "prec_no": 87,
+    "block_no": "47830",
+    "station_type": "s"
+  },
+  {
+    "id": 901,
+    "station_name": "小林",
+    "prec_no": 87,
+    "block_no": "0863",
+    "station_type": "a"
+  },
+  {
+    "id": 902,
+    "station_name": "延岡",
+    "prec_no": 87,
+    "block_no": "47822",
+    "station_type": "s"
+  },
+  {
+    "id": 903,
+    "station_name": "日向",
+    "prec_no": 87,
+    "block_no": "0857",
+    "station_type": "a"
+  },
+  {
+    "id": 904,
+    "station_name": "油津",
+    "prec_no": 87,
+    "block_no": "47835",
+    "station_type": "s"
+  },
+  {
+    "id": 905,
+    "station_name": "田野",
+    "prec_no": 87,
+    "block_no": "1663",
+    "station_type": "a"
+  },
+  {
+    "id": 906,
+    "station_name": "神門",
+    "prec_no": 87,
+    "block_no": "1353",
+    "station_type": "a"
+  },
+  {
+    "id": 907,
+    "station_name": "西米良",
+    "prec_no": 87,
+    "block_no": "1345",
+    "station_type": "a"
+  },
+  {
+    "id": 908,
+    "station_name": "西都",
+    "prec_no": 87,
+    "block_no": "0861",
+    "station_type": "a"
+  },
+  {
+    "id": 909,
+    "station_name": "赤江",
+    "prec_no": 87,
+    "block_no": "1481",
+    "station_type": "a"
+  },
+  {
+    "id": 910,
+    "station_name": "都城",
+    "prec_no": 87,
+    "block_no": "47829",
+    "station_type": "s"
+  },
+  {
+    "id": 911,
+    "station_name": "青島",
+    "prec_no": 87,
+    "block_no": "0868",
+    "station_type": "a"
+  },
+  {
+    "id": 912,
+    "station_name": "鞍岡",
+    "prec_no": 87,
+    "block_no": "1348",
+    "station_type": "a"
+  },
+  {
+    "id": 913,
+    "station_name": "高千穂",
+    "prec_no": 87,
+    "block_no": "0852",
+    "station_type": "a"
+  },
+  {
+    "id": 914,
+    "station_name": "高鍋",
+    "prec_no": 87,
+    "block_no": "0859",
+    "station_type": "a"
+  },
+  {
+    "id": 915,
+    "station_name": "さつま柏原",
+    "prec_no": 88,
+    "block_no": "0878",
+    "station_type": "a"
+  },
+  {
+    "id": 916,
+    "station_name": "上中",
+    "prec_no": 88,
+    "block_no": "0898",
+    "station_type": "a"
+  },
+  {
+    "id": 917,
+    "station_name": "与論島",
+    "prec_no": 88,
+    "block_no": "1277",
+    "station_type": "a"
+  },
+  {
+    "id": 918,
+    "station_name": "中之島",
+    "prec_no": 88,
+    "block_no": "1540",
+    "station_type": "a"
+  },
+  {
+    "id": 919,
+    "station_name": "中甑",
+    "prec_no": 88,
+    "block_no": "0879",
+    "station_type": "a"
+  },
+  {
+    "id": 920,
+    "station_name": "中種子",
+    "prec_no": 88,
+    "block_no": "0897",
+    "station_type": "a"
+  },
+  {
+    "id": 921,
+    "station_name": "伊仙",
+    "prec_no": 88,
+    "block_no": "1139",
+    "station_type": "a"
+  },
+  {
+    "id": 922,
+    "station_name": "内之浦",
+    "prec_no": 88,
+    "block_no": "0895",
+    "station_type": "a"
+  },
+  {
+    "id": 923,
+    "station_name": "加世田",
+    "prec_no": 88,
+    "block_no": "0887",
+    "station_type": "a"
+  },
+  {
+    "id": 924,
+    "station_name": "古仁屋",
+    "prec_no": 88,
+    "block_no": "0980",
+    "station_type": "a"
+  },
+  {
+    "id": 925,
+    "station_name": "名瀬",
+    "prec_no": 88,
+    "block_no": "47909",
+    "station_type": "s"
+  },
+  {
+    "id": 926,
+    "station_name": "喜入",
+    "prec_no": 88,
+    "block_no": "0890",
+    "station_type": "a"
+  },
+  {
+    "id": 927,
+    "station_name": "喜界島",
+    "prec_no": 88,
+    "block_no": "1296",
+    "station_type": "a"
+  },
+  {
+    "id": 928,
+    "station_name": "大口",
+    "prec_no": 88,
+    "block_no": "0875",
+    "station_type": "a"
+  },
+  {
+    "id": 929,
+    "station_name": "天城",
+    "prec_no": 88,
+    "block_no": "1542",
+    "station_type": "a"
+  },
+  {
+    "id": 930,
+    "station_name": "尾之間",
+    "prec_no": 88,
+    "block_no": "0899",
+    "station_type": "a"
+  },
+  {
+    "id": 931,
+    "station_name": "屋久島",
+    "prec_no": 88,
+    "block_no": "47836",
+    "station_type": "s"
+  },
+  {
+    "id": 932,
+    "station_name": "川内",
+    "prec_no": 88,
+    "block_no": "0880",
+    "station_type": "a"
+  },
+  {
+    "id": 933,
+    "station_name": "志布志",
+    "prec_no": 88,
+    "block_no": "0936",
+    "station_type": "a"
+  },
+  {
+    "id": 934,
+    "station_name": "指宿",
+    "prec_no": 88,
+    "block_no": "0893",
+    "station_type": "a"
+  },
+  {
+    "id": 935,
+    "station_name": "東市来",
+    "prec_no": 88,
+    "block_no": "0883",
+    "station_type": "a"
+  },
+  {
+    "id": 936,
+    "station_name": "枕崎",
+    "prec_no": 88,
+    "block_no": "47831",
+    "station_type": "s"
+  },
+  {
+    "id": 937,
+    "station_name": "沖永良部",
+    "prec_no": 88,
+    "block_no": "47942",
+    "station_type": "s"
+  },
+  {
+    "id": 938,
+    "station_name": "溝辺",
+    "prec_no": 88,
+    "block_no": "0881",
+    "station_type": "a"
+  },
+  {
+    "id": 939,
+    "station_name": "牧之原",
+    "prec_no": 88,
+    "block_no": "0935",
+    "station_type": "a"
+  },
+  {
+    "id": 940,
+    "station_name": "田代",
+    "prec_no": 88,
+    "block_no": "1136",
+    "station_type": "a"
+  },
+  {
+    "id": 941,
+    "station_name": "種子島",
+    "prec_no": 88,
+    "block_no": "47837",
+    "station_type": "s"
+  },
+  {
+    "id": 942,
+    "station_name": "笠利",
+    "prec_no": 88,
+    "block_no": "1520",
+    "station_type": "a"
+  },
+  {
+    "id": 943,
+    "station_name": "肝付前田",
+    "prec_no": 88,
+    "block_no": "1181",
+    "station_type": "a"
+  },
+  {
+    "id": 944,
+    "station_name": "肝属川",
+    "prec_no": 88,
+    "block_no": "0891",
+    "station_type": "a"
+  },
+  {
+    "id": 945,
+    "station_name": "輝北",
+    "prec_no": 88,
+    "block_no": "1146",
+    "station_type": "a"
+  },
+  {
+    "id": 946,
+    "station_name": "阿久根",
+    "prec_no": 88,
+    "block_no": "47823",
+    "station_type": "s"
+  },
+  {
+    "id": 947,
+    "station_name": "鹿屋",
+    "prec_no": 88,
+    "block_no": "0937",
+    "station_type": "a"
+  },
+  {
+    "id": 948,
+    "station_name": "下地島",
+    "prec_no": 91,
+    "block_no": "1490",
+    "station_type": "a"
+  },
+  {
+    "id": 949,
+    "station_name": "与那国島",
+    "prec_no": 91,
+    "block_no": "47912",
+    "station_type": "s"
+  },
+  {
+    "id": 950,
+    "station_name": "久米島",
+    "prec_no": 91,
+    "block_no": "47929",
+    "station_type": "s"
+  },
+  {
+    "id": 951,
+    "station_name": "仲筋",
+    "prec_no": 91,
+    "block_no": "1491",
+    "station_type": "a"
+  },
+  {
+    "id": 952,
+    "station_name": "伊原間",
+    "prec_no": 91,
+    "block_no": "1145",
+    "station_type": "a"
+  },
+  {
+    "id": 953,
+    "station_name": "伊是名",
+    "prec_no": 91,
+    "block_no": "1147",
+    "station_type": "a"
+  },
+  {
+    "id": 954,
+    "station_name": "伊良部",
+    "prec_no": 91,
+    "block_no": "1246",
+    "station_type": "a"
+  },
+  {
+    "id": 955,
+    "station_name": "北原",
+    "prec_no": 91,
+    "block_no": "1534",
+    "station_type": "a"
+  },
+  {
+    "id": 956,
+    "station_name": "北大東",
+    "prec_no": 91,
+    "block_no": "1517",
+    "station_type": "a"
+  },
+  {
+    "id": 957,
+    "station_name": "南大東（南大東島）",
+    "prec_no": 91,
+    "block_no": "47945",
+    "station_type": "s"
+  },
+  {
+    "id": 958,
+    "station_name": "名護",
+    "prec_no": 91,
+    "block_no": "47940",
+    "station_type": "s"
+  },
+  {
+    "id": 959,
+    "station_name": "多良間",
+    "prec_no": 91,
+    "block_no": "1247",
+    "station_type": "a"
+  },
+  {
+    "id": 960,
+    "station_name": "大原",
+    "prec_no": 91,
+    "block_no": "1251",
+    "station_type": "a"
+  },
+  {
+    "id": 961,
+    "station_name": "奥",
+    "prec_no": 91,
+    "block_no": "0901",
+    "station_type": "a"
+  },
+  {
+    "id": 962,
+    "station_name": "安次嶺",
+    "prec_no": 91,
+    "block_no": "1482",
+    "station_type": "a"
+  },
+  {
+    "id": 963,
+    "station_name": "宮古島",
+    "prec_no": 91,
+    "block_no": "47927",
+    "station_type": "s"
+  },
+  {
+    "id": 964,
+    "station_name": "宮城島",
+    "prec_no": 91,
+    "block_no": "1596",
+    "station_type": "a"
+  },
+  {
+    "id": 965,
+    "station_name": "志多阿原",
+    "prec_no": 91,
+    "block_no": "1494",
+    "station_type": "a"
+  },
+  {
+    "id": 966,
+    "station_name": "慶良間",
+    "prec_no": 91,
+    "block_no": "1516",
+    "station_type": "a"
+  },
+  {
+    "id": 967,
+    "station_name": "所野",
+    "prec_no": 91,
+    "block_no": "1493",
+    "station_type": "a"
+  },
+  {
+    "id": 968,
+    "station_name": "旧東",
+    "prec_no": 91,
+    "block_no": "1518",
+    "station_type": "a"
+  },
+  {
+    "id": 969,
+    "station_name": "波照間",
+    "prec_no": 91,
+    "block_no": "1354",
+    "station_type": "a"
+  },
+  {
+    "id": 970,
+    "station_name": "渡嘉敷",
+    "prec_no": 91,
+    "block_no": "1152",
+    "station_type": "a"
+  },
+  {
+    "id": 971,
+    "station_name": "盛山",
+    "prec_no": 91,
+    "block_no": "1639",
+    "station_type": "a"
+  },
+  {
+    "id": 972,
+    "station_name": "真栄里",
+    "prec_no": 91,
+    "block_no": "1484",
+    "station_type": "a"
+  },
+  {
+    "id": 973,
+    "station_name": "石垣島",
+    "prec_no": 91,
+    "block_no": "47918",
+    "station_type": "s"
+  },
+  {
+    "id": 974,
+    "station_name": "粟国",
+    "prec_no": 91,
+    "block_no": "1515",
+    "station_type": "a"
+  },
+  {
+    "id": 975,
+    "station_name": "糸数",
+    "prec_no": 91,
+    "block_no": "0909",
+    "station_type": "a"
+  },
+  {
+    "id": 976,
+    "station_name": "西表島",
+    "prec_no": 91,
+    "block_no": "47917",
+    "station_type": "s"
+  },
+  {
+    "id": 977,
+    "station_name": "金武",
+    "prec_no": 91,
+    "block_no": "1064",
+    "station_type": "a"
+  },
+  {
+    "id": 978,
+    "station_name": "鏡原",
+    "prec_no": 91,
+    "block_no": "1483",
+    "station_type": "a"
+  },
+  {
+    "id": 979,
+    "station_name": "昭和",
+    "prec_no": 99,
+    "block_no": "89532",
+    "station_type": "s"
+  }
+]
