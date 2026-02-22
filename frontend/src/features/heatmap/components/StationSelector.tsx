@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import {
   Select,
@@ -20,7 +20,7 @@ interface StationSelectorProps {
   onPrefectureChange?: (precNo: number) => void;
 }
 
-export function StationSelector({
+function StationSelectorInner({
   prefectures,
   selectedStationId,
   onSelect,
@@ -112,3 +112,5 @@ export function StationSelector({
     </div>
   );
 }
+
+export const StationSelector = memo(StationSelectorInner);

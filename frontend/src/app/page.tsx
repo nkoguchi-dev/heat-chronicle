@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiClient } from "@/features/shared/libs/api-client";
 import { ThemeToggle } from "@/features/shared/components/theme-toggle";
@@ -55,16 +55,22 @@ export default function Home() {
     }
   }, [prefectures, initialParams.station, fetchData, currentYear]);
 
-  const handleStationSelect = (stationId: number) => {
-    setSelectedStationId(stationId);
-    fetchData(stationId, DEFAULT_START_YEAR, currentYear);
-    updateUrl({ station: stationId, pref: selectedPrecNo });
-  };
+  const handleStationSelect = useCallback(
+    (stationId: number) => {
+      setSelectedStationId(stationId);
+      fetchData(stationId, DEFAULT_START_YEAR, currentYear);
+      updateUrl({ station: stationId, pref: selectedPrecNo });
+    },
+    [fetchData, currentYear, selectedPrecNo, updateUrl]
+  );
 
-  const handlePrefectureChange = (precNo: number) => {
-    setSelectedPrecNo(precNo);
-    updateUrl({ pref: precNo, station: null });
-  };
+  const handlePrefectureChange = useCallback(
+    (precNo: number) => {
+      setSelectedPrecNo(precNo);
+      updateUrl({ pref: precNo, station: null });
+    },
+    [updateUrl]
+  );
 
   const handleTempTypeChange = (value: string) => {
     const newType = value as TempType;
