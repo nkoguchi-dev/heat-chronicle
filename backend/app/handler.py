@@ -33,6 +33,7 @@ def handler(event, context):
             JobRepository(dynamodb),
         )
         asyncio.run(service.execute_job(event["job_id"], lambda_context=context))
+        asyncio.set_event_loop(asyncio.new_event_loop())
         return {"statusCode": 200}
 
     return mangum_handler(event, context)
