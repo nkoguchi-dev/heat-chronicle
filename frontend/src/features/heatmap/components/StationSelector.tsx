@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   Select,
@@ -16,14 +16,20 @@ interface StationSelectorProps {
   prefectures: Prefecture[];
   selectedStationId: number | null;
   onSelect: (stationId: number) => void;
+  initialPrecNo?: number | null;
+  onPrefectureChange?: (precNo: number) => void;
 }
 
 export function StationSelector({
   prefectures,
   selectedStationId,
   onSelect,
+  initialPrecNo,
+  onPrefectureChange,
 }: StationSelectorProps) {
-  const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(null);
+  const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(
+    initialPrecNo ?? null
+  );
   const [stations, setStations] = useState<Station[]>([]);
   const [loadingStations, setLoadingStations] = useState(false);
   const fetchIdRef = useRef(0);
@@ -48,10 +54,23 @@ export function StationSelector({
       });
   }, []);
 
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (
+      !restoredRef.current &&
+      initialPrecNo != null &&
+      prefectures.length > 0
+    ) {
+      restoredRef.current = true;
+      fetchStations(initialPrecNo);
+    }
+  }, [initialPrecNo, prefectures, fetchStations]);
+
   const handlePrefectureChange = (value: string) => {
     const precNo = Number(value);
     setSelectedPrecNo(precNo);
     fetchStations(precNo);
+    onPrefectureChange?.(precNo);
   };
 
   return (

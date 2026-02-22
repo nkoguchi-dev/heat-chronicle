@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { apiClient } from "@/features/shared/libs/api-client";
 import { ThemeToggle } from "@/features/shared/components/theme-toggle";
@@ -9,6 +9,7 @@ import { Heatmap } from "@/features/heatmap/components/Heatmap";
 import { ProgressBar } from "@/features/heatmap/components/ProgressBar";
 import { StationSelector } from "@/features/heatmap/components/StationSelector";
 import { useTemperatureData } from "@/hooks/use-temperature-data";
+import { useUrlParams } from "@/hooks/use-url-params";
 import {
   Select,
   SelectContent,
@@ -22,11 +23,15 @@ import { TEMP_TYPE_LABELS } from "@/types/api";
 const DEFAULT_START_YEAR = 1975;
 
 export default function Home() {
+  const { initialParams, updateUrl } = useUrlParams();
   const [prefectures, setPrefectures] = useState<Prefecture[]>([]);
   const [selectedStationId, setSelectedStationId] = useState<number | null>(
-    null
+    initialParams.station
   );
-  const [tempType, setTempType] = useState<TempType>("max");
+  const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(
+    initialParams.pref
+  );
+  const [tempType, setTempType] = useState<TempType>(initialParams.type);
   const currentYear = new Date().getFullYear();
   const { records, loading, streaming, progress, error, fetchData } =
     useTemperatureData();
@@ -38,9 +43,33 @@ export default function Home() {
       .catch(console.error);
   }, []);
 
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (
+      !restoredRef.current &&
+      prefectures.length > 0 &&
+      initialParams.station != null
+    ) {
+      restoredRef.current = true;
+      fetchData(initialParams.station, DEFAULT_START_YEAR, currentYear);
+    }
+  }, [prefectures, initialParams.station, fetchData, currentYear]);
+
   const handleStationSelect = (stationId: number) => {
     setSelectedStationId(stationId);
     fetchData(stationId, DEFAULT_START_YEAR, currentYear);
+    updateUrl({ station: stationId, pref: selectedPrecNo });
+  };
+
+  const handlePrefectureChange = (precNo: number) => {
+    setSelectedPrecNo(precNo);
+    updateUrl({ pref: precNo, station: null });
+  };
+
+  const handleTempTypeChange = (value: string) => {
+    const newType = value as TempType;
+    setTempType(newType);
+    updateUrl({ type: newType });
   };
 
   return (
@@ -61,10 +90,12 @@ export default function Home() {
           prefectures={prefectures}
           selectedStationId={selectedStationId}
           onSelect={handleStationSelect}
+          initialPrecNo={initialParams.pref}
+          onPrefectureChange={handlePrefectureChange}
         />
         <Select
           value={tempType}
-          onValueChange={(value) => setTempType(value as TempType)}
+          onValueChange={handleTempTypeChange}
         >
           <SelectTrigger className="w-[140px]">
             <SelectValue />
