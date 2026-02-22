@@ -1,9 +1,8 @@
-import asyncio
+import calendar
 import logging
-import uuid
 from datetime import date
 
-from app.infrastructure.repositories.job_repository import JobRepository
+from app.domain.schemas import MonthTemperatureResponse, TemperatureRecord
 from app.infrastructure.repositories.station_repository import StationRepository
 from app.infrastructure.repositories.temperature_repository import (
     TemperatureRepository,
@@ -19,153 +18,80 @@ class ScrapeService:
         self,
         station_repo: StationRepository,
         temp_repo: TemperatureRepository,
-        job_repo: JobRepository,
     ):
         self.station_repo = station_repo
         self.temp_repo = temp_repo
-        self.job_repo = job_repo
 
-    def create_job(
+    async def fetch_month(
         self,
         station_id: int,
-        start_year: int,
-        end_year: int,
-    ) -> dict:
-        active = self.job_repo.find_active_job(station_id)
-        if active:
-            return active
-
+        year: int,
+        month: int,
+    ) -> MonthTemperatureResponse:
+        """1ヶ月分のデータを取得して返す。キャッシュ済みならDBから返す。"""
         station = self.station_repo.get_by_id(station_id)
         if station is None:
             raise ValueError(f"Station {station_id} not found")
 
-        fetched = self.temp_repo.get_fetched_months(station_id)
-        fetched_set = set(fetched)
-
-        months_to_fetch: list[tuple[int, int]] = []
-        for y in range(end_year, start_year - 1, -1):
-            for m in range(12, 0, -1):
-                if (y, m) not in fetched_set:
-                    today = date.today()
-                    if y > today.year or (y == today.year and m > today.month):
-                        continue
-                    months_to_fetch.append((y, m))
-
-        total = len(months_to_fetch)
-        job_id = str(uuid.uuid4())
-        job = self.job_repo.create_job(job_id, station_id, total)
-        return job
-
-    async def execute_job(self, job_id: str, lambda_context=None) -> None:
-        job = self.job_repo.get_job(job_id)
-        if job is None:
-            logger.error("Job %s not found", job_id)
-            return
-
-        station_id = int(job["station_id"])
-        station = await asyncio.to_thread(
-            self.station_repo.get_by_id, station_id
-        )
-        if station is None:
-            self.job_repo.fail_job(job_id, f"Station {station_id} not found")
-            return
-
-        fetched = await asyncio.to_thread(
-            self.temp_repo.get_fetched_months, station_id
-        )
-        fetched_set = set(fetched)
-
-        total = int(job["total"])
-        if total == 0:
-            self.job_repo.complete_job(job_id, 0)
-            return
-
-        months_to_fetch: list[tuple[int, int]] = []
+        # 未来の月はリクエストしない
         today = date.today()
-        for y in range(today.year, 1974, -1):
-            for m in range(12, 0, -1):
-                if (y, m) not in fetched_set:
-                    if y > today.year or (y == today.year and m > today.month):
-                        continue
-                    months_to_fetch.append((y, m))
+        if year > today.year or (year == today.year and month > today.month):
+            return MonthTemperatureResponse(year=year, month=month, records=[])
 
-        client = JmaClient()
-        completed = 0
-        total_records = 0
+        # キャッシュ済みか確認
+        fetched_months = self.temp_repo.get_fetched_months(station_id)
+        fetched_set = set(fetched_months)
 
-        try:
-            for year, month in months_to_fetch:
-                # Lambda タイムアウト 30 秒前にループ終了
-                if (
-                    lambda_context
-                    and lambda_context.get_remaining_time_in_millis() < 30000
-                ):
-                    logger.info("Lambda timeout approaching, completing job early")
-                    break
+        if (year, month) not in fetched_set:
+            # JMAからスクレイプ
+            client = JmaClient()
+            try:
+                html = await client.fetch_daily_page(
+                    prec_no=station.prec_no,
+                    block_no=station.block_no,
+                    year=year,
+                    month=month,
+                    station_type=station.station_type,
+                )
 
-                try:
-                    html = await client.fetch_daily_page(
-                        prec_no=station.prec_no,
-                        block_no=station.block_no,
-                        year=year,
-                        month=month,
-                        station_type=station.station_type,
-                    )
+                records = parse_daily_page(html, year, month, station.station_type)
 
-                    records = parse_daily_page(
-                        html, year, month, station.station_type
-                    )
+                if records:
+                    db_records = [
+                        {
+                            "station_id": station_id,
+                            "date": r.date.isoformat(),
+                            "max_temp": r.max_temp,
+                            "min_temp": r.min_temp,
+                            "avg_temp": r.avg_temp,
+                        }
+                        for r in records
+                    ]
+                    self.temp_repo.bulk_insert_temperatures(db_records)
 
-                    if records:
-                        db_records = [
-                            {
-                                "station_id": station_id,
-                                "date": r.date.isoformat(),
-                                "max_temp": r.max_temp,
-                                "min_temp": r.min_temp,
-                                "avg_temp": r.avg_temp,
-                            }
-                            for r in records
-                        ]
-                        await asyncio.to_thread(
-                            self.temp_repo.bulk_insert_temperatures, db_records
-                        )
+                self.temp_repo.insert_fetch_log(station_id, year, month)
+            finally:
+                await client.close()
 
-                    await asyncio.to_thread(
-                        self.temp_repo.insert_fetch_log, station_id, year, month
-                    )
+        # DBからデータを取得して返す
+        start_date = date(year, month, 1).isoformat()
+        last_day = calendar.monthrange(year, month)[1]
+        end_date = date(year, month, last_day).isoformat()
 
-                    completed += 1
-                    total_records += len(records)
+        db_records = self.temp_repo.get_by_station_and_range(
+            station_id, start_date, end_date
+        )
 
-                    await asyncio.to_thread(
-                        self.job_repo.update_progress,
-                        job_id,
-                        completed,
-                        year,
-                        month,
-                        len(records),
-                    )
-
-                except Exception:
-                    logger.exception(
-                        "Error fetching %d-%02d for station %d",
-                        year,
-                        month,
-                        station_id,
-                    )
-                    completed += 1
-
-            await asyncio.to_thread(
-                self.job_repo.complete_job, job_id, total_records
-            )
-        except Exception as e:
-            logger.exception("Job %s failed", job_id)
-            await asyncio.to_thread(
-                self.job_repo.fail_job, job_id, str(e)
-            )
-        finally:
-            await client.close()
-
-    def get_job_status(self, job_id: str) -> dict | None:
-        return self.job_repo.get_job(job_id)
+        return MonthTemperatureResponse(
+            year=year,
+            month=month,
+            records=[
+                TemperatureRecord(
+                    date=r.date,
+                    max_temp=r.max_temp,
+                    min_temp=r.min_temp,
+                    avg_temp=r.avg_temp,
+                )
+                for r in db_records
+            ],
+        )

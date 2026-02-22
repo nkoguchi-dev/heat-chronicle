@@ -40,17 +40,7 @@ class TemperatureResponse(BaseModel):
     data: list[TemperatureRecord]
 
 
-class FetchJobResponse(BaseModel):
-    job_id: str
-    total_months: int
-
-
-class JobStatusResponse(BaseModel):
-    status: str
-    completed: int
-    total: int
-    year: int | None = None
-    month: int | None = None
-    new_records: list[TemperatureRecord]
-    total_records: int | None = None
-    message: str | None = None
+class MonthTemperatureResponse(BaseModel):
+    year: int
+    month: int
+    records: list[TemperatureRecord]

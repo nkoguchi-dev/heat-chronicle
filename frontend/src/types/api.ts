@@ -35,27 +35,17 @@ export interface TemperatureResponse {
   data: TemperatureRecord[];
 }
 
+export interface MonthTemperatureResponse {
+  year: number;
+  month: number;
+  records: TemperatureRecord[];
+}
+
 export interface ProgressEvent {
   year: number;
   month: number;
   completed: number;
   total: number;
-}
-
-export interface FetchJobResponse {
-  job_id: string;
-  total_months: number;
-}
-
-export interface JobStatusResponse {
-  status: "in_progress" | "complete" | "error";
-  completed: number;
-  total: number;
-  year?: number;
-  month?: number;
-  new_records: TemperatureRecord[];
-  total_records?: number;
-  message?: string;
 }
 
 export type TempType = "max" | "min" | "avg";

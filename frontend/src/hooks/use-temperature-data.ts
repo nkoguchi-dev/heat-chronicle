@@ -3,8 +3,8 @@
 import { useCallback, useRef, useState } from "react";
 
 import { apiClient } from "@/features/shared/libs/api-client";
-import { pollJobStatus, startFetchJob } from "@/features/shared/libs/polling-client";
 import type {
+  MonthTemperatureResponse,
   ProgressEvent,
   TemperatureRecord,
   TemperatureResponse,
@@ -13,7 +13,7 @@ import type {
 interface UseTemperatureDataReturn {
   records: TemperatureRecord[];
   loading: boolean;
-  streaming: boolean;
+  fetching: boolean;
   progress: ProgressEvent | null;
   error: string | null;
   fetchData: (stationId: number, startYear: number, endYear: number) => void;
@@ -22,97 +22,101 @@ interface UseTemperatureDataReturn {
 export function useTemperatureData(): UseTemperatureDataReturn {
   const [records, setRecords] = useState<TemperatureRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [streaming, setStreaming] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [progress, setProgress] = useState<ProgressEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const cancelRef = useRef<(() => void) | null>(null);
+  const cancelRef = useRef(false);
 
   const fetchData = useCallback(
     (stationId: number, startYear: number, endYear: number) => {
-      // Cancel any existing polling
-      if (cancelRef.current) {
-        cancelRef.current();
-        cancelRef.current = null;
-      }
+      // Cancel any existing fetch sequence
+      cancelRef.current = true;
 
       setLoading(true);
-      setStreaming(false);
+      setFetching(false);
       setProgress(null);
       setError(null);
       setRecords([]);
 
-      // First, fetch cached data via REST
+      // Allow cancellation for this new sequence
+      cancelRef.current = false;
+
       apiClient
         .get<TemperatureResponse>(
           `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`
         )
         .then(async (response) => {
+          if (cancelRef.current) return;
+
           setRecords(response.data);
           setLoading(false);
 
-          if (response.metadata.fetching_required) {
-            setStreaming(true);
+          if (!response.metadata.fetching_required) return;
+
+          // 未取得月のリストを作成
+          const fetchedSet = new Set(response.metadata.fetched_months);
+          const monthsToFetch: { year: number; month: number }[] = [];
+          const now = new Date();
+          const currentYear = now.getFullYear();
+          const currentMonth = now.getMonth() + 1;
+
+          for (let y = endYear; y >= startYear; y--) {
+            for (let m = 12; m >= 1; m--) {
+              if (y > currentYear || (y === currentYear && m > currentMonth))
+                continue;
+              const key = `${y}-${String(m).padStart(2, "0")}`;
+              if (!fetchedSet.has(key)) {
+                monthsToFetch.push({ year: y, month: m });
+              }
+            }
+          }
+
+          if (monthsToFetch.length === 0) return;
+
+          setFetching(true);
+          const total = monthsToFetch.length;
+
+          for (let i = 0; i < monthsToFetch.length; i++) {
+            if (cancelRef.current) break;
+
+            const { year, month } = monthsToFetch[i];
+            setProgress({ year, month, completed: i, total });
 
             try {
-              const job = await startFetchJob(stationId, startYear, endYear);
-              const { promise, cancel } = pollJobStatus(
-                stationId,
-                job.job_id,
-                (status) => {
-                  if (status.year && status.month) {
-                    setProgress({
-                      year: status.year,
-                      month: status.month,
-                      completed: status.completed,
-                      total: status.total,
-                    });
-                  }
-                }
-              );
-              cancelRef.current = cancel;
+              const monthData =
+                await apiClient.get<MonthTemperatureResponse>(
+                  `/api/temperature/${stationId}/fetch-month?year=${year}&month=${month}`
+                );
 
-              // ポーリング中に定期的にデータを再取得
-              const refetchInterval = setInterval(async () => {
-                try {
-                  const data = await apiClient.get<TemperatureResponse>(
-                    `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`
-                  );
-                  setRecords(data.data);
-                } catch {
-                  // 定期リフレッシュのエラーは無視
-                }
-              }, 10000);
+              if (cancelRef.current) break;
 
-              try {
-                await promise;
-              } finally {
-                clearInterval(refetchInterval);
+              // 取得した月のデータをマージ
+              if (monthData.records.length > 0) {
+                setRecords((prev) => [...prev, ...monthData.records]);
               }
-
-              // ジョブ完了後にデータを再取得
-              const finalData = await apiClient.get<TemperatureResponse>(
-                `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`
-              );
-              setRecords(finalData.data);
-              setStreaming(false);
-              setProgress(null);
-              cancelRef.current = null;
             } catch (err) {
-              setError(
-                err instanceof Error ? err.message : "Fetch job failed"
+              console.error(
+                `Failed to fetch ${year}-${month}:`,
+                err
               );
-              setStreaming(false);
-              cancelRef.current = null;
+              // 個別の月の失敗は無視して続行
             }
+          }
+
+          if (!cancelRef.current) {
+            setFetching(false);
+            setProgress(null);
           }
         })
         .catch((err) => {
-          setError(err.message);
-          setLoading(false);
+          if (!cancelRef.current) {
+            setError(err.message);
+            setLoading(false);
+          }
         });
     },
     []
   );
 
-  return { records, loading, streaming, progress, error, fetchData };
+  return { records, loading, fetching, progress, error, fetchData };
 }

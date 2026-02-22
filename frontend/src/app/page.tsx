@@ -33,7 +33,7 @@ export default function Home() {
   );
   const [tempType, setTempType] = useState<TempType>(initialParams.type);
   const currentYear = new Date().getFullYear();
-  const { records, loading, streaming, progress, error, fetchData } =
+  const { records, loading, fetching, progress, error, fetchData } =
     useTemperatureData();
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function Home() {
         )}
       </div>
 
-      <ProgressBar progress={progress} streaming={streaming} />
+      <ProgressBar progress={progress} streaming={fetching} />
 
       {error && (
         <div className="rounded border border-destructive bg-destructive/10 px-4 py-2 text-sm text-destructive">

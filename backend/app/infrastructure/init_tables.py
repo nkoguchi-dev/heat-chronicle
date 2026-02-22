@@ -35,8 +35,6 @@ def ensure_tables_exist() -> None:
     stations_table = settings.table_name("stations")
     temp_table = settings.table_name("daily-temperature")
     log_table = settings.table_name("fetch-log")
-    jobs_table = settings.table_name("scrape-jobs")
-
     if stations_table not in existing:
         client.create_table(
             TableName=stations_table,
@@ -100,24 +98,3 @@ def ensure_tables_exist() -> None:
             },
         )
         logger.info("Created table: %s", log_table)
-
-    if jobs_table not in existing:
-        client.create_table(
-            TableName=jobs_table,
-            KeySchema=[{"AttributeName": "job_id", "KeyType": "HASH"}],
-            AttributeDefinitions=[
-                {"AttributeName": "job_id", "AttributeType": "S"},
-            ],
-            ProvisionedThroughput={
-                "ReadCapacityUnits": 5,
-                "WriteCapacityUnits": 5,
-            },
-        )
-        client.update_time_to_live(
-            TableName=jobs_table,
-            TimeToLiveSpecification={
-                "Enabled": True,
-                "AttributeName": "ttl",
-            },
-        )
-        logger.info("Created table: %s", jobs_table)
