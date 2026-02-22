@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { apiClient } from "@/features/shared/libs/api-client";
+import { ThemeToggle } from "@/features/shared/components/theme-toggle";
 import { ColorLegend } from "@/features/heatmap/components/ColorLegend";
 import { Heatmap } from "@/features/heatmap/components/Heatmap";
 import { ProgressBar } from "@/features/heatmap/components/ProgressBar";
@@ -44,7 +45,12 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col items-center gap-6 p-8">
-      <h1 className="text-2xl font-bold">Heat Chronicle</h1>
+      <div className="flex w-full items-center justify-center relative">
+        <h1 className="text-2xl font-bold">Heat Chronicle</h1>
+        <div className="absolute right-0">
+          <ThemeToggle />
+        </div>
+      </div>
       <p className="text-muted-foreground">
         日本の観測地点における{TEMP_TYPE_LABELS[tempType]}
         の長期傾向ヒートマップ
