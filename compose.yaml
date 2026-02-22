@@ -35,6 +35,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/out
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
     command: ["npm", "run", "dev"]
