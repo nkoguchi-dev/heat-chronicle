@@ -45,6 +45,7 @@ jobs:
             ${{ vars.ECR_REPOSITORY_URL }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
 
       - name: Update Lambda function code
         run: |
