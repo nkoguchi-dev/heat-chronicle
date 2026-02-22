@@ -198,7 +198,18 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
           aws_dynamodb_table.scrape_jobs.arn,
           "${aws_dynamodb_table.scrape_jobs.arn}/index/*",
         ]
-      },
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_self_invoke" {
+  name = "${local.prefix}-lambda-self-invoke"
+  role = aws_iam_role.lambda_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
       {
         Effect   = "Allow"
         Action   = "lambda:InvokeFunction"
