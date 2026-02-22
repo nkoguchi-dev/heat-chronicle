@@ -198,6 +198,11 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
           aws_dynamodb_table.scrape_jobs.arn,
           "${aws_dynamodb_table.scrape_jobs.arn}/index/*",
         ]
+      },
+      {
+        Effect   = "Allow"
+        Action   = "lambda:InvokeFunction"
+        Resource = aws_lambda_function.backend.arn
       }
     ]
   })

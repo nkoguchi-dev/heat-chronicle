@@ -36,7 +36,6 @@ class JobRepository:
             "total": total,
             "current_year": 0,
             "current_month": 0,
-            "new_records": [],
             "total_records": 0,
             "created_at": now,
             "updated_at": now,
@@ -65,7 +64,7 @@ class JobRepository:
         completed: int,
         year: int,
         month: int,
-        new_records: list[dict[str, Any]],
+        new_record_count: int,
     ) -> None:
         now = datetime.now(timezone.utc).isoformat()
         self.table.update_item(
@@ -74,7 +73,6 @@ class JobRepository:
                 "SET completed = :completed, "
                 "current_year = :year, "
                 "current_month = :month, "
-                "new_records = list_append(new_records, :records), "
                 "total_records = total_records + :count, "
                 "updated_at = :now"
             ),
@@ -82,8 +80,7 @@ class JobRepository:
                 ":completed": completed,
                 ":year": year,
                 ":month": month,
-                ":records": new_records,
-                ":count": len(new_records),
+                ":count": new_record_count,
                 ":now": now,
             },
         )
@@ -118,16 +115,3 @@ class JobRepository:
             },
         )
 
-    def get_and_clear_records(self, job_id: str) -> dict[str, Any] | None:
-        job = self.get_job(job_id)
-        if job is None:
-            return None
-
-        if job.get("new_records"):
-            self.table.update_item(
-                Key={"job_id": job_id},
-                UpdateExpression="SET new_records = :empty",
-                ExpressionAttributeValues={":empty": []},
-            )
-
-        return job

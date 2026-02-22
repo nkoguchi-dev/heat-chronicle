@@ -2,7 +2,6 @@ import asyncio
 import logging
 import uuid
 from datetime import date
-from decimal import Decimal
 
 from app.infrastructure.repositories.job_repository import JobRepository
 from app.infrastructure.repositories.station_repository import StationRepository
@@ -131,35 +130,13 @@ class ScrapeService:
                     completed += 1
                     total_records += len(records)
 
-                    new_records = [
-                        {
-                            "date": r.date.isoformat(),
-                            "max_temp": (
-                                Decimal(str(r.max_temp))
-                                if r.max_temp is not None
-                                else None
-                            ),
-                            "min_temp": (
-                                Decimal(str(r.min_temp))
-                                if r.min_temp is not None
-                                else None
-                            ),
-                            "avg_temp": (
-                                Decimal(str(r.avg_temp))
-                                if r.avg_temp is not None
-                                else None
-                            ),
-                        }
-                        for r in records
-                    ]
-
                     await asyncio.to_thread(
                         self.job_repo.update_progress,
                         job_id,
                         completed,
                         year,
                         month,
-                        new_records,
+                        len(records),
                     )
 
                 except Exception:
@@ -183,4 +160,4 @@ class ScrapeService:
             await client.close()
 
     def get_job_status(self, job_id: str) -> dict | None:
-        return self.job_repo.get_and_clear_records(job_id)
+        return self.job_repo.get_job(job_id)

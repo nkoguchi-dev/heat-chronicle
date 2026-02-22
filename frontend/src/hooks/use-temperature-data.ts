@@ -59,9 +59,6 @@ export function useTemperatureData(): UseTemperatureDataReturn {
                 stationId,
                 job.job_id,
                 (status) => {
-                  if (status.new_records.length > 0) {
-                    setRecords((prev) => [...prev, ...status.new_records]);
-                  }
                   if (status.year && status.month) {
                     setProgress({
                       year: status.year,
@@ -75,6 +72,11 @@ export function useTemperatureData(): UseTemperatureDataReturn {
               cancelRef.current = cancel;
 
               await promise;
+              // ジョブ完了後にデータを再取得
+              const finalData = await apiClient.get<TemperatureResponse>(
+                `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`
+              );
+              setRecords(finalData.data);
               setStreaming(false);
               setProgress(null);
               cancelRef.current = null;
