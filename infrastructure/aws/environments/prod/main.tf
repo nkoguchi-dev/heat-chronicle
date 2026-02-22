@@ -1,0 +1,102 @@
+locals {
+  tags = {
+    System      = var.system_name
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+# -----------------------------------------------------------------------------
+# Static Site (S3 + CloudFront)
+# -----------------------------------------------------------------------------
+module "static_site" {
+  source = "../../modules/static_site"
+
+  system_name          = var.system_name
+  environment          = var.environment
+  default_root_object  = "index.html"
+  tags                 = local.tags
+}
+
+# -----------------------------------------------------------------------------
+# GitHub Actions OIDC Provider
+# -----------------------------------------------------------------------------
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_openid_connect_provider" "github_actions" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = ["sts.amazonaws.com"]
+
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+
+  tags = local.tags
+}
+
+# -----------------------------------------------------------------------------
+# GitHub Actions Deploy Role
+# -----------------------------------------------------------------------------
+data "aws_iam_policy_document" "github_actions_assume_role" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.github_actions.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:${var.github_repository}:*"]
+    }
+  }
+}
+
+resource "aws_iam_role" "github_actions_deploy" {
+  name               = "${var.system_name}-${var.environment}-github-actions-deploy"
+  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json
+
+  tags = local.tags
+}
+
+data "aws_iam_policy_document" "github_actions_deploy" {
+  # S3 deploy permissions
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      module.static_site.s3_bucket_arn,
+      "${module.static_site.s3_bucket_arn}/*",
+    ]
+  }
+
+  # CloudFront cache invalidation
+  statement {
+    effect = "Allow"
+    actions = [
+      "cloudfront:CreateInvalidation",
+    ]
+    resources = [
+      module.static_site.cloudfront_distribution_arn,
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "github_actions_deploy" {
+  name   = "${var.system_name}-${var.environment}-deploy"
+  role   = aws_iam_role.github_actions_deploy.id
+  policy = data.aws_iam_policy_document.github_actions_deploy.json
+}
