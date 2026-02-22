@@ -1,4 +1,64 @@
 # -----------------------------------------------------------------------------
+# Provider Configuration
+# -----------------------------------------------------------------------------
+terraform {
+  required_providers {
+    aws = {
+      source                = "hashicorp/aws"
+      configuration_aliases = [aws.us_east_1]
+    }
+  }
+}
+
+# -----------------------------------------------------------------------------
+# Route 53 — Hosted Zone Data Source
+# -----------------------------------------------------------------------------
+data "aws_route53_zone" "main" {
+  name         = var.hosted_zone_name
+  private_zone = false
+}
+
+# -----------------------------------------------------------------------------
+# ACM Certificate (us-east-1) — Required for CloudFront
+# -----------------------------------------------------------------------------
+resource "aws_acm_certificate" "frontend" {
+  provider          = aws.us_east_1
+  domain_name       = var.domain_name
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = merge(var.tags, {
+    Name = "${var.system_name}-${var.environment}-frontend"
+  })
+}
+
+resource "aws_route53_record" "acm_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.frontend.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  zone_id         = data.aws_route53_zone.main.zone_id
+  name            = each.value.name
+  type            = each.value.type
+  ttl             = 300
+  records         = [each.value.record]
+  allow_overwrite = true
+}
+
+resource "aws_acm_certificate_validation" "frontend" {
+  provider                = aws.us_east_1
+  certificate_arn         = aws_acm_certificate.frontend.arn
+  validation_record_fqdns = [for record in aws_route53_record.acm_validation : record.fqdn]
+}
+
+# -----------------------------------------------------------------------------
 # S3 Bucket
 # -----------------------------------------------------------------------------
 resource "aws_s3_bucket" "frontend" {
@@ -46,6 +106,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   comment             = "${var.system_name} ${var.environment} frontend"
   enabled             = true
   default_root_object = var.default_root_object
+  aliases             = [var.domain_name]
   price_class         = "PriceClass_200"
   http_version        = "http2and3"
 
@@ -119,7 +180,9 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = aws_acm_certificate_validation.frontend.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   tags = merge(var.tags, {
@@ -155,4 +218,19 @@ data "aws_iam_policy_document" "frontend_bucket_policy" {
 resource "aws_s3_bucket_policy" "frontend" {
   bucket = aws_s3_bucket.frontend.id
   policy = data.aws_iam_policy_document.frontend_bucket_policy.json
+}
+
+# -----------------------------------------------------------------------------
+# Route 53 — Alias Record for Custom Domain
+# -----------------------------------------------------------------------------
+resource "aws_route53_record" "frontend" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.frontend.domain_name
+    zone_id                = aws_cloudfront_distribution.frontend.hosted_zone_id
+    evaluate_target_health = false
+  }
 }

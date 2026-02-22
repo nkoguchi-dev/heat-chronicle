@@ -19,3 +19,13 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "domain_name" {
+  description = "Custom domain name for the frontend (e.g. heat-chronicle.koppepan.org)"
+  type        = string
+}
+
+variable "hosted_zone_name" {
+  description = "Route 53 hosted zone name (e.g. koppepan.org)"
+  type        = string
+}

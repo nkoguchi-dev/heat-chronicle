@@ -17,3 +17,8 @@ output "github_actions_deploy_role_arn" {
   description = "IAM role ARN for GitHub Actions deploy"
   value       = aws_iam_role.github_actions_deploy.arn
 }
+
+output "site_url" {
+  description = "Site URL with custom domain"
+  value       = module.static_site.site_url
+}

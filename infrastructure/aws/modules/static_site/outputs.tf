@@ -22,3 +22,8 @@ output "cloudfront_distribution_domain_name" {
   description = "CloudFront distribution domain name"
   value       = aws_cloudfront_distribution.frontend.domain_name
 }
+
+output "site_url" {
+  description = "Site URL with custom domain"
+  value       = "https://${var.domain_name}"
+}

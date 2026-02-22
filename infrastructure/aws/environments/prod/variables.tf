@@ -21,3 +21,15 @@ variable "github_repository" {
   type        = string
   default     = "nkoguchi-dev/heat-chronicle"
 }
+
+variable "domain_name" {
+  description = "Custom domain name for the frontend"
+  type        = string
+  default     = "heat-chronicle.koppepan.org"
+}
+
+variable "hosted_zone_name" {
+  description = "Route 53 hosted zone name"
+  type        = string
+  default     = "koppepan.org"
+}

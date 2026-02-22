@@ -12,10 +12,17 @@ locals {
 module "static_site" {
   source = "../../modules/static_site"
 
-  system_name          = var.system_name
-  environment          = var.environment
-  default_root_object  = "index.html"
-  tags                 = local.tags
+  providers = {
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
+  }
+
+  system_name         = var.system_name
+  environment         = var.environment
+  default_root_object = "index.html"
+  domain_name         = var.domain_name
+  hosted_zone_name    = var.hosted_zone_name
+  tags                = local.tags
 }
 
 # -----------------------------------------------------------------------------
