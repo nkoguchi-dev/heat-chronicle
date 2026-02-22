@@ -1,4 +1,5 @@
 import logging
+logging.basicConfig(level=logging.INFO)
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -7,7 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.requests import Request
 
-from app.infrastructure.database import init_db
+from app.infrastructure.init_tables import ensure_tables_exist
+from app.infrastructure.seed import seed_stations
 from app.presentation.api import hello, prefectures, stations, temperature
 
 logger = logging.getLogger(__name__)
@@ -15,7 +17,12 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    await init_db()
+    logger.info("Initializing DynamoDB tables...")
+    ensure_tables_exist()
+    logger.info("DynamoDB tables ready.")
+    logger.info("Seeding stations...")
+    seed_stations()
+    logger.info("Stations seeded.")
     yield
 
 

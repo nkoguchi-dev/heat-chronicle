@@ -2,9 +2,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env.local", extra="ignore")
 
-    database_url: str = "postgresql+asyncpg://heat_user:heat_user@localhost:5432/heat_db"
+    dynamodb_endpoint_url: str = "http://localhost:8001"
+    dynamodb_region: str = "ap-northeast-1"
     debug: bool = False
     scrape_interval_sec: float = 2.0
 

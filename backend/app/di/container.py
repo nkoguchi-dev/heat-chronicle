@@ -1,27 +1,21 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.database import async_session, get_session
-
-
-# Auto-commit/rollback session for standard endpoints
-async def get_db_session() -> AsyncSession:
-    async for session in get_session():
-        yield session
+from app.infrastructure.database import get_dynamodb_resource
+from app.infrastructure.repositories.station_repository import StationRepository
+from app.infrastructure.repositories.temperature_repository import (
+    TemperatureRepository,
+)
 
 
-SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
+def get_station_repository() -> StationRepository:
+    return StationRepository(get_dynamodb_resource())
 
 
-# Manual session for SSE streaming (no auto-commit/rollback)
-async def get_manual_session() -> AsyncSession:
-    async with async_session() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+def get_temperature_repository() -> TemperatureRepository:
+    return TemperatureRepository(get_dynamodb_resource())
 
 
-ManualSessionDep = Annotated[AsyncSession, Depends(get_manual_session)]
+StationRepoDep = Annotated[StationRepository, Depends(get_station_repository)]
+TempRepoDep = Annotated[TemperatureRepository, Depends(get_temperature_repository)]

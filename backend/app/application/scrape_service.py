@@ -1,11 +1,9 @@
+import asyncio
 import json
 import logging
 from collections.abc import AsyncGenerator
 from datetime import date
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.infrastructure.models.tables import Station
 from app.infrastructure.repositories.station_repository import StationRepository
 from app.infrastructure.repositories.temperature_repository import (
     TemperatureRepository,
@@ -21,10 +19,13 @@ def _sse_event(event: str, data: dict) -> str:
 
 
 class ScrapeService:
-    def __init__(self, session: AsyncSession):
-        self.session = session
-        self.station_repo = StationRepository(session)
-        self.temp_repo = TemperatureRepository(session)
+    def __init__(
+        self,
+        station_repo: StationRepository,
+        temp_repo: TemperatureRepository,
+    ):
+        self.station_repo = station_repo
+        self.temp_repo = temp_repo
 
     async def stream_fetch(
         self,
@@ -32,20 +33,22 @@ class ScrapeService:
         start_year: int,
         end_year: int,
     ) -> AsyncGenerator[str, None]:
-        station = await self.station_repo.get_by_id(station_id)
+        station = await asyncio.to_thread(
+            self.station_repo.get_by_id, station_id
+        )
         if station is None:
             yield _sse_event("error", {"message": f"Station {station_id} not found"})
             return
 
-        # Calculate required months
-        fetched = await self.temp_repo.get_fetched_months(station_id)
+        fetched = await asyncio.to_thread(
+            self.temp_repo.get_fetched_months, station_id
+        )
         fetched_set = set(fetched)
 
         months_to_fetch: list[tuple[int, int]] = []
         for y in range(end_year, start_year - 1, -1):
             for m in range(12, 0, -1):
                 if (y, m) not in fetched_set:
-                    # Skip future months
                     today = date.today()
                     if y > today.year or (y == today.year and m > today.month):
                         continue
@@ -53,7 +56,10 @@ class ScrapeService:
 
         total = len(months_to_fetch)
         if total == 0:
-            yield _sse_event("complete", {"message": "All data already cached", "total_records": 0})
+            yield _sse_event(
+                "complete",
+                {"message": "All data already cached", "total_records": 0},
+            )
             return
 
         client = JmaClient()
@@ -87,22 +93,24 @@ class ScrapeService:
                         db_records = [
                             {
                                 "station_id": station_id,
-                                "date": r.date,
+                                "date": r.date.isoformat(),
                                 "max_temp": r.max_temp,
                                 "min_temp": r.min_temp,
                                 "avg_temp": r.avg_temp,
                             }
                             for r in records
                         ]
-                        await self.temp_repo.bulk_insert_temperatures(db_records)
+                        await asyncio.to_thread(
+                            self.temp_repo.bulk_insert_temperatures, db_records
+                        )
 
-                    await self.temp_repo.insert_fetch_log(station_id, year, month)
-                    await self.session.commit()
+                    await asyncio.to_thread(
+                        self.temp_repo.insert_fetch_log, station_id, year, month
+                    )
 
                     completed += 1
                     total_records += len(records)
 
-                    # Send data event with the records for this month
                     yield _sse_event(
                         "data",
                         {
@@ -121,7 +129,12 @@ class ScrapeService:
                     )
 
                 except Exception as e:
-                    logger.exception("Error fetching %d-%02d for station %d", year, month, station_id)
+                    logger.exception(
+                        "Error fetching %d-%02d for station %d",
+                        year,
+                        month,
+                        station_id,
+                    )
                     yield _sse_event(
                         "error",
                         {
@@ -130,7 +143,6 @@ class ScrapeService:
                             "month": month,
                         },
                     )
-                    # Continue with next month
 
             yield _sse_event(
                 "complete",

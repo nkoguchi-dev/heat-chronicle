@@ -1,19 +1,11 @@
 services:
-  database:
-    container_name: heat-database
-    build:
-      context: ./database
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: heat-dynamodb
     ports:
-      - "5432:5432"
-    volumes:
-      - type: bind
-        source: ./database/data
-        target: /var/lib/postgresql/data
-      - type: bind
-        source: ./database/init.sql
-        target: /docker-entrypoint-initdb.d/init.sql
-    env_file:
-      - path: ./database/.env.local
+      - "8001:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+    working_dir: /home/dynamodblocal
 
   backend:
     container_name: heat-backend
@@ -24,11 +16,11 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-    env_file:
-      - path: ./backend/.env.local
+    environment:
+      - DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     depends_on:
-      - database
+      - dynamodb-local
 
   frontend:
     container_name: heat-frontend
