@@ -138,7 +138,7 @@ data "aws_iam_policy_document" "github_actions_deploy" {
       "ecr:CompleteLayerUpload",
     ]
     resources = [
-      module.backend_api.ecr_repository_arn,
+      "arn:aws:ecr:${var.aws_region}:${data.aws_caller_identity.current.account_id}:repository/${var.system_name}-${var.environment}-backend",
     ]
   }
 
