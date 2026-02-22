@@ -66,7 +66,7 @@ function updateUrl(params: Partial<UrlParams>) {
 }
 
 export function useUrlParams() {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   const initialParams = useMemo(() => parseParams(), []);
 
   return { initialParams, updateUrl };

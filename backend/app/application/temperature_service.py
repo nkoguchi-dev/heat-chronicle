@@ -1,14 +1,8 @@
 from datetime import date
 
-from app.domain.schemas import (
-    StationResponse,
-    TemperatureMetadata,
-    TemperatureResponse,
-)
+from app.domain.schemas import StationResponse, TemperatureMetadata, TemperatureResponse
 from app.infrastructure.repositories.station_repository import StationRepository
-from app.infrastructure.repositories.temperature_repository import (
-    TemperatureRepository,
-)
+from app.infrastructure.repositories.temperature_repository import TemperatureRepository
 
 
 class TemperatureService:

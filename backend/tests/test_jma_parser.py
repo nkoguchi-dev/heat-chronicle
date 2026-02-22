@@ -1,6 +1,10 @@
 from datetime import date
 
-from app.infrastructure.scraper.jma_parser import DailyRecord, _parse_temp, parse_daily_page
+from app.infrastructure.scraper.jma_parser import (
+    DailyRecord,
+    _parse_temp,
+    parse_daily_page,
+)
 
 
 class TestParseTemp:
@@ -61,9 +65,7 @@ class TestParseDailyPage:
 
     def test_parse_normal_row(self):
         # day, 5 extra cols, avg, max, min
-        html = self._make_s1_html(
-            [(1, "x", "x", "x", "x", "x", "5.0", "10.0", "0.5")]
-        )
+        html = self._make_s1_html([(1, "x", "x", "x", "x", "x", "5.0", "10.0", "0.5")])
         records = parse_daily_page(html, 2024, 1, "s")
         assert len(records) == 1
         assert records[0] == DailyRecord(
@@ -74,9 +76,7 @@ class TestParseDailyPage:
         )
 
     def test_parse_missing_data(self):
-        html = self._make_s1_html(
-            [(1, "x", "x", "x", "x", "x", "--", "--", "--")]
-        )
+        html = self._make_s1_html([(1, "x", "x", "x", "x", "x", "--", "--", "--")])
         records = parse_daily_page(html, 2024, 1, "s")
         assert len(records) == 1
         assert records[0].max_temp is None
@@ -93,7 +93,9 @@ class TestParseDailyPage:
         assert records[0].avg_temp == 5.0
 
     def test_empty_table(self):
-        html = '<html><body><table class="data2_s"><tbody></tbody></table></body></html>'
+        html = (
+            '<html><body><table class="data2_s"><tbody></tbody></table></body></html>'
+        )
         records = parse_daily_page(html, 2024, 1, "s")
         assert records == []
 
@@ -127,9 +129,7 @@ class TestParseDailyPage:
 
     def test_parse_amedas_row(self):
         # day, 3 extra cols, avg, max, min
-        html = self._make_a1_html(
-            [(1, "x", "x", "x", "5.0", "10.0", "0.5")]
-        )
+        html = self._make_a1_html([(1, "x", "x", "x", "5.0", "10.0", "0.5")])
         records = parse_daily_page(html, 2024, 1, "a")
         assert len(records) == 1
         assert records[0].max_temp == 10.0

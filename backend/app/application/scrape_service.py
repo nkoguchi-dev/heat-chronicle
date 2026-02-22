@@ -4,9 +4,7 @@ from datetime import date
 
 from app.domain.schemas import MonthTemperatureResponse, TemperatureRecord
 from app.infrastructure.repositories.station_repository import StationRepository
-from app.infrastructure.repositories.temperature_repository import (
-    TemperatureRepository,
-)
+from app.infrastructure.repositories.temperature_repository import TemperatureRepository
 from app.infrastructure.scraper.jma_client import JmaClient
 from app.infrastructure.scraper.jma_parser import parse_daily_page
 

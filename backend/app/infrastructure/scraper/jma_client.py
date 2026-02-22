@@ -67,6 +67,4 @@ class JmaClient:
                 )
                 await asyncio.sleep(wait)
 
-        raise RuntimeError(
-            f"Failed to fetch JMA data after 3 retries: {last_exc}"
-        )
+        raise RuntimeError(f"Failed to fetch JMA data after 3 retries: {last_exc}")

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-heat-chronicle is a Japanese-language web app that visualizes daily maximum temperature data from Japan Meteorological Agency (JMA) weather stations as a heatmap. It scrapes historical data from JMA's public website and caches it in PostgreSQL. The full specification is in SPEC.md (Japanese).
+heat-chronicle is a Japanese-language web app that visualizes daily maximum temperature data from Japan Meteorological Agency (JMA) weather stations as a heatmap. It scrapes historical data from JMA's public website and caches it in DynamoDB. The full specification is in SPEC.md (Japanese).
 
 ## Development Commands
 
@@ -17,7 +17,6 @@ poetry run pytest tests/test_jma_parser.py::test_name -v  # Run a single test
 poetry run black . && poetry run isort .                  # Format
 poetry run flake8 .                                       # Lint
 poetry run mypy .                                         # Type check
-poetry run alembic upgrade head                           # Run migrations
 ```
 
 ### Frontend (from `frontend/`)
@@ -30,8 +29,8 @@ npm run lint      # ESLint
 
 ### Database & Full Stack
 ```bash
-docker compose up database        # Start PostgreSQL only
-docker compose up                 # Start all services (database + backend + frontend)
+docker compose up dynamodb-local    # Start DynamoDB Local only
+docker compose up                   # Start all services (dynamodb-local + backend + frontend)
 ```
 
 ## Architecture
@@ -41,50 +40,47 @@ docker compose up                 # Start all services (database + backend + fro
 Layered architecture with four layers:
 
 - **presentation/api/** — FastAPI routers (HTTP handlers)
-- **application/** — Service layer (ScrapeService for SSE streaming fetch, TemperatureService for cached queries)
+- **application/** — Service layer (ScrapeService for synchronous per-month fetch from JMA, TemperatureService for cached queries)
 - **domain/** — Pydantic response schemas
-- **infrastructure/** — Database (async SQLAlchemy + asyncpg), repositories, JMA scraper
+- **infrastructure/** — Database (DynamoDB via boto3), repositories, JMA scraper
 
 Key patterns:
 - **Repository pattern**: `StationRepository` and `TemperatureRepository` encapsulate all DB queries
-- **DI via FastAPI Depends**: `SessionDep` (auto-commit/rollback) for normal endpoints, `ManualSessionDep` for SSE streaming where the session must outlive the response
-- **Async-first**: asyncpg for queries, httpx for HTTP, async SQLAlchemy sessions
-- **SSE streaming**: `GET /api/temperature/{id}/stream` emits `progress`, `data`, `complete`, `error` events
+- **DI via FastAPI Depends**: `StationRepoDep`, `TempRepoDep` via FastAPI Depends
 - **Rate-limited scraping**: JmaClient enforces 2-second minimum interval between JMA requests with 3 retries + exponential backoff
-- **PostgreSQL schema**: All tables live in the `heat` schema (set via `search_path` for `heat_user`)
 
 ### Frontend (Next.js / TypeScript)
 
 Single-page client component at `/`. Feature-based organization:
 
 - `src/features/heatmap/` — Heatmap components and utilities (Canvas 2D rendering, color scale, data grid)
-- `src/features/shared/libs/` — API client (fetch wrapper) and SSE client
+- `src/features/shared/libs/` — API client (fetch wrapper)
 - `src/components/ui/` — shadcn/ui primitives (Radix UI)
-- `src/hooks/` — Custom hooks (temperature data fetching with REST + SSE fallback)
+- `src/hooks/` — Custom hooks (temperature data fetching)
 - `src/types/` — TypeScript interfaces matching backend schemas
 
-Data flow: fetch stations via REST → user selects station → fetch cached data via REST → if data is missing, open SSE stream to `/api/temperature/{id}/stream` → heatmap re-renders incrementally as records arrive.
+Data flow: fetch stations via REST → user selects station → fetch cached data via REST → if data is missing, sequentially fetch each month via GET `/api/temperature/{id}/fetch-month` → heatmap re-renders incrementally as records arrive.
 
 ### Database
 
-PostgreSQL 17 with three tables in the `heat` schema:
-- `stations` — 12 seeded weather observation stations
-- `daily_temperature` — Daily records (unique on station_id + date), upserted with ON CONFLICT DO NOTHING
-- `fetch_log` — Tracks which (station, year, month) combos have been scraped
+DynamoDB with three tables:
+- `stations` — Weather observation stations (PK: id, GSI: prec_no-index)
+- `daily-temperature` — Daily records (PK: station_id + date)
+- `fetch-log` — Tracks which (station, year_month) combos have been scraped (PK: station_id + year_month)
 
 ### API Endpoints
 
 - `GET /health` — Health check
-- `GET /api/stations` — List all stations
-- `GET /api/temperature/{station_id}?start_year=&end_year=` — Cached temperature data
-- `GET /api/temperature/{station_id}/stream?start_year=&end_year=` — SSE stream for fetching missing data
+- `GET /api/prefectures` — List all prefectures
+- `GET /api/stations` — List all stations (optional: `?prec_no=` filter)
+- `GET /api/temperature/{station_id}?start_year=&end_year=` — Cached temperature data with metadata
+- `GET /api/temperature/{station_id}/fetch-month?year=&month=` — Fetch and return one month of data (scrapes from JMA if not cached)
 
 ## Environment
 
 Each service has a `.env.local` file (gitignored):
-- `backend/.env.local`: `DATABASE_URL` (asyncpg), `ALEMBIC_DATABASE_URL` (psycopg2)
+- `backend/.env.local`: `DYNAMODB_ENDPOINT_URL` (local development, optional), `DYNAMODB_REGION`, `DYNAMODB_TABLE_PREFIX`, `CORS_ALLOW_ORIGINS`
 - `frontend/.env.local`: `NEXT_PUBLIC_API_URL=http://localhost:8000`
-- `database/.env.local`: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
 
 ## Code Style
 

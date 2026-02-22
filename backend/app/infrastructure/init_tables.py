@@ -15,7 +15,12 @@ def _wait_for_dynamodb(
     for attempt in range(1, max_retries + 1):
         try:
             return client.list_tables()["TableNames"]
-        except (EndpointConnectionError, ClientError, ConnectionError, ReadTimeoutError) as e:
+        except (
+            EndpointConnectionError,
+            ClientError,
+            ConnectionError,
+            ReadTimeoutError,
+        ) as e:
             if attempt == max_retries:
                 raise
             logger.warning(
@@ -46,9 +51,7 @@ def ensure_tables_exist() -> None:
             GlobalSecondaryIndexes=[
                 {
                     "IndexName": "prec_no-index",
-                    "KeySchema": [
-                        {"AttributeName": "prec_no", "KeyType": "HASH"}
-                    ],
+                    "KeySchema": [{"AttributeName": "prec_no", "KeyType": "HASH"}],
                     "Projection": {"ProjectionType": "ALL"},
                     "ProvisionedThroughput": {
                         "ReadCapacityUnits": 5,
