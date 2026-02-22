@@ -156,7 +156,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
   }, []);
 
   return (
-    <div className="relative inline-block">
+    <div className="relative w-fit mx-auto">
       <canvas
         ref={canvasRef}
         onMouseMove={handleMouseMove}
