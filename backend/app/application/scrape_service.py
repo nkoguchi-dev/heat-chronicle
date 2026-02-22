@@ -56,7 +56,7 @@ class ScrapeService:
         job = self.job_repo.create_job(job_id, station_id, total)
         return job
 
-    async def execute_job(self, job_id: str) -> None:
+    async def execute_job(self, job_id: str, lambda_context=None) -> None:
         job = self.job_repo.get_job(job_id)
         if job is None:
             logger.error("Job %s not found", job_id)
@@ -95,6 +95,14 @@ class ScrapeService:
 
         try:
             for year, month in months_to_fetch:
+                # Lambda タイムアウト 30 秒前にループ終了
+                if (
+                    lambda_context
+                    and lambda_context.get_remaining_time_in_millis() < 30000
+                ):
+                    logger.info("Lambda timeout approaching, completing job early")
+                    break
+
                 try:
                     html = await client.fetch_daily_page(
                         prec_no=station.prec_no,

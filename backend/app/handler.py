@@ -32,7 +32,7 @@ def handler(event, context):
             TemperatureRepository(dynamodb),
             JobRepository(dynamodb),
         )
-        asyncio.run(service.execute_job(event["job_id"]))
+        asyncio.run(service.execute_job(event["job_id"], lambda_context=context))
         return {"statusCode": 200}
 
     return mangum_handler(event, context)

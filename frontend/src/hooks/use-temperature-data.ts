@@ -71,7 +71,24 @@ export function useTemperatureData(): UseTemperatureDataReturn {
               );
               cancelRef.current = cancel;
 
-              await promise;
+              // ポーリング中に定期的にデータを再取得
+              const refetchInterval = setInterval(async () => {
+                try {
+                  const data = await apiClient.get<TemperatureResponse>(
+                    `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`
+                  );
+                  setRecords(data.data);
+                } catch {
+                  // 定期リフレッシュのエラーは無視
+                }
+              }, 10000);
+
+              try {
+                await promise;
+              } finally {
+                clearInterval(refetchInterval);
+              }
+
               // ジョブ完了後にデータを再取得
               const finalData = await apiClient.get<TemperatureResponse>(
                 `/api/temperature/${stationId}?start_year=${startYear}&end_year=${endYear}`
