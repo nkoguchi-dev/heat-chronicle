@@ -15,13 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Station, TempType } from "@/types/api";
+import type { Prefecture, TempType } from "@/types/api";
 import { TEMP_TYPE_LABELS } from "@/types/api";
 
 const DEFAULT_START_YEAR = 1975;
 
 export default function Home() {
-  const [stations, setStations] = useState<Station[]>([]);
+  const [prefectures, setPrefectures] = useState<Prefecture[]>([]);
   const [selectedStationId, setSelectedStationId] = useState<number | null>(
     null
   );
@@ -32,8 +32,8 @@ export default function Home() {
 
   useEffect(() => {
     apiClient
-      .get<Station[]>("/api/stations")
-      .then(setStations)
+      .get<Prefecture[]>("/api/prefectures")
+      .then(setPrefectures)
       .catch(console.error);
   }, []);
 
@@ -46,13 +46,14 @@ export default function Home() {
     <div className="flex min-h-screen flex-col items-center gap-6 p-8">
       <h1 className="text-2xl font-bold">Heat Chronicle</h1>
       <p className="text-muted-foreground">
-        日本の主要都市における{TEMP_TYPE_LABELS[tempType]}の長期傾向ヒートマップ
+        日本の観測地点における{TEMP_TYPE_LABELS[tempType]}
+        の長期傾向ヒートマップ
       </p>
 
       <div className="flex items-center gap-4">
         <StationSelector
-          stations={stations}
-          selectedId={selectedStationId}
+          prefectures={prefectures}
+          selectedStationId={selectedStationId}
           onSelect={handleStationSelect}
         />
         <Select

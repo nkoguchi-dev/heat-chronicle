@@ -13,6 +13,11 @@ class StationResponse(BaseModel):
     longitude: float | None = None
 
 
+class PrefectureResponse(BaseModel):
+    prec_no: int
+    name: str
+
+
 class TemperatureRecord(BaseModel):
     date: date
     max_temp: float | None = None

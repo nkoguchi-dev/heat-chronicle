@@ -34,6 +34,23 @@ class TemperatureService:
             for s in stations
         ]
 
+    async def get_stations_by_prec_no(
+        self, prec_no: int
+    ) -> list[StationResponse]:
+        stations = await self.station_repo.get_by_prec_no(prec_no)
+        return [
+            StationResponse(
+                id=s.id,
+                station_name=s.station_name,
+                prec_no=s.prec_no,
+                block_no=s.block_no,
+                station_type=s.station_type,
+                latitude=s.latitude,
+                longitude=s.longitude,
+            )
+            for s in stations
+        ]
+
     async def get_temperature_data(
         self, station_id: int, start_year: int, end_year: int
     ) -> TemperatureResponse:

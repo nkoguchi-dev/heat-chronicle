@@ -14,6 +14,14 @@ class StationRepository:
         )
         return list(result.scalars().all())
 
+    async def get_by_prec_no(self, prec_no: int) -> list[Station]:
+        result = await self.session.execute(
+            select(Station)
+            .where(Station.prec_no == prec_no)
+            .order_by(Station.station_name)
+        )
+        return list(result.scalars().all())
+
     async def get_by_id(self, station_id: int) -> Station | None:
         result = await self.session.execute(
             select(Station).where(Station.id == station_id)

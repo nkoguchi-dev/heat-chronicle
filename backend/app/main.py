@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from starlette.requests import Request
 
 from app.infrastructure.database import init_db
-from app.presentation.api import hello, stations, temperature
+from app.presentation.api import hello, prefectures, stations, temperature
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +35,7 @@ app.add_middleware(
 )
 
 app.include_router(hello.router, prefix="/api/hello", tags=["hello"])
+app.include_router(prefectures.router, prefix="/api/prefectures", tags=["prefectures"])
 app.include_router(stations.router, prefix="/api/stations", tags=["stations"])
 app.include_router(temperature.router, prefix="/api/temperature", tags=["temperature"])
 

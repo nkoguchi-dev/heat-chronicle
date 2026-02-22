@@ -1,3 +1,8 @@
+export interface Prefecture {
+  prec_no: number;
+  name: string;
+}
+
 export interface Station {
   id: number;
   station_name: string;
