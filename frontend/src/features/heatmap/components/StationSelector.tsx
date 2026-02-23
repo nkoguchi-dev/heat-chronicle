@@ -15,7 +15,7 @@ import type { Prefecture, Station } from "@/types/api";
 interface StationSelectorProps {
   prefectures: Prefecture[];
   selectedStationId: number | null;
-  onSelect: (stationId: number) => void;
+  onSelect: (station: Station) => void;
   initialPrecNo?: number | null;
   onPrefectureChange?: (precNo: number) => void;
 }
@@ -109,7 +109,10 @@ function StationSelectorInner({
 
       <Select
         value={selectedStationId?.toString() ?? ""}
-        onValueChange={(value) => onSelect(Number(value))}
+        onValueChange={(value) => {
+          const station = stations.find((s) => s.id === Number(value));
+          if (station) onSelect(station);
+        }}
         disabled={selectedPrecNo === null || loadingStations}
       >
         <SelectTrigger className="w-full md:w-[180px]">

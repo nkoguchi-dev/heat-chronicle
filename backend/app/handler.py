@@ -1,9 +1,9 @@
 from mangum import Mangum
 
-from app.infrastructure.seed import seed_stations
+from app.infrastructure.seed import seed_and_migrate
 from app.main import app
 
-seed_stations()
+seed_and_migrate()
 
 mangum_handler = Mangum(app, lifespan="off")
 

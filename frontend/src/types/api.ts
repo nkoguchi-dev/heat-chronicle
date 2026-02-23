@@ -11,6 +11,7 @@ export interface Station {
   station_type: string;
   latitude: number | null;
   longitude: number | null;
+  earliest_year: number | null;
 }
 
 export interface TemperatureRecord {

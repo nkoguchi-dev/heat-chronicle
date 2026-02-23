@@ -11,6 +11,7 @@ class StationResponse(BaseModel):
     station_type: str
     latitude: float | None = None
     longitude: float | None = None
+    earliest_year: int | None = None
 
 
 class PrefectureResponse(BaseModel):

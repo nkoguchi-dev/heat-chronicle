@@ -1,5 +1,6 @@
 import json
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
 from app.config import settings
@@ -9,22 +10,56 @@ logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
+CURRENT_VERSION = 2
 
-def seed_stations() -> None:
+
+def _migrate_v1_seed(table, stations: list[dict]) -> None:  # type: ignore[type-arg]
+    """空テーブルへの初期投入。"""
+    with table.batch_writer() as batch:
+        for station in stations:
+            batch.put_item(Item=station)
+
+
+def _migrate_v2_add_earliest_year(table, stations: list[dict]) -> None:  # type: ignore[type-arg]
+    """既存レコードに earliest_year を追加。"""
+    for station in stations:
+        earliest_year = station.get("earliest_year")
+        if earliest_year is None:
+            continue
+        table.update_item(
+            Key={"id": station["id"]},
+            UpdateExpression="SET earliest_year = :val",
+            ExpressionAttributeValues={":val": earliest_year},
+        )
+
+
+MIGRATIONS: dict[int, Callable] = {  # type: ignore[type-arg]
+    1: _migrate_v1_seed,
+    2: _migrate_v2_add_earliest_year,
+}
+
+
+def seed_and_migrate() -> None:
     dynamodb = get_dynamodb_resource()
     table = dynamodb.Table(settings.table_name("stations"))
 
-    response = table.scan(Select="COUNT")
-    if response["Count"] > 0:
-        logger.info("Stations table already seeded (%d items)", response["Count"])
+    meta = table.get_item(Key={"id": 0})
+    db_version = 0
+    if "Item" in meta:
+        db_version = int(meta["Item"].get("schema_version", 0))
+
+    if db_version >= CURRENT_VERSION:
+        logger.info("Stations schema up to date (version %d)", db_version)
         return
 
     stations_file = DATA_DIR / "stations.json"
     with open(stations_file, encoding="utf-8") as f:
         stations = json.load(f)
 
-    with table.batch_writer() as batch:
-        for station in stations:
-            batch.put_item(Item=station)
+    for version in range(db_version + 1, CURRENT_VERSION + 1):
+        logger.info("Running migration v%d...", version)
+        MIGRATIONS[version](table, stations)
+        logger.info("Migration v%d complete", version)
 
-    logger.info("Seeded %d stations", len(stations))
+    table.put_item(Item={"id": 0, "schema_version": CURRENT_VERSION})
+    logger.info("Stations schema updated to version %d", CURRENT_VERSION)

@@ -24,6 +24,7 @@ class StationRepository:
             if "LastEvaluatedKey" not in response:
                 break
             kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+        items = [item for item in items if int(item["id"]) != 0]
         items.sort(key=lambda x: int(x["id"]))
         return [self._to_schema(item) for item in items]
 
@@ -43,6 +44,8 @@ class StationRepository:
         return [self._to_schema(item) for item in items]
 
     def get_by_id(self, station_id: int) -> StationResponse | None:
+        if station_id == 0:
+            return None
         response = self.table.get_item(Key={"id": station_id})
         item = response.get("Item")
         return self._to_schema(item) if item else None
@@ -56,4 +59,7 @@ class StationRepository:
             station_type=item["station_type"],
             latitude=float(item["latitude"]) if "latitude" in item else None,
             longitude=float(item["longitude"]) if "longitude" in item else None,
+            earliest_year=int(item["earliest_year"])
+            if "earliest_year" in item
+            else None,
         )

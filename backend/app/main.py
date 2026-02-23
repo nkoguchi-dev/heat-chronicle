@@ -11,7 +11,7 @@ from starlette.requests import Request
 
 from app.config import settings
 from app.infrastructure.init_tables import ensure_tables_exist
-from app.infrastructure.seed import seed_stations
+from app.infrastructure.seed import seed_and_migrate
 from app.presentation.api import hello, prefectures, stations, temperature
 
 logger = logging.getLogger(__name__)
@@ -22,9 +22,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Initializing DynamoDB tables...")
     ensure_tables_exist()
     logger.info("DynamoDB tables ready.")
-    logger.info("Seeding stations...")
-    seed_stations()
-    logger.info("Stations seeded.")
+    logger.info("Running station migrations...")
+    seed_and_migrate()
+    logger.info("Station migrations complete.")
     yield
 
 

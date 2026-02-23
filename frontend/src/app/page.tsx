@@ -17,10 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Prefecture, TempType } from "@/types/api";
+import type { Prefecture, Station, TempType } from "@/types/api";
 import { TEMP_TYPE_LABELS } from "@/types/api";
 
-const DEFAULT_START_YEAR = 1975;
+const FALLBACK_START_YEAR = 1975;
 
 export default function Home() {
   const { initialParams, updateUrl } = useUrlParams();
@@ -28,11 +28,13 @@ export default function Home() {
   const [selectedStationId, setSelectedStationId] = useState<number | null>(
     initialParams.station
   );
+  const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(
     initialParams.pref
   );
   const [tempType, setTempType] = useState<TempType>(initialParams.type);
   const currentYear = new Date().getFullYear();
+  const startYear = selectedStation?.earliest_year ?? FALLBACK_START_YEAR;
   const { records, loading, fetching, progress, error, fetchData } =
     useTemperatureData();
 
@@ -51,15 +53,17 @@ export default function Home() {
       initialParams.station != null
     ) {
       restoredRef.current = true;
-      fetchData(initialParams.station, DEFAULT_START_YEAR, currentYear);
+      fetchData(initialParams.station, FALLBACK_START_YEAR, currentYear);
     }
   }, [prefectures, initialParams.station, fetchData, currentYear]);
 
   const handleStationSelect = useCallback(
-    (stationId: number) => {
-      setSelectedStationId(stationId);
-      fetchData(stationId, DEFAULT_START_YEAR, currentYear);
-      updateUrl({ station: stationId, pref: selectedPrecNo });
+    (station: Station) => {
+      setSelectedStation(station);
+      setSelectedStationId(station.id);
+      const stationStartYear = station.earliest_year ?? FALLBACK_START_YEAR;
+      fetchData(station.id, stationStartYear, currentYear);
+      updateUrl({ station: station.id, pref: selectedPrecNo });
     },
     [fetchData, currentYear, selectedPrecNo, updateUrl]
   );
@@ -130,7 +134,7 @@ export default function Home() {
         <div className="relative w-full overflow-x-auto">
           <Heatmap
             records={records}
-            startYear={DEFAULT_START_YEAR}
+            startYear={startYear}
             endYear={currentYear}
             tempType={tempType}
           />
