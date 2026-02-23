@@ -78,7 +78,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
 
       // Draw year labels and cells
       for (let yi = 0; yi < years; yi++) {
-        const year = startYear + yi;
+        const year = endYear - yi;
         const y = TOP_MARGIN + yi * CELL_HEIGHT;
 
         // Year label
@@ -98,7 +98,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
         }
       }
     },
-    [canvasWidth, canvasHeight, years, startYear, tempType]
+    [canvasWidth, canvasHeight, years, endYear, tempType]
   );
 
   useEffect(() => {
@@ -127,7 +127,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
         return;
       }
 
-      const year = startYear + yearIdx;
+      const year = endYear - yearIdx;
       const cell = grid.get(year)?.get(day);
 
       if (cell) {
@@ -148,7 +148,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
         setTooltip(null);
       }
     },
-    [grid, years, startYear, tempType, canvasWidth]
+    [grid, years, endYear, tempType, canvasWidth]
   );
 
   const handleMouseLeave = useCallback(() => {
