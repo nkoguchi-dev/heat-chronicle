@@ -113,6 +113,50 @@ npm run dev
 |--------|-----------|------|
 | `NEXT_PUBLIC_API_URL` | *(なし)* | バックエンド API の URL（ローカル開発時: `http://localhost:8000`） |
 
+## 初期データの作成
+
+観測地点のマスタデータは `backend/data/stations.json` に格納されています。このファイルは以下のスクリプトで生成・更新できます。すべて `backend/` ディレクトリの Poetry 環境を使って実行します。
+
+### 1. 観測地点一覧の取得
+
+気象庁のWebサイトから気温観測を行っている全地点をスクレイピングし、CSV を出力します。
+
+```bash
+cd backend && poetry run python ../scripts/fetch_stations.py
+```
+
+出力: `backend/data/stations_YYYYMMDD.csv`, `backend/data/prefectures_YYYYMMDD.txt`
+
+処理には約 2 分かかります（リクエスト間隔 2 秒 × 全都道府県）。
+
+### 2. 各地点の最古データ年の取得
+
+`stations.json` の各地点について、気象庁で閲覧可能な最も古い年を取得し `earliest_year` フィールドを追加します。
+
+```bash
+cd backend && poetry run python ../scripts/fetch_earliest_years.py
+```
+
+出力: `backend/data/stations.json`（上書き更新）, `backend/data/earliest_years_YYYYMMDD.csv`
+
+全地点を巡回するため、地点数に応じて相応の時間がかかります（979 地点 × 2 秒 ≈ 約 33 分）。
+
+### 3. マイグレーションファイルの生成（旧 PostgreSQL 環境用）
+
+地点 CSV から Alembic マイグレーションファイルを生成するスクリプトです。現在の DynamoDB 環境では直接使用しませんが、参考として残しています。
+
+```bash
+# 全件 INSERT
+cd backend && poetry run python ../scripts/generate_migration.py data/stations_YYYYMMDD.csv
+
+# 差分更新（新旧 CSV の比較）
+cd backend && poetry run python ../scripts/generate_migration.py data/stations_old.csv data/stations_new.csv
+```
+
+### 初期データの自動投入
+
+バックエンドの起動時に `backend/data/stations.json` から DynamoDB の `stations` テーブルへ自動的にシードデータが投入されます（マイグレーション管理付き）。手動でのデータ投入は不要です。
+
 ## デプロイ
 
 `release/prod` ブランチへの push で GitHub Actions が自動デプロイを実行します。
