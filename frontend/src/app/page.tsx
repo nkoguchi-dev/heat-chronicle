@@ -116,9 +116,6 @@ export default function Home() {
             )}
           </SelectContent>
         </Select>
-        {loading && (
-          <span className="text-sm text-muted-foreground text-center">読み込み中...</span>
-        )}
       </div>
 
       <ProgressBar progress={progress} streaming={fetching} />
@@ -129,14 +126,19 @@ export default function Home() {
         </div>
       )}
 
-      {records.length > 0 && (
-        <div className="w-full overflow-x-auto">
+      {selectedStationId !== null && (
+        <div className="relative w-full overflow-x-auto">
           <Heatmap
             records={records}
             startYear={DEFAULT_START_YEAR}
             endYear={currentYear}
             tempType={tempType}
           />
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/30 border-t-muted-foreground" />
+            </div>
+          )}
         </div>
       )}
 
