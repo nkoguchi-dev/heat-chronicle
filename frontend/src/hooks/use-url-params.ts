@@ -9,10 +9,12 @@ interface UrlParams {
 }
 
 const VALID_TEMP_TYPES: TempType[] = ["max", "min", "avg"];
+const DEFAULT_PREF = 44;
+const DEFAULT_STATION = 4;
 
 function parseParams(): UrlParams {
   if (typeof window === "undefined") {
-    return { station: null, pref: null, type: "max" };
+    return { station: DEFAULT_STATION, pref: DEFAULT_PREF, type: "max" };
   }
 
   const params = new URLSearchParams(window.location.search);
@@ -31,6 +33,14 @@ function parseParams(): UrlParams {
     typeRaw !== null && VALID_TEMP_TYPES.includes(typeRaw as TempType)
       ? (typeRaw as TempType)
       : "max";
+
+  if (station === null && pref === null) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("pref", String(DEFAULT_PREF));
+    url.searchParams.set("station", String(DEFAULT_STATION));
+    window.history.replaceState(null, "", url.toString());
+    return { station: DEFAULT_STATION, pref: DEFAULT_PREF, type };
+  }
 
   return { station, pref, type };
 }

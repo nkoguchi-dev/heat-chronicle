@@ -31,7 +31,9 @@ function StationSelectorInner({
     initialPrecNo ?? null
   );
   const [stations, setStations] = useState<Station[]>([]);
-  const [loadingStations, setLoadingStations] = useState(false);
+  const [loadingStations, setLoadingStations] = useState(
+    initialPrecNo != null
+  );
   const fetchIdRef = useRef(0);
 
   const fetchStations = useCallback((precNo: number) => {
@@ -62,9 +64,23 @@ function StationSelectorInner({
       prefectures.length > 0
     ) {
       restoredRef.current = true;
-      fetchStations(initialPrecNo);
+      const fetchId = ++fetchIdRef.current;
+      apiClient
+        .get<Station[]>(`/api/stations?prec_no=${initialPrecNo}`)
+        .then((data) => {
+          if (fetchIdRef.current === fetchId) {
+            setStations(data);
+            setLoadingStations(false);
+          }
+        })
+        .catch((err) => {
+          if (fetchIdRef.current === fetchId) {
+            console.error(err);
+            setLoadingStations(false);
+          }
+        });
     }
-  }, [initialPrecNo, prefectures, fetchStations]);
+  }, [initialPrecNo, prefectures]);
 
   const handlePrefectureChange = (value: string) => {
     const precNo = Number(value);
