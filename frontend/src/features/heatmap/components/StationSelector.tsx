@@ -71,6 +71,11 @@ function StationSelectorInner({
           if (fetchIdRef.current === fetchId) {
             setStations(data);
             setLoadingStations(false);
+            // URL復元時: 選択中の地点情報を親に通知
+            if (selectedStationId != null) {
+              const matched = data.find((s) => s.id === selectedStationId);
+              if (matched) onSelect(matched);
+            }
           }
         })
         .catch((err) => {
@@ -80,7 +85,7 @@ function StationSelectorInner({
           }
         });
     }
-  }, [initialPrecNo, prefectures]);
+  }, [initialPrecNo, prefectures, selectedStationId, onSelect]);
 
   const handlePrefectureChange = (value: string) => {
     const precNo = Number(value);

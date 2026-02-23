@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { apiClient } from "@/features/shared/libs/api-client";
 import { ThemeToggle } from "@/features/shared/components/theme-toggle";
@@ -44,18 +44,6 @@ export default function Home() {
       .then(setPrefectures)
       .catch(console.error);
   }, []);
-
-  const restoredRef = useRef(false);
-  useEffect(() => {
-    if (
-      !restoredRef.current &&
-      prefectures.length > 0 &&
-      initialParams.station != null
-    ) {
-      restoredRef.current = true;
-      fetchData(initialParams.station, FALLBACK_START_YEAR, currentYear);
-    }
-  }, [prefectures, initialParams.station, fetchData, currentYear]);
 
   const handleStationSelect = useCallback(
     (station: Station) => {
@@ -139,7 +127,7 @@ export default function Home() {
             tempType={tempType}
           />
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="fixed inset-0 z-10 flex items-center justify-center pointer-events-none">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/30 border-t-muted-foreground" />
             </div>
           )}
