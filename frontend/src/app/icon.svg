@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bulbGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF6B6B"/>
+      <stop offset="100%" stop-color="#EE3344"/>
+    </linearGradient>
+    <linearGradient id="tubeGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF6B6B"/>
+      <stop offset="40%" stop-color="#FFAA44"/>
+      <stop offset="70%" stop-color="#FFD93D"/>
+      <stop offset="100%" stop-color="#6BCB77"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF5E6"/>
+      <stop offset="100%" stop-color="#FFE0CC"/>
+    </linearGradient>
+    <linearGradient id="mercuryGrad" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#EE3344"/>
+      <stop offset="50%" stop-color="#FF6B6B"/>
+      <stop offset="100%" stop-color="#FF9A76"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Soft rounded background -->
+  <rect x="16" y="16" width="480" height="480" rx="120" ry="120" fill="url(#bgGrad)"/>
+  <rect x="16" y="16" width="480" height="480" rx="120" ry="120" fill="none" stroke="#FFD0B0" stroke-width="3"/>
+
+  <!-- Cute thermometer body -->
+  <!-- Tube (white outer) -->
+  <rect x="210" y="80" width="92" height="260" rx="46" ry="46" fill="white" stroke="#E8E8E8" stroke-width="2"/>
+
+  <!-- Mercury fill (colorful gradient) -->
+  <rect x="230" y="120" width="52" height="200" rx="26" ry="26" fill="url(#mercuryGrad)"/>
+
+  <!-- Bulb (bottom circle) -->
+  <circle cx="256" cy="380" r="72" fill="white" stroke="#E8E8E8" stroke-width="2"/>
+  <circle cx="256" cy="380" r="56" fill="url(#bulbGrad)"/>
+
+  <!-- Bulb shine -->
+  <ellipse cx="238" cy="365" rx="14" ry="18" fill="rgba(255,255,255,0.4)" transform="rotate(-15, 238, 365)"/>
+
+  <!-- Temperature tick marks -->
+  <rect x="185" y="130" width="20" height="4" rx="2" fill="#CCBBAA"/>
+  <rect x="185" y="170" width="20" height="4" rx="2" fill="#CCBBAA"/>
+  <rect x="185" y="210" width="20" height="4" rx="2" fill="#CCBBAA"/>
+  <rect x="185" y="250" width="20" height="4" rx="2" fill="#CCBBAA"/>
+  <rect x="185" y="290" width="20" height="4" rx="2" fill="#CCBBAA"/>
+
+  <!-- Cute face on the bulb -->
+  <!-- Eyes -->
+  <ellipse cx="240" cy="374" rx="7" ry="8" fill="#333"/>
+  <ellipse cx="272" cy="374" rx="7" ry="8" fill="#333"/>
+  <!-- Eye highlights -->
+  <ellipse cx="243" cy="371" rx="3" ry="3.5" fill="white"/>
+  <ellipse cx="275" cy="371" rx="3" ry="3.5" fill="white"/>
+
+  <!-- Cute smile -->
+  <path d="M242 394 Q256 408 270 394" fill="none" stroke="#333" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Rosy cheeks -->
+  <ellipse cx="226" cy="392" rx="10" ry="7" fill="#FFB5B5" opacity="0.7"/>
+  <ellipse cx="286" cy="392" rx="10" ry="7" fill="#FFB5B5" opacity="0.7"/>
+
+  <!-- Mini heatmap grid (to the right of thermometer) -->
+  <!-- 3x5 tiny grid -->
+  <rect x="330" y="150" width="24" height="20" rx="4" fill="#4488CC"/>
+  <rect x="358" y="150" width="24" height="20" rx="4" fill="#3377BB"/>
+  <rect x="386" y="150" width="24" height="20" rx="4" fill="#5599DD"/>
+
+  <rect x="330" y="174" width="24" height="20" rx="4" fill="#88CC88"/>
+  <rect x="358" y="174" width="24" height="20" rx="4" fill="#AADD77"/>
+  <rect x="386" y="174" width="24" height="20" rx="4" fill="#99CC88"/>
+
+  <rect x="330" y="198" width="24" height="20" rx="4" fill="#FFDD55"/>
+  <rect x="358" y="198" width="24" height="20" rx="4" fill="#FFCC33"/>
+  <rect x="386" y="198" width="24" height="20" rx="4" fill="#FFBB44"/>
+
+  <rect x="330" y="222" width="24" height="20" rx="4" fill="#FF9933"/>
+  <rect x="358" y="222" width="24" height="20" rx="4" fill="#FF7722"/>
+  <rect x="386" y="222" width="24" height="20" rx="4" fill="#FF8833"/>
+
+  <rect x="330" y="246" width="24" height="20" rx="4" fill="#EE4433"/>
+  <rect x="358" y="246" width="24" height="20" rx="4" fill="#DD3322"/>
+  <rect x="386" y="246" width="24" height="20" rx="4" fill="#CC2211"/>
+
+  <!-- Sparkle decorations -->
+  <!-- Star 1 -->
+  <g transform="translate(120, 120)">
+    <path d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3 Z" fill="#FFD93D" opacity="0.8"/>
+  </g>
+  <!-- Star 2 -->
+  <g transform="translate(400, 100)">
+    <path d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z" fill="#FFD93D" opacity="0.6"/>
+  </g>
+  <!-- Star 3 -->
+  <g transform="translate(140, 420)">
+    <path d="M0 -10 L2.5 -2.5 L10 0 L2.5 2.5 L0 10 L-2.5 2.5 L-10 0 L-2.5 -2.5 Z" fill="#FFD93D" opacity="0.7"/>
+  </g>
+  <!-- Small dot decorations -->
+  <circle cx="100" cy="200" r="5" fill="#FFB5B5" opacity="0.5"/>
+  <circle cx="420" cy="340" r="6" fill="#B5D8FF" opacity="0.5"/>
+  <circle cx="380" cy="420" r="4" fill="#B5FFB5" opacity="0.5"/>
+</svg>
