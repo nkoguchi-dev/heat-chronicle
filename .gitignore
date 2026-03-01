@@ -47,6 +47,7 @@ node_modules/
 .npm
 .next/
 out/
+tsconfig.tsbuildinfo
 
 # Database
 *.db
