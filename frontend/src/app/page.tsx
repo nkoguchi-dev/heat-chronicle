@@ -34,9 +34,9 @@ export default function Home() {
   const currentYear = new Date().getFullYear();
   const {
     records,
-    loading,
-    loadingMore,
-    fetching,
+    isLoading,
+    isLoadingMore,
+    isFetching,
     progress,
     error,
     hasOlderData,
@@ -122,7 +122,7 @@ export default function Home() {
         </Select>
       </div>
 
-      <ProgressBar progress={progress} streaming={fetching} />
+      <ProgressBar progress={progress} streaming={isFetching} />
 
       {error && (
         <div className="rounded border border-destructive bg-destructive/10 px-4 py-2 text-sm text-destructive">
@@ -138,7 +138,7 @@ export default function Home() {
             endYear={currentYear}
             tempType={tempType}
           />
-          {loading && (
+          {isLoading && (
             <div className="fixed inset-0 z-10 flex items-center justify-center pointer-events-none">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/30 border-t-muted-foreground" />
             </div>
@@ -149,7 +149,7 @@ export default function Home() {
       {hasOlderData && nextEndYear !== null && startYear !== null && (
         <LoadMoreButton
           nextEndYear={nextEndYear}
-          loading={loadingMore || fetching}
+          loading={isLoadingMore || isFetching}
           onLoadMore={handleLoadMore}
         />
       )}

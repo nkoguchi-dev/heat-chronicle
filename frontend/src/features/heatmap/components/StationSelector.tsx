@@ -31,27 +31,27 @@ function StationSelectorInner({
     initialPrecNo ?? null
   );
   const [stations, setStations] = useState<Station[]>([]);
-  const [loadingStations, setLoadingStations] = useState(
+  const [isLoadingStations, setIsLoadingStations] = useState(
     initialPrecNo != null
   );
   const fetchIdRef = useRef(0);
 
   const fetchStations = useCallback((precNo: number) => {
     const fetchId = ++fetchIdRef.current;
-    setLoadingStations(true);
+    setIsLoadingStations(true);
     setStations([]);
     apiClient
       .get<Station[]>(`/api/stations?prec_no=${precNo}`)
       .then((data) => {
         if (fetchIdRef.current === fetchId) {
           setStations(data);
-          setLoadingStations(false);
+          setIsLoadingStations(false);
         }
       })
       .catch((err) => {
         if (fetchIdRef.current === fetchId) {
           console.error(err);
-          setLoadingStations(false);
+          setIsLoadingStations(false);
         }
       });
   }, []);
@@ -70,7 +70,7 @@ function StationSelectorInner({
         .then((data) => {
           if (fetchIdRef.current === fetchId) {
             setStations(data);
-            setLoadingStations(false);
+            setIsLoadingStations(false);
             // URL復元時: 選択中の地点情報を親に通知
             if (selectedStationId != null) {
               const matched = data.find((s) => s.id === selectedStationId);
@@ -81,7 +81,7 @@ function StationSelectorInner({
         .catch((err) => {
           if (fetchIdRef.current === fetchId) {
             console.error(err);
-            setLoadingStations(false);
+            setIsLoadingStations(false);
           }
         });
     }
@@ -118,11 +118,11 @@ function StationSelectorInner({
           const station = stations.find((s) => s.id === Number(value));
           if (station) onSelect(station);
         }}
-        disabled={selectedPrecNo === null || loadingStations}
+        disabled={selectedPrecNo === null || isLoadingStations}
       >
         <SelectTrigger className="w-full md:w-[180px]">
           <SelectValue
-            placeholder={loadingStations ? "読み込み中..." : "地点を選択"}
+            placeholder={isLoadingStations ? "読み込み中..." : "地点を選択"}
           />
         </SelectTrigger>
         <SelectContent>

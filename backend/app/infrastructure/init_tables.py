@@ -11,8 +11,17 @@ from app.infrastructure.database import get_dynamodb_client
 
 if TYPE_CHECKING:
     from mypy_boto3_dynamodb.client import DynamoDBClient
+    from mypy_boto3_dynamodb.type_defs import (
+        AttributeDefinitionTypeDef,
+        GlobalSecondaryIndexTypeDef,
+        KeySchemaElementTypeDef,
+        ProvisionedThroughputTypeDef,
+    )
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_READ_CAPACITY_UNITS = 5
+DEFAULT_WRITE_CAPACITY_UNITS = 5
 
 
 def _wait_for_dynamodb(
@@ -39,71 +48,78 @@ def _wait_for_dynamodb(
     return []  # unreachable
 
 
+def _create_table_if_not_exists(
+    client: DynamoDBClient,
+    name: str,
+    existing: list[str],
+    key_schema: list[KeySchemaElementTypeDef],
+    attr_defs: list[AttributeDefinitionTypeDef],
+    gsi: list[GlobalSecondaryIndexTypeDef] | None = None,
+) -> None:
+    if name in existing:
+        return
+    throughput: ProvisionedThroughputTypeDef = {
+        "ReadCapacityUnits": DEFAULT_READ_CAPACITY_UNITS,
+        "WriteCapacityUnits": DEFAULT_WRITE_CAPACITY_UNITS,
+    }
+    client.create_table(
+        TableName=name,
+        KeySchema=key_schema,
+        AttributeDefinitions=attr_defs,
+        GlobalSecondaryIndexes=gsi,
+        ProvisionedThroughput=throughput,
+    )
+    logger.info("Created table: %s", name)
+
+
 def ensure_tables_exist() -> None:
     client = get_dynamodb_client()
     existing = _wait_for_dynamodb(client)
 
-    stations_table = settings.table_name("stations")
-    temp_table = settings.table_name("daily-temperature")
-    log_table = settings.table_name("fetch-log")
-    if stations_table not in existing:
-        client.create_table(
-            TableName=stations_table,
-            KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
-            AttributeDefinitions=[
-                {"AttributeName": "id", "AttributeType": "N"},
-                {"AttributeName": "prec_no", "AttributeType": "N"},
-            ],
-            GlobalSecondaryIndexes=[
-                {
-                    "IndexName": "prec_no-index",
-                    "KeySchema": [{"AttributeName": "prec_no", "KeyType": "HASH"}],
-                    "Projection": {"ProjectionType": "ALL"},
-                    "ProvisionedThroughput": {
-                        "ReadCapacityUnits": 5,
-                        "WriteCapacityUnits": 5,
-                    },
-                }
-            ],
-            ProvisionedThroughput={
-                "ReadCapacityUnits": 5,
-                "WriteCapacityUnits": 5,
-            },
-        )
-        logger.info("Created table: %s", stations_table)
-
-    if temp_table not in existing:
-        client.create_table(
-            TableName=temp_table,
-            KeySchema=[
-                {"AttributeName": "station_id", "KeyType": "HASH"},
-                {"AttributeName": "date", "KeyType": "RANGE"},
-            ],
-            AttributeDefinitions=[
-                {"AttributeName": "station_id", "AttributeType": "N"},
-                {"AttributeName": "date", "AttributeType": "S"},
-            ],
-            ProvisionedThroughput={
-                "ReadCapacityUnits": 5,
-                "WriteCapacityUnits": 5,
-            },
-        )
-        logger.info("Created table: %s", temp_table)
-
-    if log_table not in existing:
-        client.create_table(
-            TableName=log_table,
-            KeySchema=[
-                {"AttributeName": "station_id", "KeyType": "HASH"},
-                {"AttributeName": "year_month", "KeyType": "RANGE"},
-            ],
-            AttributeDefinitions=[
-                {"AttributeName": "station_id", "AttributeType": "N"},
-                {"AttributeName": "year_month", "AttributeType": "S"},
-            ],
-            ProvisionedThroughput={
-                "ReadCapacityUnits": 5,
-                "WriteCapacityUnits": 5,
-            },
-        )
-        logger.info("Created table: %s", log_table)
+    _create_table_if_not_exists(
+        client,
+        settings.table_name("stations"),
+        existing,
+        key_schema=[{"AttributeName": "id", "KeyType": "HASH"}],
+        attr_defs=[
+            {"AttributeName": "id", "AttributeType": "N"},
+            {"AttributeName": "prec_no", "AttributeType": "N"},
+        ],
+        gsi=[
+            {
+                "IndexName": "prec_no-index",
+                "KeySchema": [{"AttributeName": "prec_no", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": DEFAULT_READ_CAPACITY_UNITS,
+                    "WriteCapacityUnits": DEFAULT_WRITE_CAPACITY_UNITS,
+                },
+            }
+        ],
+    )
+    _create_table_if_not_exists(
+        client,
+        settings.table_name("daily-temperature"),
+        existing,
+        key_schema=[
+            {"AttributeName": "station_id", "KeyType": "HASH"},
+            {"AttributeName": "date", "KeyType": "RANGE"},
+        ],
+        attr_defs=[
+            {"AttributeName": "station_id", "AttributeType": "N"},
+            {"AttributeName": "date", "AttributeType": "S"},
+        ],
+    )
+    _create_table_if_not_exists(
+        client,
+        settings.table_name("fetch-log"),
+        existing,
+        key_schema=[
+            {"AttributeName": "station_id", "KeyType": "HASH"},
+            {"AttributeName": "year_month", "KeyType": "RANGE"},
+        ],
+        attr_defs=[
+            {"AttributeName": "station_id", "AttributeType": "N"},
+            {"AttributeName": "year_month", "AttributeType": "S"},
+        ],
+    )

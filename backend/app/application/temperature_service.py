@@ -9,6 +9,29 @@ CHUNK_SIZE = 50
 FALLBACK_START_YEAR = 1975
 
 
+def _build_date_range(start_year: int, end_year: int) -> tuple[str, str]:
+    start_date = date(start_year, 1, 1).isoformat()
+    end_date = date(end_year, 12, 31).isoformat()
+    return start_date, end_date
+
+
+def _find_missing_months(
+    policy: FetchFreshnessPolicy,
+    start_year: int,
+    end_year: int,
+    fetched_months: dict[tuple[int, int], datetime],
+    now: datetime,
+) -> list[tuple[int, int]]:
+    required = []
+    for y in range(end_year, start_year - 1, -1):
+        for m in range(12, 0, -1):
+            fetched_at = fetched_months.get((y, m))
+            status = policy.evaluate(y, m, fetched_at, now)
+            if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
+                required.append((y, m))
+    return required
+
+
 class TemperatureService:
     def __init__(
         self,
@@ -37,9 +60,7 @@ class TemperatureService:
         has_older_data = start_year > effective_earliest
         next_end_year = start_year - 1 if has_older_data else None
 
-        start_date = date(start_year, 1, 1).isoformat()
-        end_date = date(end_year, 12, 31).isoformat()
-
+        start_date, end_date = _build_date_range(start_year, end_year)
         records = self.temp_repo.get_by_station_and_range(
             station_id, start_date, end_date
         )
@@ -47,13 +68,9 @@ class TemperatureService:
 
         policy = FetchFreshnessPolicy()
         now = datetime.now(timezone.utc)
-        required_months = []
-        for y in range(end_year, start_year - 1, -1):
-            for m in range(12, 0, -1):
-                fetched_at = fetched_months.get((y, m))
-                status = policy.evaluate(y, m, fetched_at, now)
-                if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
-                    required_months.append((y, m))
+        required_months = _find_missing_months(
+            policy, start_year, end_year, fetched_months, now
+        )
 
         fetched_month_strs = [
             f"{y}-{m:02d}"
