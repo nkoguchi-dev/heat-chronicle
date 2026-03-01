@@ -1,0 +1,6 @@
+# Required: Anthropic API key (https://console.anthropic.com/)
+anthropic_api_key = "sk-ant-..."
+
+# Optional: override defaults
+# github_repository = "heat-chronicle"
+# claude_max_turns  = 20
