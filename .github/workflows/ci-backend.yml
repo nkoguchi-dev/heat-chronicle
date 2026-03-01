@@ -1,0 +1,60 @@
+name: CI Backend
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - backend/**
+      - .github/workflows/ci-backend.yml
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Configure Poetry
+        run: poetry config virtualenvs.in-project true
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: backend/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('backend/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        working-directory: backend
+        run: poetry install --no-interaction
+
+      - name: Check formatting (black)
+        working-directory: backend
+        run: poetry run black --check .
+
+      - name: Check import order (isort)
+        working-directory: backend
+        run: poetry run isort --check-only .
+
+      - name: Lint (flake8)
+        working-directory: backend
+        run: poetry run flake8 .
+
+      - name: Type check (mypy)
+        working-directory: backend
+        run: poetry run mypy .
+
+      - name: Run tests (pytest)
+        working-directory: backend
+        run: poetry run pytest -v
