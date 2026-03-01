@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, datetime, timezone
 
+from app.domain.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.schemas import StationResponse, TemperatureMetadata, TemperatureResponse
 from app.infrastructure.repositories.station_repository import StationRepository
 from app.infrastructure.repositories.temperature_repository import TemperatureRepository
@@ -44,14 +45,17 @@ class TemperatureService:
         )
         fetched_months = self.temp_repo.get_fetched_months(station_id)
 
-        fetched_set = {(y, m) for y, m in fetched_months}
+        policy = FetchFreshnessPolicy()
+        now = datetime.now(timezone.utc)
         required_months = []
         for y in range(end_year, start_year - 1, -1):
             for m in range(12, 0, -1):
-                if (y, m) not in fetched_set:
+                fetched_at = fetched_months.get((y, m))
+                status = policy.evaluate(y, m, fetched_at, now)
+                if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
                     required_months.append((y, m))
 
-        fetched_month_strs = [f"{y}-{m:02d}" for y, m in fetched_months]
+        fetched_month_strs = [f"{y}-{m:02d}" for y, m in fetched_months.keys()]
 
         metadata = TemperatureMetadata(
             station_id=station_id,

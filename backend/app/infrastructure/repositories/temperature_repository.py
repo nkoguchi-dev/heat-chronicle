@@ -36,7 +36,7 @@ class TemperatureRepository:
             kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         return [self._to_record(item) for item in items]
 
-    def get_fetched_months(self, station_id: int) -> list[tuple[int, int]]:
+    def get_fetched_months(self, station_id: int) -> dict[tuple[int, int], datetime]:
         items: list[dict] = []
         kwargs: dict = {
             "KeyConditionExpression": Key("station_id").eq(station_id),
@@ -47,10 +47,11 @@ class TemperatureRepository:
             if "LastEvaluatedKey" not in response:
                 break
             kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
-        results = []
+        results: dict[tuple[int, int], datetime] = {}
         for item in items:
             year, month = item["year_month"].split("-")
-            results.append((int(year), int(month)))
+            fetched_at = datetime.fromisoformat(item["fetched_at"])
+            results[(int(year), int(month))] = fetched_at
         return results
 
     def bulk_insert_temperatures(self, records: list[dict]) -> None:
