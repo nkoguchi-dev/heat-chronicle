@@ -9,6 +9,9 @@ from app.domain.schemas import MonthTemperatureResponse, TemperatureResponse
 
 router = APIRouter()
 
+MIN_MONTH = 1
+MAX_MONTH = 12
+
 
 @router.get("/{station_id}", response_model=TemperatureResponse)
 def get_temperature(
@@ -32,7 +35,7 @@ async def fetch_month(
     year: int = Query(...),
     month: int = Query(...),
 ) -> MonthTemperatureResponse:
-    if month < 1 or month > 12:
+    if month < MIN_MONTH or month > MAX_MONTH:
         raise HTTPException(status_code=400, detail="month must be 1-12")
 
     service = ScrapeService(station_repo, temp_repo)

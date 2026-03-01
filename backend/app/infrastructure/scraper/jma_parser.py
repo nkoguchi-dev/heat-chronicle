@@ -1,8 +1,14 @@
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass
 from datetime import date
+from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
+
+if TYPE_CHECKING:
+    from bs4.element import ResultSet, Tag
 
 
 @dataclass
@@ -16,6 +22,14 @@ class DailyRecord:
 # Pattern to strip quality flags like ], ), *, #
 QUALITY_FLAG_RE = re.compile(r"[\]\)\*#\s]")
 
+S_TYPE_AVG_COL = 6
+S_TYPE_MAX_COL = 7
+S_TYPE_MIN_COL = 8
+
+A_TYPE_AVG_COL = 4
+A_TYPE_MAX_COL = 5
+A_TYPE_MIN_COL = 6
+
 
 def _parse_temp(value: str) -> float | None:
     """Parse a temperature cell value, returning None for missing data."""
@@ -26,6 +40,28 @@ def _parse_temp(value: str) -> float | None:
         return float(cleaned)
     except ValueError:
         return None
+
+
+def _parse_s_type_row(
+    cells: ResultSet[Tag],
+) -> tuple[float | None, float | None, float | None] | None:
+    if len(cells) < S_TYPE_MIN_COL + 1:
+        return None
+    avg_temp = _parse_temp(cells[S_TYPE_AVG_COL].get_text(strip=True))
+    max_temp = _parse_temp(cells[S_TYPE_MAX_COL].get_text(strip=True))
+    min_temp = _parse_temp(cells[S_TYPE_MIN_COL].get_text(strip=True))
+    return avg_temp, max_temp, min_temp
+
+
+def _parse_a_type_row(
+    cells: ResultSet[Tag],
+) -> tuple[float | None, float | None, float | None] | None:
+    if len(cells) < A_TYPE_MIN_COL + 1:
+        return None
+    avg_temp = _parse_temp(cells[A_TYPE_AVG_COL].get_text(strip=True))
+    max_temp = _parse_temp(cells[A_TYPE_MAX_COL].get_text(strip=True))
+    min_temp = _parse_temp(cells[A_TYPE_MIN_COL].get_text(strip=True))
+    return avg_temp, max_temp, min_temp
 
 
 def parse_daily_page(
@@ -39,6 +75,8 @@ def parse_daily_page(
 
     records: list[DailyRecord] = []
     tbody = table.find("tbody") or table
+
+    parse_row = _parse_s_type_row if station_type == "s" else _parse_a_type_row
 
     for tr in tbody.find_all("tr", class_="mtx"):
         cells = tr.find_all("td")
@@ -57,24 +95,11 @@ def parse_daily_page(
         except ValueError:
             continue
 
-        if station_type == "s":
-            # daily_s1.php: columns vary but temperature block is after
-            # pressure/precipitation. Typical indices:
-            # avg_temp=6, max_temp=7, min_temp=8 (0-indexed from first td)
-            if len(cells) < 9:
-                continue
-            avg_temp = _parse_temp(cells[6].get_text(strip=True))
-            max_temp = _parse_temp(cells[7].get_text(strip=True))
-            min_temp = _parse_temp(cells[8].get_text(strip=True))
-        else:
-            # daily_a1.php (AMEDAS): fewer columns
-            # avg_temp=4, max_temp=5, min_temp=6 (typical layout)
-            if len(cells) < 7:
-                continue
-            avg_temp = _parse_temp(cells[4].get_text(strip=True))
-            max_temp = _parse_temp(cells[5].get_text(strip=True))
-            min_temp = _parse_temp(cells[6].get_text(strip=True))
+        temps = parse_row(cells)
+        if temps is None:
+            continue
 
+        avg_temp, max_temp, min_temp = temps
         records.append(
             DailyRecord(
                 date=record_date,

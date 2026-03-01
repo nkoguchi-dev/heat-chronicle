@@ -8,13 +8,15 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.data.jma.go.jp/stats/etrn/view"
+REQUEST_TIMEOUT_SECONDS = 30.0
+MAX_RETRIES = 3
 
 
 class JmaClient:
     def __init__(self) -> None:
         self._last_request_time: float = 0.0
         self._client = httpx.AsyncClient(
-            timeout=30.0,
+            timeout=REQUEST_TIMEOUT_SECONDS,
             headers={"User-Agent": "heat-chronicle/1.0"},
             follow_redirects=True,
         )
@@ -49,7 +51,7 @@ class JmaClient:
         }
 
         last_exc: Exception | None = None
-        for attempt in range(3):
+        for attempt in range(MAX_RETRIES):
             try:
                 await self._wait_interval()
                 response = await self._client.get(url, params=params)
@@ -67,4 +69,6 @@ class JmaClient:
                 )
                 await asyncio.sleep(wait)
 
-        raise RuntimeError(f"Failed to fetch JMA data after 3 retries: {last_exc}")
+        raise RuntimeError(
+            f"Failed to fetch JMA data after {MAX_RETRIES} retries: {last_exc}"
+        )
