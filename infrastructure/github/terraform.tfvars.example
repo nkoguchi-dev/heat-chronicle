@@ -4,3 +4,14 @@ anthropic_api_key = "sk-ant-..."
 # Optional: override defaults
 # github_repository = "heat-chronicle"
 # claude_max_turns  = 20
+
+# Required: AWS deploy resources (from `terraform output` in infrastructure/aws/environments/prod/)
+aws_role_arn               = "arn:aws:iam::123456789012:role/heat-chronicle-prod-github-actions-deploy"
+cloudfront_distribution_id = "E1B4J9IKBVNL7X"
+ecr_repository_url         = "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/heat-chronicle-prod-backend"
+lambda_function_name       = "heat-chronicle-prod-backend"
+next_public_api_url        = "https://api.heat-chronicle.koppepan.org"
+s3_bucket_name             = "heat-chronicle-prod-frontend"
+
+# Optional: override AWS region default
+# aws_region = "ap-northeast-1"

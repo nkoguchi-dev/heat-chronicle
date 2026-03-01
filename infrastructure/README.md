@@ -58,7 +58,14 @@ infrastructure/docs/
 ### GitHub Actions (`infrastructure/github/`)
 
 - **Actions Secret** — `ANTHROPIC_API_KEY`（Claude PR レビュー用）
+- **Actions Secret** — `AWS_ROLE_ARN`（GitHub Actions OIDC デプロイ用 IAM ロール）
 - **Actions Variable** — `CLAUDE_MAX_TURNS`（Claude の最大ターン数、デフォルト: 20）
+- **Actions Variable** — `AWS_REGION`（デプロイ先 AWS リージョン）
+- **Actions Variable** — `CLOUDFRONT_DISTRIBUTION_ID`（CloudFront キャッシュ無効化用）
+- **Actions Variable** — `ECR_REPOSITORY_URL`（バックエンド Docker イメージ）
+- **Actions Variable** — `LAMBDA_FUNCTION_NAME`（バックエンド Lambda 関数名）
+- **Actions Variable** — `NEXT_PUBLIC_API_URL`（フロントエンド API エンドポイント）
+- **Actions Variable** — `S3_BUCKET_NAME`（フロントエンドデプロイ先 S3 バケット）
 
 ## 使い方
 
@@ -119,3 +126,4 @@ terraform apply -var-file=<(sops -d terraform.tfvars.enc)
 - GitHub Actions のデプロイは OIDC 認証を使用しており、長期的なアクセスキーは不要です
 - `infrastructure/github/` の実行には `GITHUB_TOKEN` 環境変数（repo スコープ）が必要です
 - `ANTHROPIC_API_KEY` の値は `terraform.tfvars.enc` に暗号化された状態で含まれています
+- GitHub Terraform の変数（`aws_role_arn` 等）は AWS Terraform の output から取得した値です。AWS リソースを再作成した場合は `terraform.tfvars.enc` の値も更新してください
