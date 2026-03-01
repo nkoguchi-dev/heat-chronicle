@@ -9,7 +9,10 @@ on:
       - .github/workflows/ci-backend.yml
 
 jobs:
-  ci:
+  # ────────────────────────────────────────────
+  # Job 1: 静的解析 + ユニットテスト
+  # ────────────────────────────────────────────
+  lint-and-unit-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -55,6 +58,66 @@ jobs:
         working-directory: backend
         run: poetry run mypy .
 
-      - name: Run tests (pytest)
+      - name: Run unit tests
         working-directory: backend
-        run: poetry run pytest -v
+        run: poetry run pytest tests/ -v
+
+  # ────────────────────────────────────────────
+  # Job 2: 統合テスト（DynamoDB Local 必要）
+  # ────────────────────────────────────────────
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: lint-and-unit-test
+
+    services:
+      dynamodb-local:
+        image: amazon/dynamodb-local:latest
+        ports:
+          - 8000:8000
+        options: >-
+          --health-cmd "curl -s http://localhost:8000/shell/ || exit 1"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Configure Poetry
+        run: poetry config virtualenvs.in-project true
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: backend/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('backend/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        working-directory: backend
+        run: poetry install --no-interaction
+
+      - name: Wait for DynamoDB Local
+        run: |
+          for i in $(seq 1 10); do
+            curl -s http://localhost:8000/shell/ > /dev/null && break
+            echo "Waiting for DynamoDB Local... ($i)"
+            sleep 2
+          done
+
+      - name: Run integration tests
+        working-directory: backend
+        run: poetry run pytest integration_tests/ -v
+        env:
+          DYNAMODB_ENDPOINT_URL: http://localhost:8000
+          DYNAMODB_TABLE_PREFIX: test
