@@ -1,3 +1,4 @@
+from typing import Any, Generator
 from unittest.mock import patch
 
 import boto3
@@ -36,7 +37,7 @@ test_settings = Settings(
 
 
 @pytest.fixture()
-def dynamodb_table():
+def dynamodb_table() -> Generator[Any, None, None]:
     with mock_aws():
         dynamodb = boto3.resource("dynamodb", region_name="ap-northeast-1")
         table = dynamodb.create_table(
@@ -51,7 +52,7 @@ def dynamodb_table():
         yield table
 
 
-def _run_seed_with_patches():
+def _run_seed_with_patches() -> None:
     with (
         patch("app.infrastructure.seed.settings", test_settings),
         patch(
@@ -67,7 +68,7 @@ def _run_seed_with_patches():
 
 
 class TestSeedAndMigrate:
-    def test_empty_table_runs_all_migrations(self, dynamodb_table):
+    def test_empty_table_runs_all_migrations(self, dynamodb_table: Any) -> None:
         """空テーブル → v1, v2 が実行される。"""
         _run_seed_with_patches()
 
@@ -82,7 +83,7 @@ class TestSeedAndMigrate:
         for item in items:
             assert "earliest_year" in item
 
-    def test_v1_done_runs_only_v2(self, dynamodb_table):
+    def test_v1_done_runs_only_v2(self, dynamodb_table: Any) -> None:
         """v1 済み → v2 のみ実行される。"""
         with dynamodb_table.batch_writer() as batch:
             for station in SAMPLE_STATIONS:
@@ -98,7 +99,7 @@ class TestSeedAndMigrate:
         item = dynamodb_table.get_item(Key={"id": 1})["Item"]
         assert int(item["earliest_year"]) == 1872
 
-    def test_v2_done_skips(self, dynamodb_table):
+    def test_v2_done_skips(self, dynamodb_table: Any) -> None:
         """v2 済み → 即リターン。"""
         dynamodb_table.put_item(Item={"id": 0, "schema_version": CURRENT_VERSION})
 

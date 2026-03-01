@@ -1,10 +1,11 @@
 import os
+from typing import Generator
 
 import pytest
 
 
 @pytest.fixture(autouse=True)
-def _aws_credentials():
+def _aws_credentials() -> Generator[None, None, None]:
     """Mocked AWS credentials for moto."""
     # Clear any real AWS credentials that could interfere with moto
     env_backup = {}

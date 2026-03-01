@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from boto3.dynamodb.conditions import Key
 
@@ -21,8 +21,8 @@ class TemperatureRepository:
     def get_by_station_and_range(
         self, station_id: int, start_date: str, end_date: str
     ) -> list[TemperatureRecord]:
-        items: list[dict] = []
-        kwargs: dict = {
+        items: list[dict[str, Any]] = []
+        kwargs: dict[str, Any] = {
             "KeyConditionExpression": (
                 Key("station_id").eq(station_id)
                 & Key("date").between(start_date, end_date)
@@ -36,9 +36,9 @@ class TemperatureRepository:
             kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         return [self._to_record(item) for item in items]
 
-    def get_fetched_months(self, station_id: int) -> list[tuple[int, int]]:
-        items: list[dict] = []
-        kwargs: dict = {
+    def get_fetched_months(self, station_id: int) -> dict[tuple[int, int], datetime]:
+        items: list[dict[str, Any]] = []
+        kwargs: dict[str, Any] = {
             "KeyConditionExpression": Key("station_id").eq(station_id),
         }
         while True:
@@ -47,18 +47,19 @@ class TemperatureRepository:
             if "LastEvaluatedKey" not in response:
                 break
             kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
-        results = []
+        results: dict[tuple[int, int], datetime] = {}
         for item in items:
             year, month = item["year_month"].split("-")
-            results.append((int(year), int(month)))
+            fetched_at = datetime.fromisoformat(item["fetched_at"])
+            results[(int(year), int(month))] = fetched_at
         return results
 
-    def bulk_insert_temperatures(self, records: list[dict]) -> None:
+    def bulk_insert_temperatures(self, records: list[dict[str, Any]]) -> None:
         if not records:
             return
         with self.temp_table.batch_writer() as batch:
             for record in records:
-                item: dict = {
+                item: dict[str, Any] = {
                     "station_id": record["station_id"],
                     "date": record["date"],
                 }
@@ -79,7 +80,7 @@ class TemperatureRepository:
             }
         )
 
-    def _to_record(self, item: dict) -> TemperatureRecord:
+    def _to_record(self, item: dict[str, Any]) -> TemperatureRecord:
         return TemperatureRecord(
             date=item["date"],
             max_temp=float(item["max_temp"]) if "max_temp" in item else None,

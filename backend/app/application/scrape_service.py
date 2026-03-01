@@ -1,7 +1,8 @@
 import calendar
 import logging
-from datetime import date
+from datetime import date, datetime, timezone
 
+from app.domain.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.schemas import MonthTemperatureResponse, TemperatureRecord
 from app.infrastructure.repositories.station_repository import StationRepository
 from app.infrastructure.repositories.temperature_repository import TemperatureRepository
@@ -38,9 +39,12 @@ class ScrapeService:
 
         # キャッシュ済みか確認
         fetched_months = self.temp_repo.get_fetched_months(station_id)
-        fetched_set = set(fetched_months)
+        fetched_at = fetched_months.get((year, month))
 
-        if (year, month) not in fetched_set:
+        policy = FetchFreshnessPolicy()
+        status = policy.evaluate(year, month, fetched_at, datetime.now(timezone.utc))
+
+        if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
             # JMAからスクレイプ
             client = JmaClient()
             try:
@@ -76,7 +80,7 @@ class ScrapeService:
         last_day = calendar.monthrange(year, month)[1]
         end_date = date(year, month, last_day).isoformat()
 
-        db_records = self.temp_repo.get_by_station_and_range(
+        temperature_records = self.temp_repo.get_by_station_and_range(
             station_id, start_date, end_date
         )
 
@@ -90,6 +94,6 @@ class ScrapeService:
                     min_temp=r.min_temp,
                     avg_temp=r.avg_temp,
                 )
-                for r in db_records
+                for r in temperature_records
             ],
         )

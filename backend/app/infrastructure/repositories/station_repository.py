@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from boto3.dynamodb.conditions import Key
 
@@ -16,8 +16,8 @@ class StationRepository:
         self.table = dynamodb.Table(settings.table_name("stations"))
 
     def get_all(self) -> list[StationResponse]:
-        items: list[dict] = []
-        kwargs: dict = {}
+        items: list[dict[str, Any]] = []
+        kwargs: dict[str, Any] = {}
         while True:
             response = self.table.scan(**kwargs)
             items.extend(response["Items"])
@@ -29,8 +29,8 @@ class StationRepository:
         return [self._to_schema(item) for item in items]
 
     def get_by_prec_no(self, prec_no: int) -> list[StationResponse]:
-        items: list[dict] = []
-        kwargs: dict = {
+        items: list[dict[str, Any]] = []
+        kwargs: dict[str, Any] = {
             "IndexName": "prec_no-index",
             "KeyConditionExpression": Key("prec_no").eq(prec_no),
         }
@@ -50,7 +50,7 @@ class StationRepository:
         item = response.get("Item")
         return self._to_schema(item) if item else None
 
-    def _to_schema(self, item: dict) -> StationResponse:
+    def _to_schema(self, item: dict[str, Any]) -> StationResponse:
         return StationResponse(
             id=int(item["id"]),
             station_name=item["station_name"],

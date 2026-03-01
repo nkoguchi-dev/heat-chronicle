@@ -1,6 +1,4 @@
 import logging
-
-logging.basicConfig(level=logging.INFO)
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -14,6 +12,7 @@ from app.infrastructure.init_tables import ensure_tables_exist
 from app.infrastructure.seed import seed_and_migrate
 from app.presentation.api import hello, prefectures, stations, temperature
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
