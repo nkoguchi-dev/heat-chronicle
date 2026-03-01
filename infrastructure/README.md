@@ -85,6 +85,11 @@ cd infrastructure/github
 cp terraform.tfvars.example terraform.tfvars
 # ANTHROPIC_API_KEY の実際の値を記入
 
+# AWS 認証情報を設定（S3 バックエンド用）
+export AWS_ACCESS_KEY_ID="..."
+export AWS_SECRET_ACCESS_KEY="..."
+# または AWS CLI プロファイル／IAM ロールで設定済みであれば不要
+
 # GITHUB_TOKEN 環境変数を設定（repo スコープが必要）
 export GITHUB_TOKEN="ghp_..."
 
