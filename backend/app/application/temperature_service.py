@@ -55,7 +55,12 @@ class TemperatureService:
                 if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
                     required_months.append((y, m))
 
-        fetched_month_strs = [f"{y}-{m:02d}" for y, m in fetched_months.keys()]
+        fetched_month_strs = [
+            f"{y}-{m:02d}"
+            for (y, m), fetched_at in fetched_months.items()
+            if policy.evaluate(y, m, fetched_at, now)
+            in (FetchStatus.FINALIZED, FetchStatus.TEMPORARILY_CACHED)
+        ]
 
         metadata = TemperatureMetadata(
             station_id=station_id,
