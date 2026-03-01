@@ -2,6 +2,7 @@ import json
 import logging
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from app.config import settings
 from app.infrastructure.database import get_dynamodb_resource
@@ -13,14 +14,14 @@ DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 CURRENT_VERSION = 2
 
 
-def _migrate_v1_seed(table, stations: list[dict]) -> None:  # type: ignore[type-arg]
+def _migrate_v1_seed(table: Any, stations: list[dict[str, Any]]) -> None:
     """空テーブルへの初期投入。"""
     with table.batch_writer() as batch:
         for station in stations:
             batch.put_item(Item=station)
 
 
-def _migrate_v2_add_earliest_year(table, stations: list[dict]) -> None:  # type: ignore[type-arg]
+def _migrate_v2_add_earliest_year(table: Any, stations: list[dict[str, Any]]) -> None:
     """既存レコードに earliest_year を追加。"""
     for station in stations:
         earliest_year = station.get("earliest_year")
@@ -33,7 +34,7 @@ def _migrate_v2_add_earliest_year(table, stations: list[dict]) -> None:  # type:
         )
 
 
-MIGRATIONS: dict[int, Callable] = {  # type: ignore[type-arg]
+MIGRATIONS: dict[int, Callable[..., None]] = {
     1: _migrate_v1_seed,
     2: _migrate_v2_add_earliest_year,
 }

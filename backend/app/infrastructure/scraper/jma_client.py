@@ -39,7 +39,7 @@ class JmaClient:
     ) -> str:
         page = "daily_s1.php" if station_type == "s" else "daily_a1.php"
         url = f"{BASE_URL}/{page}"
-        params = {
+        params: dict[str, str | int] = {
             "prec_no": prec_no,
             "block_no": block_no,
             "year": year,

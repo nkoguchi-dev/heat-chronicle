@@ -80,7 +80,7 @@ class ScrapeService:
         last_day = calendar.monthrange(year, month)[1]
         end_date = date(year, month, last_day).isoformat()
 
-        db_records = self.temp_repo.get_by_station_and_range(
+        temperature_records = self.temp_repo.get_by_station_and_range(
             station_id, start_date, end_date
         )
 
@@ -94,6 +94,6 @@ class ScrapeService:
                     min_temp=r.min_temp,
                     avg_temp=r.avg_temp,
                 )
-                for r in db_records
+                for r in temperature_records
             ],
         )

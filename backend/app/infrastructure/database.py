@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import boto3
 from botocore.config import Config
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 def get_dynamodb_resource() -> DynamoDBServiceResource:
-    kwargs: dict = {
+    kwargs: dict[str, Any] = {
         "region_name": settings.dynamodb_region,
         "config": _dynamo_config,
     }
@@ -33,7 +33,7 @@ def get_dynamodb_resource() -> DynamoDBServiceResource:
 
 
 def get_dynamodb_client() -> DynamoDBClient:
-    kwargs: dict = {
+    kwargs: dict[str, Any] = {
         "region_name": settings.dynamodb_region,
         "config": _dynamo_config,
     }

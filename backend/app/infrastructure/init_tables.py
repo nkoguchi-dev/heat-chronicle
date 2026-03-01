@@ -1,20 +1,26 @@
+from __future__ import annotations
+
 import logging
 import time
+from typing import TYPE_CHECKING, cast
 
 from botocore.exceptions import ClientError, EndpointConnectionError, ReadTimeoutError
 
 from app.config import settings
 from app.infrastructure.database import get_dynamodb_client
 
+if TYPE_CHECKING:
+    from mypy_boto3_dynamodb.client import DynamoDBClient
+
 logger = logging.getLogger(__name__)
 
 
 def _wait_for_dynamodb(
-    client, max_retries: int = 15, interval: float = 2.0
+    client: DynamoDBClient, max_retries: int = 15, interval: float = 2.0
 ) -> list[str]:
     for attempt in range(1, max_retries + 1):
         try:
-            return client.list_tables()["TableNames"]
+            return cast(list[str], client.list_tables()["TableNames"])
         except (
             EndpointConnectionError,
             ClientError,
