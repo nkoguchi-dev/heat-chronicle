@@ -1,89 +1,58 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Claude Code（claude.ai/code）がこのリポジトリで作業する際のガイドです。
 
-## Project Overview
+## プロジェクト概要
 
-heat-chronicle is a Japanese-language web app that visualizes daily maximum temperature data from Japan Meteorological Agency (JMA) weather stations as a heatmap. It scrapes historical data from JMA's public website and caches it in DynamoDB. The full specification is in SPEC.md (Japanese).
+heat-chronicle は気象庁の公開データをスクレイピングし、日別最高気温をヒートマップとして可視化する Web アプリケーションです。詳細仕様は SPEC.md を参照してください。
 
-## Development Commands
+## サブ CLAUDE.md
 
-### Backend (from `backend/`)
+各サブディレクトリに専用のガイドがあります。
+
+- [backend/CLAUDE.md](./backend/CLAUDE.md) — バックエンド（Python / FastAPI）の開発コマンド・アーキテクチャ・コーディング規約
+- [frontend/CLAUDE.md](./frontend/CLAUDE.md) — フロントエンド（Next.js / TypeScript）の開発コマンド・命名規則・コーディング規約
+
+## フルスタック起動
+
 ```bash
-poetry install                                            # Install dependencies
-poetry run uvicorn app.main:app --reload --port 8000      # Dev server
-poetry run pytest tests/ -v                               # Run all tests
-poetry run pytest tests/test_jma_parser.py::test_name -v  # Run a single test
-poetry run black . && poetry run isort .                  # Format
-poetry run flake8 .                                       # Lint
-poetry run mypy .                                         # Type check
+docker compose up                   # 全サービス起動（DynamoDB Local + Backend + Frontend）
+docker compose up dynamodb-local    # DynamoDB Local のみ起動
 ```
 
-### Frontend (from `frontend/`)
-```bash
-npm install       # Install dependencies
-npm run dev       # Dev server (port 3000)
-npm run build     # Production build
-npm run lint      # ESLint
+## データベース（DynamoDB）
+
+3 つのテーブルを使用しています。
+
+| テーブル | PK | 説明 |
+|---------|-----|------|
+| `stations` | id（GSI: prec_no-index） | 気象観測地点マスタ |
+| `daily-temperature` | station_id + date | 日別気温レコード |
+| `fetch-log` | station_id + year_month | スクレイピング済み年月の管理 |
+
+## コード品質基準
+
+### 共通ルール
+
+- 実装前に既存コードのパターンを確認し、一貫性を保つ
+- 問題が発生した場合は表面的な対処ではなく根本原因を分析する
+- 不要なコードや未使用のインポートを残さない
+
+### バックエンド品質チェック順序
+
+```
+black → isort → flake8 → mypy → pytest
 ```
 
-### Database & Full Stack
-```bash
-docker compose up dynamodb-local    # Start DynamoDB Local only
-docker compose up                   # Start all services (dynamodb-local + backend + frontend)
+### フロントエンド品質チェック
+
+```
+npm run lint → npm run build
 ```
 
-## Architecture
+## 開発のベストプラクティス
 
-### Backend (Python/FastAPI)
-
-Layered architecture with four layers:
-
-- **presentation/api/** — FastAPI routers (HTTP handlers)
-- **application/** — Service layer (ScrapeService for synchronous per-month fetch from JMA, TemperatureService for cached queries)
-- **domain/** — Pydantic response schemas
-- **infrastructure/** — Database (DynamoDB via boto3), repositories, JMA scraper
-
-Key patterns:
-- **Repository pattern**: `StationRepository` and `TemperatureRepository` encapsulate all DB queries
-- **DI via FastAPI Depends**: `StationRepoDep`, `TempRepoDep` via FastAPI Depends
-- **Rate-limited scraping**: JmaClient enforces 2-second minimum interval between JMA requests with 3 retries + exponential backoff
-
-### Frontend (Next.js / TypeScript)
-
-Single-page client component at `/`. Feature-based organization:
-
-- `src/features/heatmap/` — Heatmap components and utilities (Canvas 2D rendering, color scale, data grid)
-- `src/features/shared/libs/` — API client (fetch wrapper)
-- `src/components/ui/` — shadcn/ui primitives (Radix UI)
-- `src/hooks/` — Custom hooks (temperature data fetching)
-- `src/types/` — TypeScript interfaces matching backend schemas
-
-Data flow: fetch stations via REST → user selects station → fetch cached data via REST → if data is missing, sequentially fetch each month via GET `/api/temperature/{id}/fetch-month` → heatmap re-renders incrementally as records arrive.
-
-### Database
-
-DynamoDB with three tables:
-- `stations` — Weather observation stations (PK: id, GSI: prec_no-index)
-- `daily-temperature` — Daily records (PK: station_id + date)
-- `fetch-log` — Tracks which (station, year_month) combos have been scraped (PK: station_id + year_month)
-
-### API Endpoints
-
-- `GET /health` — Health check
-- `GET /api/prefectures` — List all prefectures
-- `GET /api/stations` — List all stations (optional: `?prec_no=` filter)
-- `GET /api/temperature/{station_id}?start_year=&end_year=` — Cached temperature data with metadata
-- `GET /api/temperature/{station_id}/fetch-month?year=&month=` — Fetch and return one month of data (scrapes from JMA if not cached)
-
-## Environment
-
-Each service has a `.env.local` file (gitignored):
-- `backend/.env.local`: `DYNAMODB_ENDPOINT_URL` (local development, optional), `DYNAMODB_REGION`, `DYNAMODB_TABLE_PREFIX`, `CORS_ALLOW_ORIGINS`
-- `frontend/.env.local`: `NEXT_PUBLIC_API_URL=http://localhost:8000`
-
-## Code Style
-
-- Backend: black (line-length 88), isort (profile "black"), flake8, mypy (strict)
-- Frontend: ESLint (next core-web-vitals + typescript), Tailwind CSS v4, shadcn/ui (new-york style)
-- Path alias: `@/*` maps to `./src/*` in frontend
+- **パターン確認**: 新しいコードを書く前に、同種の既存実装を確認して同じパターンに従う
+- **根本原因分析**: エラーが出たら表面的な修正ではなく、なぜ起きたかを調査する
+- **一貫性の保持**: 命名規則・ディレクトリ構成・エラーハンドリングを既存コードと揃える
+- **最小限の変更**: 依頼された内容に直接関係する変更のみ行う

@@ -46,46 +46,7 @@ backend/
 └── Dockerfile.prod                  … 本番用（Lambda コンテナ）
 ```
 
-## アーキテクチャ
-
-レイヤードアーキテクチャを採用しています。
-
-1. **Presentation 層** (`presentation/api/`) — FastAPI ルーターによる HTTP ハンドリング
-2. **Application 層** (`application/`) — ビジネスロジック（スクレイピング、キャッシュ判定）
-3. **Domain 層** (`domain/`) — レスポンススキーマの定義
-4. **Infrastructure 層** (`infrastructure/`) — DynamoDB アクセス、気象庁スクレイパー
-
-依存性注入は FastAPI の `Depends` を使用しています。
-
-## API エンドポイント
-
-| メソッド | パス | 説明 |
-|----------|------|------|
-| GET | `/health` | ヘルスチェック |
-| GET | `/api/prefectures` | 都道府県一覧 |
-| GET | `/api/stations` | 観測地点一覧（`?prec_no=` でフィルタ可） |
-| GET | `/api/temperature/{station_id}` | キャッシュ済み気温データ（`?start_year=&end_year=`） |
-| GET | `/api/temperature/{station_id}/fetch-month` | 月別データ取得（`?year=&month=`、未キャッシュ時に気象庁へアクセス） |
-
-## 開発コマンド
-
-```bash
-# 依存関係インストール
-poetry install
-
-# 開発サーバー起動
-poetry run uvicorn app.main:app --reload --port 8000
-
-# テスト実行
-poetry run pytest tests/ -v
-
-# コードフォーマット
-poetry run black . && poetry run isort .
-
-# Lint / 型チェック
-poetry run flake8 .
-poetry run mypy .
-```
+コーディング規約・開発コマンド・アーキテクチャの詳細は [CLAUDE.md](./CLAUDE.md) を参照してください。
 
 ## スクレイピング仕様
 

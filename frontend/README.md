@@ -45,29 +45,7 @@ frontend/src/
     └── utils.ts                      … 汎用ユーティリティ
 ```
 
-## データフロー
-
-1. ページ読み込み時に URL パラメータ（`?pref=&station=`）から地点を特定
-2. REST API で地点一覧を取得し、セレクタに表示
-3. 選択された地点のキャッシュ済みデータを API から取得
-4. 未取得の月がある場合、`/api/temperature/{id}/fetch-month` を順次呼び出し
-5. データが届くたびにヒートマップを Canvas 上に逐次描画
-
-## 開発コマンド
-
-```bash
-# 依存関係インストール
-npm install
-
-# 開発サーバー起動（ポート 3000）
-npm run dev
-
-# 本番ビルド（静的エクスポート）
-npm run build
-
-# Lint
-npm run lint
-```
+コーディング規約・開発コマンド・データフローの詳細は [CLAUDE.md](./CLAUDE.md) を参照してください。
 
 ## ビルドと配信
 
