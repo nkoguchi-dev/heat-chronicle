@@ -62,21 +62,13 @@ def _create_table_if_not_exists(
         "ReadCapacityUnits": DEFAULT_READ_CAPACITY_UNITS,
         "WriteCapacityUnits": DEFAULT_WRITE_CAPACITY_UNITS,
     }
-    if gsi is not None:
-        client.create_table(
-            TableName=name,
-            KeySchema=key_schema,
-            AttributeDefinitions=attr_defs,
-            GlobalSecondaryIndexes=gsi,
-            ProvisionedThroughput=throughput,
-        )
-    else:
-        client.create_table(
-            TableName=name,
-            KeySchema=key_schema,
-            AttributeDefinitions=attr_defs,
-            ProvisionedThroughput=throughput,
-        )
+    client.create_table(
+        TableName=name,
+        KeySchema=key_schema,
+        AttributeDefinitions=attr_defs,
+        GlobalSecondaryIndexes=gsi,
+        ProvisionedThroughput=throughput,
+    )
     logger.info("Created table: %s", name)
 
 

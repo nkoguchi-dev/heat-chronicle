@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date
+from functools import partial
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
@@ -42,25 +43,17 @@ def _parse_temp(value: str) -> float | None:
         return None
 
 
-def _parse_s_type_row(
+def _parse_row(
     cells: ResultSet[Tag],
+    avg_col: int,
+    max_col: int,
+    min_col: int,
 ) -> tuple[float | None, float | None, float | None] | None:
-    if len(cells) < S_TYPE_MIN_COL + 1:
+    if len(cells) < min_col + 1:
         return None
-    avg_temp = _parse_temp(cells[S_TYPE_AVG_COL].get_text(strip=True))
-    max_temp = _parse_temp(cells[S_TYPE_MAX_COL].get_text(strip=True))
-    min_temp = _parse_temp(cells[S_TYPE_MIN_COL].get_text(strip=True))
-    return avg_temp, max_temp, min_temp
-
-
-def _parse_a_type_row(
-    cells: ResultSet[Tag],
-) -> tuple[float | None, float | None, float | None] | None:
-    if len(cells) < A_TYPE_MIN_COL + 1:
-        return None
-    avg_temp = _parse_temp(cells[A_TYPE_AVG_COL].get_text(strip=True))
-    max_temp = _parse_temp(cells[A_TYPE_MAX_COL].get_text(strip=True))
-    min_temp = _parse_temp(cells[A_TYPE_MIN_COL].get_text(strip=True))
+    avg_temp = _parse_temp(cells[avg_col].get_text(strip=True))
+    max_temp = _parse_temp(cells[max_col].get_text(strip=True))
+    min_temp = _parse_temp(cells[min_col].get_text(strip=True))
     return avg_temp, max_temp, min_temp
 
 
@@ -76,7 +69,20 @@ def parse_daily_page(
     records: list[DailyRecord] = []
     tbody = table.find("tbody") or table
 
-    parse_row = _parse_s_type_row if station_type == "s" else _parse_a_type_row
+    if station_type == "s":
+        parse_row = partial(
+            _parse_row,
+            avg_col=S_TYPE_AVG_COL,
+            max_col=S_TYPE_MAX_COL,
+            min_col=S_TYPE_MIN_COL,
+        )
+    else:
+        parse_row = partial(
+            _parse_row,
+            avg_col=A_TYPE_AVG_COL,
+            max_col=A_TYPE_MAX_COL,
+            min_col=A_TYPE_MIN_COL,
+        )
 
     for tr in tbody.find_all("tr", class_="mtx"):
         cells = tr.find_all("td")
