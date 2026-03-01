@@ -91,18 +91,24 @@ sops -e infrastructure/aws/environments/prod/terraform.tfvars > infrastructure/a
 
 ### 4-3. 暗号化の確認
 
-キー名は平文のまま、値のみが暗号化されていることを確認します。
+`.tfvars` は SOPS のネイティブサポート対象外のため、ファイル全体が JSON 形式でバイナリ暗号化されます。
 
 ```bash
 cat infrastructure/github/terraform.tfvars.enc
 ```
 
-出力例:
+出力例（ファイル全体が JSON 形式で暗号化）:
 
-```hcl
-anthropic_api_key = "ENC[AES256_GCM,data:xxxxx...,iv:xxxxx,tag:xxxxx,type:str]"
-sops_age__list_0__map_recipient = "age1..."
-...
+```json
+{
+    "data": "ENC[AES256_GCM,data:xxxxx...,iv:xxxxx,tag:xxxxx,type:str]",
+    "sops": {
+        "age": [{ "recipient": "age1...", "enc": "..." }],
+        "lastmodified": "...",
+        "mac": "ENC[...]",
+        "version": "3.x.x"
+    }
+}
 ```
 
 ---
