@@ -13,7 +13,8 @@ infrastructure/aws/
 │       ├── outputs.tf     … 出力値定義
 │       ├── provider.tf    … AWS プロバイダ設定
 │       ├── backend.tf     … Terraform state 管理（S3）
-│       └── terraform.tfvars.example … 変数のサンプル
+│       ├── terraform.tfvars.example … 変数のサンプル
+│       └── terraform.tfvars.enc    … SOPS + age 暗号化済み変数
 └── modules/
     ├── static_site/       … S3 + CloudFront + ACM + Route 53
     └── backend_api/       … ECR + Lambda + API Gateway + DynamoDB
@@ -24,7 +25,11 @@ infrastructure/github/
 ├── outputs.tf                 … 出力値定義
 ├── provider.tf                … GitHub プロバイダ設定
 ├── backend.tf                 … Terraform state 管理（S3）
-└── terraform.tfvars.example   … 変数のサンプル
+├── terraform.tfvars.example   … 変数のサンプル
+└── terraform.tfvars.enc       … SOPS + age 暗号化済み変数
+
+infrastructure/docs/
+└── sops-encryption-guide.md   … SOPS + age 暗号化手順書
 ```
 
 ## AWS リソース構成
@@ -57,33 +62,39 @@ infrastructure/github/
 
 ## 使い方
 
+### 前提: SOPS + age のセットアップ
+
+`terraform.tfvars` は SOPS + age で暗号化し、`terraform.tfvars.enc` として Git 管理しています。初回セットアップの詳細は [docs/sops-encryption-guide.md](./docs/sops-encryption-guide.md) を参照してください。
+
+```bash
+# sops と age のインストール
+brew install sops age
+
+# 秘密鍵の配置（既存メンバーから受け取る）
+mkdir -p ~/.config/sops/age
+vim ~/.config/sops/age/keys.txt
+chmod 600 ~/.config/sops/age/keys.txt
+
+# 環境変数の設定（.bashrc / .zshrc に追加）
+export SOPS_AGE_KEY_FILE="$HOME/.config/sops/age/keys.txt"
+```
+
 ### AWS リソース（infrastructure/aws/environments/prod/）
 
 ```bash
 cd infrastructure/aws/environments/prod
 
-# terraform.tfvars を作成（サンプルからコピー）
-cp terraform.tfvars.example terraform.tfvars
-# terraform.tfvars を編集してドメイン名などを設定
-
-# 初期化
 terraform init
 
-# プラン確認
-terraform plan
-
-# 適用
-terraform apply
+# プロセス置換で復号しながら実行（ディスクに平文が残らない）
+terraform plan -var-file=<(sops -d terraform.tfvars.enc)
+terraform apply -var-file=<(sops -d terraform.tfvars.enc)
 ```
 
 ### GitHub リソース（infrastructure/github/）
 
 ```bash
 cd infrastructure/github
-
-# terraform.tfvars を作成（サンプルからコピー）
-cp terraform.tfvars.example terraform.tfvars
-# ANTHROPIC_API_KEY の実際の値を記入
 
 # AWS 認証情報を設定（S3 バックエンド用）
 export AWS_ACCESS_KEY_ID="..."
@@ -94,14 +105,17 @@ export AWS_SECRET_ACCESS_KEY="..."
 export GITHUB_TOKEN="ghp_..."
 
 terraform init
-terraform plan
-terraform apply
+
+# プロセス置換で復号しながら実行（ディスクに平文が残らない）
+terraform plan -var-file=<(sops -d terraform.tfvars.enc)
+terraform apply -var-file=<(sops -d terraform.tfvars.enc)
 ```
 
 ## 注意事項
 
-- `terraform.tfvars` は `.gitignore` で除外されています（機密情報を含む可能性があるため）
+- `terraform.tfvars`（平文）は `.gitignore` で除外されています。Git には暗号化済みの `terraform.tfvars.enc` のみコミットしてください
+- 暗号化・復号の詳細手順は [docs/sops-encryption-guide.md](./docs/sops-encryption-guide.md) を参照してください
 - AWS アカウント ID はコード中にハードコードされず、`data.aws_caller_identity` で動的に取得しています
 - GitHub Actions のデプロイは OIDC 認証を使用しており、長期的なアクセスキーは不要です
 - `infrastructure/github/` の実行には `GITHUB_TOKEN` 環境変数（repo スコープ）が必要です
-- `ANTHROPIC_API_KEY` の値は `terraform.tfvars` に記載するため、環境変数としての設定は不要です
+- `ANTHROPIC_API_KEY` の値は `terraform.tfvars.enc` に暗号化された状態で含まれています

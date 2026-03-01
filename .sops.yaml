@@ -1,0 +1,8 @@
+creation_rules:
+  # github ディレクトリの tfvars（API キー等の機密情報を含む）
+  - path_regex: infrastructure/github/terraform\.tfvars(\.enc)?$
+    age: "age1umk24a0dylgk3ftm0axe6j6g5qwg57mct5436cduhawy2fk0ku3s57s03n"
+
+  # AWS 環境の tfvars
+  - path_regex: infrastructure/aws/environments/prod/terraform\.tfvars(\.enc)?$
+    age: "age1umk24a0dylgk3ftm0axe6j6g5qwg57mct5436cduhawy2fk0ku3s57s03n"
