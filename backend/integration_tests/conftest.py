@@ -11,16 +11,15 @@ from integration_tests.fixtures.test_data import (
     insert_test_stations,
 )
 
-TEST_DYNAMODB_ENDPOINT = os.getenv("DYNAMODB_ENDPOINT_URL", "http://localhost:8000")
 TEST_TABLE_PREFIX = os.getenv("DYNAMODB_TABLE_PREFIX", "test")
 
 
 @pytest.fixture(scope="session")
 def test_settings() -> Settings:
-    """テスト用の Settings を返す。"""
+    """テスト用の Settings を返す。
+    dynamodb_endpoint_url は .env.local または環境変数 DYNAMODB_ENDPOINT_URL から自動取得する。
+    """
     return Settings(
-        dynamodb_endpoint_url=TEST_DYNAMODB_ENDPOINT,
-        dynamodb_region="ap-northeast-1",
         dynamodb_table_prefix=TEST_TABLE_PREFIX,
         cors_allow_origins="http://localhost:3000",
         scrape_interval_sec=0.0,
