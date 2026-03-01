@@ -59,7 +59,7 @@ class StationRepository:
             station_type=item["station_type"],
             latitude=float(item["latitude"]) if "latitude" in item else None,
             longitude=float(item["longitude"]) if "longitude" in item else None,
-            earliest_year=int(item["earliest_year"])
-            if "earliest_year" in item
-            else None,
+            earliest_year=(
+                int(item["earliest_year"]) if "earliest_year" in item else None
+            ),
         )

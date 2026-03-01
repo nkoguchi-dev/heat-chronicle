@@ -4,6 +4,9 @@ from app.domain.schemas import StationResponse, TemperatureMetadata, Temperature
 from app.infrastructure.repositories.station_repository import StationRepository
 from app.infrastructure.repositories.temperature_repository import TemperatureRepository
 
+CHUNK_SIZE = 50
+FALLBACK_START_YEAR = 1975
+
 
 class TemperatureService:
     def __init__(
@@ -21,11 +24,17 @@ class TemperatureService:
         return self.station_repo.get_by_prec_no(prec_no)
 
     def get_temperature_data(
-        self, station_id: int, start_year: int, end_year: int
+        self, station_id: int, end_year: int
     ) -> TemperatureResponse:
         station = self.station_repo.get_by_id(station_id)
         if station is None:
             raise ValueError(f"Station {station_id} not found")
+
+        effective_earliest = station.earliest_year or FALLBACK_START_YEAR
+        start_year = max(effective_earliest, end_year - CHUNK_SIZE + 1)
+
+        has_older_data = start_year > effective_earliest
+        next_end_year = start_year - 1 if has_older_data else None
 
         start_date = date(start_year, 1, 1).isoformat()
         end_date = date(end_year, 12, 31).isoformat()
@@ -52,6 +61,8 @@ class TemperatureService:
             total_records=len(records),
             fetched_months=fetched_month_strs,
             fetching_required=len(required_months) > 0,
+            has_older_data=has_older_data,
+            next_end_year=next_end_year,
         )
 
         return TemperatureResponse(metadata=metadata, data=records)

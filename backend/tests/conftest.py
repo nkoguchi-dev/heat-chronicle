@@ -21,7 +21,12 @@ def _aws_credentials():
     yield
 
     # Restore original env
-    for key in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION",
-                "AWS_CONFIG_FILE", "AWS_SHARED_CREDENTIALS_FILE"):
+    for key in (
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_DEFAULT_REGION",
+        "AWS_CONFIG_FILE",
+        "AWS_SHARED_CREDENTIALS_FILE",
+    ):
         os.environ.pop(key, None)
     os.environ.update(env_backup)

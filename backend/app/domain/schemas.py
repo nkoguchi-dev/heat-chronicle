@@ -34,6 +34,8 @@ class TemperatureMetadata(BaseModel):
     total_records: int
     fetched_months: list[str]
     fetching_required: bool
+    has_older_data: bool
+    next_end_year: int | None
 
 
 class TemperatureResponse(BaseModel):

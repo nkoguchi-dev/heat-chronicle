@@ -6,6 +6,7 @@ import { apiClient } from "@/features/shared/libs/api-client";
 import { ThemeToggle } from "@/features/shared/components/theme-toggle";
 import { ColorLegend } from "@/features/heatmap/components/ColorLegend";
 import { Heatmap } from "@/features/heatmap/components/Heatmap";
+import { LoadMoreButton } from "@/features/heatmap/components/LoadMoreButton";
 import { ProgressBar } from "@/features/heatmap/components/ProgressBar";
 import { StationSelector } from "@/features/heatmap/components/StationSelector";
 import { useTemperatureData } from "@/hooks/use-temperature-data";
@@ -20,23 +21,30 @@ import {
 import type { Prefecture, Station, TempType } from "@/types/api";
 import { TEMP_TYPE_LABELS } from "@/types/api";
 
-const FALLBACK_START_YEAR = 1975;
-
 export default function Home() {
   const { initialParams, updateUrl } = useUrlParams();
   const [prefectures, setPrefectures] = useState<Prefecture[]>([]);
   const [selectedStationId, setSelectedStationId] = useState<number | null>(
     initialParams.station
   );
-  const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(
     initialParams.pref
   );
   const [tempType, setTempType] = useState<TempType>(initialParams.type);
   const currentYear = new Date().getFullYear();
-  const startYear = selectedStation?.earliest_year ?? FALLBACK_START_YEAR;
-  const { records, loading, fetching, progress, error, fetchData } =
-    useTemperatureData();
+  const {
+    records,
+    loading,
+    loadingMore,
+    fetching,
+    progress,
+    error,
+    hasOlderData,
+    nextEndYear,
+    startYear,
+    fetchData,
+    fetchMoreData,
+  } = useTemperatureData();
 
   useEffect(() => {
     apiClient
@@ -47,14 +55,18 @@ export default function Home() {
 
   const handleStationSelect = useCallback(
     (station: Station) => {
-      setSelectedStation(station);
       setSelectedStationId(station.id);
-      const stationStartYear = station.earliest_year ?? FALLBACK_START_YEAR;
-      fetchData(station.id, stationStartYear, currentYear);
+      fetchData(station.id, currentYear);
       updateUrl({ station: station.id, pref: selectedPrecNo });
     },
     [fetchData, currentYear, selectedPrecNo, updateUrl]
   );
+
+  const handleLoadMore = useCallback(() => {
+    if (selectedStationId !== null && nextEndYear !== null) {
+      fetchMoreData(selectedStationId, nextEndYear);
+    }
+  }, [selectedStationId, nextEndYear, fetchMoreData]);
 
   const handlePrefectureChange = useCallback(
     (precNo: number) => {
@@ -118,7 +130,7 @@ export default function Home() {
         </div>
       )}
 
-      {selectedStationId !== null && (
+      {selectedStationId !== null && startYear !== null && (
         <div className="relative w-full overflow-x-auto">
           <Heatmap
             records={records}
@@ -132,6 +144,14 @@ export default function Home() {
             </div>
           )}
         </div>
+      )}
+
+      {hasOlderData && nextEndYear !== null && startYear !== null && (
+        <LoadMoreButton
+          nextEndYear={nextEndYear}
+          loading={loadingMore || fetching}
+          onLoadMore={handleLoadMore}
+        />
       )}
 
       {selectedStationId && (

@@ -15,12 +15,11 @@ def get_temperature(
     station_id: int,
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
-    start_year: int = Query(default=1975),
     end_year: int = Query(default_factory=lambda: datetime.now().year),
 ) -> TemperatureResponse:
     try:
         service = TemperatureService(station_repo, temp_repo)
-        return service.get_temperature_data(station_id, start_year, end_year)
+        return service.get_temperature_data(station_id, end_year)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

@@ -29,6 +29,8 @@ export interface TemperatureMetadata {
   total_records: number;
   fetched_months: string[];
   fetching_required: boolean;
+  has_older_data: boolean;
+  next_end_year: number | null;
 }
 
 export interface TemperatureResponse {
