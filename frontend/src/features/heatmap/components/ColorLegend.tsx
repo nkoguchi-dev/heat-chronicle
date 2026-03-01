@@ -2,11 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-import { tempToColor } from "../lib/color-scale";
+import { TEMP_MAX, TEMP_MIN, tempToColor } from "../lib/color-scale";
 
 const LEGEND_HEIGHT = 16;
-const TEMP_MIN = -10;
-const TEMP_MAX = 40;
 
 export function ColorLegend() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,20 +45,18 @@ export function ColorLegend() {
     return () => observer.disconnect();
   }, []);
 
-  const labels = [-10, 0, 10, 20, 30, 40];
+  const labels = Array.from({ length: 6 }, (_, i) => TEMP_MIN + i * 10);
 
   return (
     <div className="flex flex-col items-start gap-1 w-full max-w-[300px]">
       <canvas ref={canvasRef} className="w-full" />
-      <div
-        className="relative text-xs text-muted-foreground w-full"
-        style={{ height: 16 }}
-      >
+      <div className="relative text-xs text-muted-foreground w-full h-4">
         {labels.map((temp) => (
           <span
             key={temp}
             className="absolute text-center"
             style={{
+              /* 動的な left 値は Tailwind では表現できないためインラインスタイルを使用 */
               left: `${((temp - TEMP_MIN) / (TEMP_MAX - TEMP_MIN)) * 100}%`,
               transform: "translateX(-50%)",
             }}

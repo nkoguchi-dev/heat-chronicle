@@ -1,3 +1,7 @@
+export const TEMP_MIN = -10;
+export const TEMP_MAX = 40;
+export const TEMP_RANGE = TEMP_MAX - TEMP_MIN;
+
 // Color stops: temp -> [r, g, b]
 const COLOR_STOPS: [number, [number, number, number]][] = [
   [-10, [0, 0, 180]], // dark blue
@@ -45,7 +49,7 @@ export function tempToColor(temp: number | null): string {
 // Pre-compute gradient for legend rendering
 export function getGradientStops(): { offset: string; color: string }[] {
   return COLOR_STOPS.map(([temp, [r, g, b]]) => ({
-    offset: `${((temp + 10) / 50) * 100}%`,
+    offset: `${((temp - TEMP_MIN) / TEMP_RANGE) * 100}%`,
     color: `rgb(${r},${g},${b})`,
   }));
 }
