@@ -1,9 +1,5 @@
-# Required: Anthropic API key (https://console.anthropic.com/)
-anthropic_api_key = "sk-ant-..."
-
 # Optional: override defaults
 # github_repository = "heat-chronicle"
-# claude_max_turns  = 20
 
 # Required: AWS deploy resources (from `terraform output` in infrastructure/aws/environments/prod/)
 aws_role_arn               = "arn:aws:iam::123456789012:role/heat-chronicle-prod-github-actions-deploy"
