@@ -1,17 +1,17 @@
-# CLAUDE.md
+# AGENTS.md
 
-Claude Code（claude.ai/code）がこのリポジトリで作業する際のガイドです。
+Codex（Codex.ai/code）がこのリポジトリで作業する際のガイドです。
 
 ## プロジェクト概要
 
 heat-chronicle は気象庁の公開データをスクレイピングし、日別の最高・最低・平均気温をヒートマップとして可視化する Web アプリケーションです。プロジェクト全体の構成と設計上の判断は [README.md](./README.md) を参照してください。
 
-## サブ CLAUDE.md
+## サブ AGENTS.md
 
 各サブディレクトリに専用のガイドがあります。
 
-- [backend/CLAUDE.md](./backend/CLAUDE.md) — バックエンド（Python / FastAPI）の開発コマンド・アーキテクチャ・コーディング規約
-- [frontend/CLAUDE.md](./frontend/CLAUDE.md) — フロントエンド（Next.js / TypeScript）の開発コマンド・命名規則・コーディング規約
+- [backend/AGENTS.md](./backend/AGENTS.md) — バックエンド（Python / FastAPI）の開発コマンド・アーキテクチャ・コーディング規約
+- [frontend/AGENTS.md](./frontend/AGENTS.md) — フロントエンド（Next.js / TypeScript）の開発コマンド・命名規則・コーディング規約
 
 ## フルスタック起動
 

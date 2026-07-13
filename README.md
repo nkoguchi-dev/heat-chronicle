@@ -80,7 +80,7 @@
 このプロジェクトはAI機能を提供するプロダクトではなく、AIをソフトウェア開発工程へ
 組み込む実践例です。
 
-- [`CLAUDE.md`](./CLAUDE.md) と各レイヤーのガイドに、アーキテクチャ、依存方向、品質基準を明文化
+- [`AGENTS.md`](./AGENTS.md) と各レイヤーのガイドに、アーキテクチャ、依存方向、品質基準を明文化
 - [`docs/REVIEW_GUIDE.md`](./docs/REVIEW_GUIDE.md) を起点に、変更領域別のチェック項目を整備
 - GitHub ActionsのClaude PR Reviewが差分とレビューガイドを読み、PRへフィードバック
 - AIの提案は自動採用せず、既存設計との整合性を確認し、lint・型検査・テスト・ビルドで検証
@@ -127,7 +127,7 @@ heat-chronicle/
 ├── scripts/           # 地点マスタ生成、デプロイ補助
 ├── .github/workflows/ # CI、デプロイ、Claude PR Review
 ├── compose.yaml       # ローカル開発環境
-└── CLAUDE.md          # AIエージェント向け開発ガイド
+└── AGENTS.md          # AIエージェント向け開発ガイド
 ```
 
 ## ローカル開発
@@ -139,8 +139,8 @@ heat-chronicle/
 docker compose up
 ```
 
-個別の開発コマンドと設計ルールは、[`backend/CLAUDE.md`](./backend/CLAUDE.md) と
-[`frontend/CLAUDE.md`](./frontend/CLAUDE.md) を参照してください。
+個別の開発コマンドと設計ルールは、[`backend/AGENTS.md`](./backend/AGENTS.md) と
+[`frontend/AGENTS.md`](./frontend/AGENTS.md) を参照してください。
 
 ## CI/CD
 

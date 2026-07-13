@@ -1,4 +1,4 @@
-# Frontend CLAUDE.md
+# Frontend AGENTS.md
 
 フロントエンド（Next.js / TypeScript）の開発ガイドです。
 
