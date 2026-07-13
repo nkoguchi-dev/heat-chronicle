@@ -5,6 +5,9 @@
 >
 > フロントエンドの変更を含む PR は、本ガイドに加えて
 > [フロントエンド PR レビューガイド](./FRONTEND_REVIEW_GUIDE.md) も参照してください。
+>
+> インフラの変更を含む PR は、本ガイドに加えて
+> [インフラ PR レビューガイド](./INFRA_REVIEW_GUIDE.md) も参照してください。
 
 ---
 
@@ -92,3 +95,4 @@
 |---|---|
 | バックエンド（FastAPI / DynamoDB / Python） | [バックエンド PR レビューガイド](./BACKEND_REVIEW_GUIDE.md) |
 | フロントエンド（Next.js / TypeScript） | [フロントエンド PR レビューガイド](./FRONTEND_REVIEW_GUIDE.md) |
+| インフラ（Terraform / AWS / GitHub Actions） | [インフラ PR レビューガイド](./INFRA_REVIEW_GUIDE.md) |

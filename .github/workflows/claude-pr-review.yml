@@ -33,7 +33,8 @@ jobs:
             2. `docs/REVIEW_GUIDE.md` を読み、全体共通のレビュー観点を把握する
             3. 変更ファイルにバックエンド（backend/）のコードが含まれる場合は `docs/BACKEND_REVIEW_GUIDE.md` も読む
             4. 変更ファイルにフロントエンド（frontend/）のコードが含まれる場合は `docs/FRONTEND_REVIEW_GUIDE.md` も読む
-            5. ガイドの各チェック項目に沿って差分をレビューする
+            5. 変更ファイルにインフラ（infrastructure/、関連するデプロイワークフロー）のコードが含まれる場合は `docs/INFRA_REVIEW_GUIDE.md` も読む
+            6. ガイドの各チェック項目に沿って差分をレビューする
 
             ## レビュー出力ルール
 

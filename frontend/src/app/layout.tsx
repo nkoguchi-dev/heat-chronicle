@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Heat Chronicle",
-  description: "Heat Chronicle",
+  title: "Heat Chronicle | 日本の気温を長期ヒートマップで見る",
+  description:
+    "日本全国の気象観測地点から、日別の最高・最低・平均気温を選び、長期的な変化をヒートマップで比較できます。",
 };
 
 export default function RootLayout({
