@@ -50,7 +50,7 @@
 - バックエンドはpytestによるユニットテストと、DynamoDB Localを使うAPI統合テストを分離
 - Black、isort、Flake8、mypyの静的チェックをCIで実行
 - フロントエンドはESLint、TypeScript、本番ビルドをCIで検証
-- PRでは共通・バックエンド・フロントエンド・インフラ別のレビューガイドをClaude PR Reviewから参照
+- Codexによる開発・レビューでは、共通・バックエンド・フロントエンド・インフラ別のレビューガイドを参照
 
 ## 担当範囲
 
@@ -82,7 +82,7 @@
 
 - [`AGENTS.md`](./AGENTS.md) と各レイヤーのガイドに、アーキテクチャ、依存方向、品質基準を明文化
 - [`docs/REVIEW_GUIDE.md`](./docs/REVIEW_GUIDE.md) を起点に、変更領域別のチェック項目を整備
-- GitHub ActionsのClaude PR Reviewが差分とレビューガイドを読み、PRへフィードバック
+- Codexが実装・レビュー時に差分とレビューガイドを読み、変更を検証
 - AIの提案は自動採用せず、既存設計との整合性を確認し、lint・型検査・テスト・ビルドで検証
 
 ## アーキテクチャ
@@ -112,7 +112,7 @@
 | バックエンド | Python 3.12 / FastAPI / Pydantic / httpx / BeautifulSoup4 / Mangum |
 | データストア | Amazon DynamoDB / DynamoDB Local |
 | インフラ | AWS Lambda / API Gateway / ECR / S3 / CloudFront / Route 53 / Terraform |
-| CI/CD | GitHub Actions / AWS OIDC / Claude PR Review |
+| CI/CD | GitHub Actions / AWS OIDC |
 | 品質管理 | pytest / moto / Black / isort / Flake8 / mypy / ESLint / TypeScript |
 
 ## ディレクトリ構成
@@ -125,7 +125,7 @@ heat-chronicle/
 ├── database/          # DynamoDB Localのデータ
 ├── docs/              # PRレビューガイド、運用・改善ドキュメント
 ├── scripts/           # 地点マスタ生成、デプロイ補助
-├── .github/workflows/ # CI、デプロイ、Claude PR Review
+├── .github/workflows/ # CI、デプロイ
 ├── compose.yaml       # ローカル開発環境
 └── AGENTS.md          # AIエージェント向け開発ガイド
 ```

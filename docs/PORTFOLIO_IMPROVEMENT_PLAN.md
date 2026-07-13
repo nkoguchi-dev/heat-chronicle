@@ -66,7 +66,7 @@ Heat Chronicleを、マツリカのリファラル応募で提示できるポー
 - AWS Lambda／S3／CloudFrontによる構成
 - TerraformとGitHub ActionsによるCI/CD
 - ユニットテスト、統合テスト、型検査
-- `CLAUDE.md`、レビューガイド、Claude PR Reviewを組み合わせたAI活用
+- `AGENTS.md`とレビューガイドを用いたCodexによるAI活用
 
 AIについては、「AI機能を持つプロダクト」ではなく「AIをソフトウェア開発工程へ組み込んだ事例」として正確に説明する。
 
