@@ -1,158 +1,155 @@
-# heat-chronicle
+# Heat Chronicle
 
-日本全国の気象観測地点における **日別最高気温** をヒートマップとして可視化する Web アプリケーションです。
-気象庁が公開している「過去の気象データ検索」からデータを取得し、長期的な気温変化の傾向を直感的に把握できます。
+日本全国 979 か所の気象観測地点から、日別の最高・最低・平均気温を選び、長期的な変化を
+年×日付のヒートマップで比較できるWebアプリケーションです。
 
-**サイト URL:** https://heat-chronicle.koppepan.org
+[公開サイトを見る](https://heat-chronicle.koppepan.org/?pref=44&station=4) ・
+[ソースコードを見る](https://github.com/nkoguchi-dev/heat-chronicle)
 
-> AI エージェント向けのコーディング規約・アーキテクチャルールは [CLAUDE.md](./CLAUDE.md) を参照してください。
+![東京の最高気温を50年分表示したHeat Chronicleの画面](./docs/images/heat-chronicle.jpg)
 
-## 主要都市のヒートマップ
+気象庁の「過去の気象データ検索」から必要な年月だけを取得し、DynamoDBへキャッシュします。
+長期間の大量データを扱いながら、外部サイトへの負荷と利用者の待ち時間を抑えることを
+テーマに、フロントエンド、API、データ取得、AWSインフラ、CI/CDまで個人で設計・実装しました。
 
-| 地点 | リンク |
-|------|--------|
-| 札幌 | [heat-chronicle.koppepan.org/?pref=14&station=1](https://heat-chronicle.koppepan.org/?pref=14&station=1) |
-| 仙台 | [heat-chronicle.koppepan.org/?pref=34&station=2](https://heat-chronicle.koppepan.org/?pref=34&station=2) |
-| 東京 | [heat-chronicle.koppepan.org/?pref=44&station=4](https://heat-chronicle.koppepan.org/?pref=44&station=4) |
-| 名古屋 | [heat-chronicle.koppepan.org/?pref=51&station=6](https://heat-chronicle.koppepan.org/?pref=51&station=6) |
-| 大阪 | [heat-chronicle.koppepan.org/?pref=62&station=7](https://heat-chronicle.koppepan.org/?pref=62&station=7) |
-| 広島 | [heat-chronicle.koppepan.org/?pref=67&station=8](https://heat-chronicle.koppepan.org/?pref=67&station=8) |
-| 福岡 | [heat-chronicle.koppepan.org/?pref=82&station=10](https://heat-chronicle.koppepan.org/?pref=82&station=10) |
-| 那覇 | [heat-chronicle.koppepan.org/?pref=91&station=12](https://heat-chronicle.koppepan.org/?pref=91&station=12) |
+## 技術的な見どころ
+
+### Canvasによる長期データの可視化
+
+- 1年を横一列、1日を1セルとして、数十年分の日別気温をCanvas 2D APIで描画
+- DOM要素を日数分生成せず、長期間でも描画負荷とメモリ使用量を抑制
+- 最高・最低・平均気温の切り替え、日付と気温のツールチップ、ライト／ダークテーマに対応
+
+### 50年単位の段階取得
+
+- 初回表示は最大50年に限定し、古い期間は「さらに過去50年分を読み込む」操作で追加
+- キャッシュ済みデータを先に描画し、未取得の月だけを順次取得して画面へ反映
+- 地点変更時は進行中のリクエストを中断し、古いレスポンスによる表示の競合を防止
+
+### DynamoDBキャッシュと鮮度管理
+
+- `daily-temperature` に日別データ、`fetch-log` に地点・年月ごとの取得日時を保存
+- 確定済みの過去年月は再取得せず、当月など更新される可能性があるデータだけを24時間後に再取得
+- パーティションキーとソートキーによる期間クエリで、対象地点・期間のデータだけを取得
+
+### 外部サイトに配慮したデータ取得
+
+- 気象庁へのリクエスト間隔を2秒以上に制御
+- HTTPエラー時は最大3回、指数バックオフでリトライ
+- 1リクエストを1か月分に限定し、取得済み年月への重複アクセスを抑制
+
+### AWS上のサーバーレス構成とIaC
+
+- フロントエンドはNext.jsの静的エクスポートをS3 + CloudFrontで配信
+- FastAPIをコンテナ化し、Mangum経由でAWS Lambda + API Gateway上に配置
+- AWSとGitHub ActionsのリソースをTerraformで管理し、SOPS + ageでtfvarsを暗号化
+- GitHub ActionsからAWSへはOIDCで認証し、長期アクセスキーを使用しない
+
+### 継続的な品質管理
+
+- バックエンドはpytestによるユニットテストと、DynamoDB Localを使うAPI統合テストを分離
+- Black、isort、Flake8、mypyの静的チェックをCIで実行
+- フロントエンドはESLint、TypeScript、本番ビルドをCIで検証
+- PRでは共通・バックエンド・フロントエンド・インフラ別のレビューガイドをClaude PR Reviewから参照
+
+## 担当範囲
+
+個人開発として、以下の工程を一貫して担当しています。
+
+- 要件整理、画面・API・データモデルの設計
+- Next.js / Reactによるフロントエンド実装
+- FastAPIによるAPIとレイヤードアーキテクチャの実装
+- 気象庁データの取得、解析、キャッシュ鮮度管理
+- DynamoDBのテーブル・アクセスパターン設計
+- TerraformによるAWS / GitHubリソースのコード化
+- GitHub Actionsによるテスト、ビルド、デプロイの自動化
+- テスト、レビューガイド、運用ドキュメントの整備
+
+## 設計上の判断とトレードオフ
+
+| 判断 | 採用理由 | トレードオフ |
+|---|---|---|
+| ヒートマップをCanvasで描画 | 数万セルを少ないDOM要素で描画できる | セル単位のアクセシビリティやレスポンシブ制御を別途設計する必要がある |
+| 50年ごとの段階取得 | 初回応答とデータ量を抑え、必要な利用者だけが古い期間を取得できる | 全期間を一度に比較するには追加操作が必要になる |
+| オンデマンド取得 + DynamoDBキャッシュ | 事前収集の運用コストを抑え、閲覧された地点からデータを蓄積できる | 初回閲覧ではスクレイピング完了まで待ち時間が発生する |
+| 静的フロントエンド + Lambda API | 常時稼働サーバーを持たず、小規模サービスの運用負荷を抑えられる | Lambdaの実行時間やコールドスタートを考慮する必要がある |
+| 気象庁HTMLのスクレイピング | 公開画面から必要な過去データを取得できる | HTML変更への追従と、アクセス頻度への慎重な配慮が必要になる |
+
+## AIを利用した開発プロセス
+
+このプロジェクトはAI機能を提供するプロダクトではなく、AIをソフトウェア開発工程へ
+組み込む実践例です。
+
+- [`CLAUDE.md`](./CLAUDE.md) と各レイヤーのガイドに、アーキテクチャ、依存方向、品質基準を明文化
+- [`docs/REVIEW_GUIDE.md`](./docs/REVIEW_GUIDE.md) を起点に、変更領域別のチェック項目を整備
+- GitHub ActionsのClaude PR Reviewが差分とレビューガイドを読み、PRへフィードバック
+- AIの提案は自動採用せず、既存設計との整合性を確認し、lint・型検査・テスト・ビルドで検証
+
+## アーキテクチャ
+
+```text
+┌─────────────────────┐      ┌────────────────────────┐
+│ Next.js / Canvas    │─────▶│ API Gateway            │
+│ S3 + CloudFront     │ HTTPS│ FastAPI on AWS Lambda  │
+└─────────────────────┘      └───────────┬────────────┘
+                                         │
+                              ┌──────────▼──────────┐
+                              │ DynamoDB            │
+                              │ data + fetch log    │
+                              └──────────┬──────────┘
+                                         │ 未取得・要更新の月だけ
+                              ┌──────────▼──────────┐
+                              │ 気象庁              │
+                              │ 過去の気象データ検索 │
+                              └─────────────────────┘
+```
 
 ## 技術スタック
 
 | レイヤー | 技術 |
-|----------|------|
-| フロントエンド | Next.js 16 / React 19 / TypeScript / Tailwind CSS v4 |
-| バックエンド | Python 3.12 / FastAPI / BeautifulSoup4 |
-| データベース | Amazon DynamoDB（ローカル開発は DynamoDB Local） |
-| インフラ | AWS Lambda + API Gateway / S3 + CloudFront / Terraform |
-| CI/CD | GitHub Actions（OIDC 認証） |
-
-## アーキテクチャ
-
-```
-┌─────────────────┐     ┌────────────────────┐     ┌───────────┐
-│  Frontend       │────→│  Backend (Lambda)  │────→│ DynamoDB  │
-│  S3+CloudFront  │ API │  FastAPI + Mangum  │     │ (キャッシュ) │
-└─────────────────┘     └────────┬───────────┘     └───────────┘
-                                 │ スクレイピング
-                                 ↓
-                        ┌────────────────────┐
-                        │  気象庁             │
-                        │  過去の気象データ    │
-                        └────────────────────┘
-```
-
-フロントエンドは静的エクスポートされた Next.js アプリを S3 + CloudFront で配信し、バックエンドは Lambda（コンテナイメージ）上で FastAPI を実行しています。気象庁から取得したデータは DynamoDB にキャッシュされ、同一データの再取得を防止します。
+|---|---|
+| フロントエンド | Next.js 16 / React 19 / TypeScript / Tailwind CSS v4 / Canvas 2D API |
+| バックエンド | Python 3.12 / FastAPI / Pydantic / httpx / BeautifulSoup4 / Mangum |
+| データストア | Amazon DynamoDB / DynamoDB Local |
+| インフラ | AWS Lambda / API Gateway / ECR / S3 / CloudFront / Route 53 / Terraform |
+| CI/CD | GitHub Actions / AWS OIDC / Claude PR Review |
+| 品質管理 | pytest / moto / Black / isort / Flake8 / mypy / ESLint / TypeScript |
 
 ## ディレクトリ構成
 
-```
+```text
 heat-chronicle/
-├── backend/           … Python/FastAPI バックエンド
-├── frontend/          … Next.js フロントエンド
-├── database/          … DynamoDB Local のデータファイル
-├── infrastructure/    … Terraform による AWS インフラ定義
-├── scripts/           … データ取得・デプロイ用ユーティリティスクリプト
-├── .github/workflows/ … GitHub Actions CI/CD
-├── compose.yaml       … Docker Compose（ローカル開発用）
-├── CLAUDE.md          … AI エージェント向けコーディング規約
-└── SPEC.md            … 詳細仕様書
+├── backend/           # FastAPI、ドメインロジック、DynamoDB、スクレイパー
+├── frontend/          # Next.js、Canvasヒートマップ、UI
+├── infrastructure/    # AWS / GitHub Terraform
+├── database/          # DynamoDB Localのデータ
+├── docs/              # PRレビューガイド、運用・改善ドキュメント
+├── scripts/           # 地点マスタ生成、デプロイ補助
+├── .github/workflows/ # CI、デプロイ、Claude PR Review
+├── compose.yaml       # ローカル開発環境
+└── CLAUDE.md          # AIエージェント向け開発ガイド
 ```
-
-各ディレクトリの詳細は、それぞれの `README.md` を参照してください。
 
 ## ローカル開発
 
-### 前提条件
-
-- Docker / Docker Compose
-- Python 3.12+ / Poetry
-- Node.js 22+ / npm
-
-### クイックスタート（Docker Compose）
+前提: Docker / Docker Compose、Python 3.12 + Poetry、Node.js 22 + npm
 
 ```bash
+# DynamoDB Local、バックエンド、フロントエンドをまとめて起動
 docker compose up
 ```
 
-DynamoDB Local（ポート 8001）、バックエンド（ポート 8000）、フロントエンド（ポート 3000）がすべて起動します。
+個別の開発コマンドと設計ルールは、[`backend/CLAUDE.md`](./backend/CLAUDE.md) と
+[`frontend/CLAUDE.md`](./frontend/CLAUDE.md) を参照してください。
 
-### 個別起動
+## CI/CD
 
-```bash
-# DynamoDB Local のみ起動
-docker compose up dynamodb-local
-```
+PRでは変更領域に応じたCIを実行し、`release/prod` ブランチへのpushでAWSへデプロイします。
 
-バックエンド・フロントエンドの個別起動方法は各ディレクトリの [backend/CLAUDE.md](./backend/CLAUDE.md)・[frontend/CLAUDE.md](./frontend/CLAUDE.md) を参照してください。
-
-### 環境変数
-
-各サービスの `.env.local` で設定します（`.gitignore` で除外済み）。
-
-**backend/.env.local:**
-
-| 変数名 | デフォルト | 説明 |
-|--------|-----------|------|
-| `DYNAMODB_ENDPOINT_URL` | *(なし)* | DynamoDB Local の URL（ローカル開発時: `http://localhost:8001`） |
-| `DYNAMODB_REGION` | `ap-northeast-1` | AWS リージョン |
-| `DYNAMODB_TABLE_PREFIX` | *(なし)* | テーブル名のプレフィックス |
-| `CORS_ALLOW_ORIGINS` | `http://localhost:3000` | CORS 許可オリジン |
-
-**frontend/.env.local:**
-
-| 変数名 | デフォルト | 説明 |
-|--------|-----------|------|
-| `NEXT_PUBLIC_API_URL` | *(なし)* | バックエンド API の URL（ローカル開発時: `http://localhost:8000`） |
-
-## 初期データの作成
-
-観測地点のマスタデータは `backend/data/stations.json` に格納されています。このファイルは以下のスクリプトで生成・更新できます。すべて `backend/` ディレクトリの Poetry 環境を使って実行します。
-
-### 1. 観測地点一覧の取得
-
-気象庁のWebサイトから気温観測を行っている全地点をスクレイピングし、CSV を出力します。
-
-```bash
-cd backend && poetry run python ../scripts/fetch_stations.py
-```
-
-出力: `backend/data/stations_YYYYMMDD.csv`, `backend/data/prefectures_YYYYMMDD.txt`
-
-処理には約 2 分かかります（リクエスト間隔 2 秒 × 全都道府県）。
-
-### 2. 各地点の最古データ年の取得
-
-`stations.json` の各地点について、気象庁で閲覧可能な最も古い年を取得し `earliest_year` フィールドを追加します。
-
-```bash
-cd backend && poetry run python ../scripts/fetch_earliest_years.py
-```
-
-出力: `backend/data/stations.json`（上書き更新）, `backend/data/earliest_years_YYYYMMDD.csv`
-
-全地点を巡回するため、地点数に応じて相応の時間がかかります（979 地点 × 2 秒 ≈ 約 33 分）。
-
-### 初期データの自動投入
-
-バックエンドの起動時に `backend/data/stations.json` から DynamoDB の `stations` テーブルへ自動的にシードデータが投入されます（マイグレーション管理付き）。手動でのデータ投入は不要です。
-
-## デプロイ
-
-`release/prod` ブランチへの push で GitHub Actions が自動デプロイを実行します。
-
-- **フロントエンド:** `npm run build` → S3 へアップロード → CloudFront キャッシュ無効化
-- **バックエンド:** Docker イメージビルド → ECR へプッシュ → Lambda 関数コード更新
-
-詳細は `.github/workflows/` 配下のワークフロー定義を参照してください。
+- フロントエンド: `npm ci` → ESLint → 静的ビルド → S3同期 → CloudFrontキャッシュ無効化
+- バックエンド: 静的解析・ユニットテスト・統合テスト → Docker build → ECR push → Lambda更新
 
 ## データ出典
 
-このアプリケーションで使用している気象データは、[気象庁ホームページ](https://www.jma.go.jp/)「過去の気象データ検索」から取得しています。
-
-## ライセンス
-
-このプロジェクトは個人プロジェクトです。
+気象データは[気象庁ホームページ](https://www.data.jma.go.jp/)「過去の気象データ検索」から
+取得しています。本サービスは個人開発プロジェクトです。

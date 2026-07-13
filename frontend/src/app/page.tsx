@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Github } from "lucide-react";
 
 import { apiClient } from "@/features/shared/libs/api-client";
 import { ThemeToggle } from "@/features/shared/components/theme-toggle";
@@ -131,18 +132,33 @@ export default function Home() {
       )}
 
       {selectedStationId !== null && startYear !== null && (
-        <div className="relative w-full overflow-x-auto">
-          <Heatmap
-            records={records}
-            startYear={startYear}
-            endYear={currentYear}
-            tempType={tempType}
-          />
-          {isLoading && (
-            <div className="fixed inset-0 z-10 flex items-center justify-center pointer-events-none">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/30 border-t-muted-foreground" />
-            </div>
-          )}
+        <div className="w-full">
+          <p
+            id="heatmap-scroll-hint"
+            className="mb-2 text-center text-xs text-muted-foreground md:hidden"
+          >
+            横にスクロールして期間を確認できます
+            <span aria-hidden="true"> →</span>
+          </p>
+          <div
+            className="relative w-full overflow-x-auto"
+            role="region"
+            aria-label="気温ヒートマップ"
+            aria-describedby="heatmap-scroll-hint"
+            tabIndex={0}
+          >
+            <Heatmap
+              records={records}
+              startYear={startYear}
+              endYear={currentYear}
+              tempType={tempType}
+            />
+            {isLoading && (
+              <div className="fixed inset-0 z-10 flex items-center justify-center pointer-events-none">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/30 border-t-muted-foreground" />
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -160,8 +176,31 @@ export default function Home() {
         </div>
       )}
 
-      <footer className="mt-auto pt-8 text-xs text-muted-foreground">
-        出典: 気象庁ホームページ (https://www.data.jma.go.jp/)
+      <footer className="mt-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pt-8 text-xs text-muted-foreground">
+        <span>
+          データ出典: {" "}
+          <a
+            href="https://www.data.jma.go.jp/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-4 transition-colors hover:text-foreground"
+          >
+            気象庁ホームページ
+          </a>
+        </span>
+        <span aria-hidden="true" className="hidden text-border sm:inline">
+          |
+        </span>
+        <a
+          href="https://github.com/nkoguchi-dev/heat-chronicle"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 font-medium text-foreground underline-offset-4 transition-colors hover:underline"
+          aria-label="Heat ChronicleのソースコードをGitHubで開く（新しいタブ）"
+        >
+          <Github aria-hidden="true" className="h-3.5 w-3.5" />
+          GitHub
+        </a>
       </footer>
     </div>
   );
