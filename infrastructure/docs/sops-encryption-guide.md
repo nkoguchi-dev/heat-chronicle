@@ -10,7 +10,7 @@
 
 | 平文ファイル（Git 管理外） | 暗号化ファイル（Git 管理） | 機密情報 |
 |---------|---------|---------|
-| `infrastructure/github/terraform.tfvars` | `terraform.tfvars.enc` | Anthropic API キー |
+| `infrastructure/github/terraform.tfvars` | `terraform.tfvars.enc` | GitHub Actions 用のデプロイ設定値 |
 | `infrastructure/aws/environments/prod/terraform.tfvars` | `terraform.tfvars.enc` | ドメイン名・リージョン等 |
 
 ### 前提条件

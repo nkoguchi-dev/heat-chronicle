@@ -46,7 +46,7 @@ backend/
 └── Dockerfile.prod                  … 本番用（Lambda コンテナ）
 ```
 
-コーディング規約・開発コマンド・アーキテクチャの詳細は [CLAUDE.md](./CLAUDE.md) を参照してください。
+コーディング規約・開発コマンド・アーキテクチャの詳細は [AGENTS.md](./AGENTS.md) を参照してください。
 
 ## スクレイピング仕様
 

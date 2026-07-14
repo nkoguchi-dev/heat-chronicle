@@ -1,4 +1,4 @@
-# Backend CLAUDE.md
+# Backend AGENTS.md
 
 バックエンド（Python / FastAPI）の開発ガイドです。
 

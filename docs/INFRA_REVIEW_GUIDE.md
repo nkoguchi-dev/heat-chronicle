@@ -5,7 +5,7 @@
 > [PR レビューガイド（全体共通）](./REVIEW_GUIDE.md) を参照してください。
 
 このドキュメントは、インフラの PR をレビューする際のチェック観点をまとめたものです。
-Claude Code によるレビュー自動化、および GitHub Actions の Claude PR Review で使用されます。
+Codex による実装・レビューで使用します。
 
 対象は `infrastructure/` 配下の Terraform（AWS / GitHub）と、関連する GitHub Actions の
 デプロイワークフローです。
