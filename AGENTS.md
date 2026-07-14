@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Codex（Codex.ai/code）がこのリポジトリで作業する際のガイドです。
+Codex（OpenAI）がこのリポジトリで作業する際のガイドです。
 
 ## プロジェクト概要
 
