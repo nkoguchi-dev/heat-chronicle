@@ -23,7 +23,7 @@ frontend/src/
 │   │   ├── components/
 │   │   │   ├── Heatmap.tsx           … ヒートマップ本体（Canvas 描画）
 │   │   │   ├── ColorLegend.tsx       … 凡例
-│   │   │   ├── ProgressBar.tsx       … データ取得プログレスバー
+│   │   │   ├── LoadingStatus.tsx     … 読み込み・進捗・エラー表示
 │   │   │   └── StationSelector.tsx   … 地点選択 UI
 │   │   └── lib/
 │   │       ├── color-scale.ts        … 気温→色のマッピング
@@ -38,6 +38,7 @@ frontend/src/
 ├── components/ui/                    … shadcn/ui プリミティブ
 ├── hooks/
 │   ├── use-temperature-data.ts       … 気温データ取得カスタムフック
+│   ├── use-station-options.ts        … 都道府県・観測地点一覧取得カスタムフック
 │   └── use-url-params.ts            … URL パラメータ管理
 ├── types/
 │   └── api.ts                        … TypeScript 型定義（バックエンド API 対応）

@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo } from "react";
 
 import {
   Select,
@@ -9,120 +9,88 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { apiClient } from "@/features/shared/libs/api-client";
 import type { Prefecture, Station } from "@/types/api";
 
 interface StationSelectorProps {
   prefectures: Prefecture[];
+  stations: Station[];
+  selectedPrecNo: number | null;
   selectedStationId: number | null;
+  loadingPrefectures: boolean;
+  loadingStations: boolean;
+  onPrefectureChange: (precNo: number) => void;
   onSelect: (station: Station) => void;
-  initialPrecNo?: number | null;
-  onPrefectureChange?: (precNo: number) => void;
 }
 
 function StationSelectorInner({
   prefectures,
+  stations,
+  selectedPrecNo,
   selectedStationId,
-  onSelect,
-  initialPrecNo,
+  loadingPrefectures,
+  loadingStations,
   onPrefectureChange,
+  onSelect,
 }: StationSelectorProps) {
-  const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(
-    initialPrecNo ?? null
+  const selectedPrefectureExists = prefectures.some(
+    (prefecture) => prefecture.prec_no === selectedPrecNo
   );
-  const [stations, setStations] = useState<Station[]>([]);
-  const [isLoadingStations, setIsLoadingStations] = useState(
-    initialPrecNo != null
+  const selectedStationExists = stations.some(
+    (station) => station.id === selectedStationId
   );
-  const fetchIdRef = useRef(0);
-
-  const fetchStations = useCallback((precNo: number) => {
-    const fetchId = ++fetchIdRef.current;
-    setIsLoadingStations(true);
-    setStations([]);
-    apiClient
-      .get<Station[]>(`/api/stations?prec_no=${precNo}`)
-      .then((data) => {
-        if (fetchIdRef.current === fetchId) {
-          setStations(data);
-          setIsLoadingStations(false);
-        }
-      })
-      .catch((err) => {
-        if (fetchIdRef.current === fetchId) {
-          console.error(err);
-          setIsLoadingStations(false);
-        }
-      });
-  }, []);
-
-  const restoredRef = useRef(false);
-  useEffect(() => {
-    if (
-      !restoredRef.current &&
-      initialPrecNo != null &&
-      prefectures.length > 0
-    ) {
-      restoredRef.current = true;
-      const fetchId = ++fetchIdRef.current;
-      apiClient
-        .get<Station[]>(`/api/stations?prec_no=${initialPrecNo}`)
-        .then((data) => {
-          if (fetchIdRef.current === fetchId) {
-            setStations(data);
-            setIsLoadingStations(false);
-            // URL復元時: 選択中の地点情報を親に通知
-            if (selectedStationId != null) {
-              const matched = data.find((s) => s.id === selectedStationId);
-              if (matched) onSelect(matched);
-            }
-          }
-        })
-        .catch((err) => {
-          if (fetchIdRef.current === fetchId) {
-            console.error(err);
-            setIsLoadingStations(false);
-          }
-        });
-    }
-  }, [initialPrecNo, prefectures, selectedStationId, onSelect]);
-
-  const handlePrefectureChange = (value: string) => {
-    const precNo = Number(value);
-    setSelectedPrecNo(precNo);
-    fetchStations(precNo);
-    onPrefectureChange?.(precNo);
-  };
 
   return (
     <div className="flex flex-col gap-2 md:flex-row md:items-center">
       <Select
-        value={selectedPrecNo?.toString() ?? ""}
-        onValueChange={handlePrefectureChange}
+        value={
+          selectedPrefectureExists ? selectedPrecNo?.toString() ?? "" : ""
+        }
+        onValueChange={(value) => onPrefectureChange(Number(value))}
+        disabled={loadingPrefectures || prefectures.length === 0}
       >
-        <SelectTrigger className="w-full md:w-[180px]">
-          <SelectValue placeholder="都道府県を選択" />
+        <SelectTrigger
+          className="w-full md:w-[180px]"
+          aria-busy={loadingPrefectures}
+        >
+          <SelectValue
+            placeholder={
+              loadingPrefectures ? "読み込み中..." : "都道府県を選択"
+            }
+          />
         </SelectTrigger>
         <SelectContent>
-          {prefectures.map((pref) => (
-            <SelectItem key={pref.prec_no} value={pref.prec_no.toString()}>
-              {pref.name}
+          {prefectures.map((prefecture) => (
+            <SelectItem
+              key={prefecture.prec_no}
+              value={prefecture.prec_no.toString()}
+            >
+              {prefecture.name}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       <Select
-        value={selectedStationId?.toString() ?? ""}
+        value={selectedStationExists ? selectedStationId?.toString() ?? "" : ""}
         onValueChange={(value) => {
-          const station = stations.find((s) => s.id === Number(value));
+          const station = stations.find(
+            (candidate) => candidate.id === Number(value)
+          );
           if (station) onSelect(station);
         }}
-        disabled={selectedPrecNo === null || isLoadingStations}
+        disabled={
+          selectedPrecNo === null ||
+          loadingPrefectures ||
+          loadingStations ||
+          stations.length === 0
+        }
       >
-        <SelectTrigger className="w-full md:w-[180px]">
+        <SelectTrigger
+          className="w-full md:w-[180px]"
+          aria-busy={loadingStations}
+        >
           <SelectValue
-            placeholder={isLoadingStations ? "読み込み中..." : "地点を選択"}
+            placeholder={loadingStations ? "読み込み中..." : "地点を選択"}
           />
         </SelectTrigger>
         <SelectContent>
