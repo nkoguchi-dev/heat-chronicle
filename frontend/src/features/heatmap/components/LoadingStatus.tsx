@@ -11,6 +11,7 @@ interface LoadingStatusProps {
   message: string;
   progress?: ProgressEvent;
   onRetry?: () => void;
+  variant?: "default" | "compact";
 }
 
 export function LoadingStatus({
@@ -18,6 +19,7 @@ export function LoadingStatus({
   message,
   progress,
   onRetry,
+  variant = "default",
 }: LoadingStatusProps) {
   const percent = progress
     ? Math.round((progress.completed / Math.max(progress.total, 1)) * 100)
@@ -38,6 +40,26 @@ export function LoadingStatus({
             再試行
           </Button>
         )}
+      </div>
+    );
+  }
+
+  if (variant === "compact") {
+    return (
+      <div
+        className="inline-flex h-8 shrink-0 items-center gap-1.5 text-xs text-muted-foreground sm:rounded-md sm:border sm:bg-muted/30 sm:px-2"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-label={message}
+      >
+        <Loader2
+          aria-hidden="true"
+          className="size-4 shrink-0 animate-spin motion-reduce:animate-none"
+        />
+        <span aria-hidden="true" className="hidden whitespace-nowrap sm:inline">
+          {message}
+        </span>
       </div>
     );
   }

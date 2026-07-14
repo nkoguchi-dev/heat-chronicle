@@ -98,6 +98,8 @@ export default function Home() {
   const loadingMoreEndYear = moreTemperatureLoading
     ? activeOperation.endYear
     : nextEndYear;
+  const singleMonthProgress =
+    initialTemperatureLoading && progress?.total === 1 ? progress : null;
 
   const primaryStatus = stationOptionsError ? (
     <LoadingStatus
@@ -120,7 +122,7 @@ export default function Home() {
       message={initialTemperatureError.message}
       onRetry={retryTemperature}
     />
-  ) : initialTemperatureLoading ? (
+  ) : initialTemperatureLoading && singleMonthProgress === null ? (
     <LoadingStatus
       state={progress ? "progress" : "loading"}
       message={
@@ -159,7 +161,15 @@ export default function Home() {
     >
       <div className="relative flex w-full items-center justify-center">
         <h1 className="text-xl font-bold md:text-2xl">Heat Chronicle</h1>
-        <div className="absolute right-0">
+        <div className="absolute right-0 flex items-center gap-2">
+          {singleMonthProgress && (
+            <LoadingStatus
+              state="progress"
+              message={`${singleMonthProgress.year}年${singleMonthProgress.month}月を取得中...`}
+              progress={singleMonthProgress}
+              variant="compact"
+            />
+          )}
           <ThemeToggle />
         </div>
       </div>
