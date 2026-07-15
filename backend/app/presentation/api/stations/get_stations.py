@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
-from app.di.container import GetStationUseCaseDep
+from app.di.container import ListStationUseCaseDep
 
 router = APIRouter()
 
@@ -23,10 +23,10 @@ class StationResponse(BaseModel):
 
 @router.get("/", response_model=list[StationResponse])
 def get_stations(
-    use_case: GetStationUseCaseDep,
+    use_case: ListStationUseCaseDep,
     prec_no: int | None = None,
 ) -> list[StationResponse]:
-    stations = use_case.get_stations(prec_no)
+    stations = use_case.list_stations(prec_no)
     return [
         StationResponse(
             id=station.id,

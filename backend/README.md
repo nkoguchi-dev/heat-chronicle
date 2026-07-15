@@ -32,9 +32,9 @@ backend/
 │   │       └── get_temperature.py   … キャッシュ済みデータ取得
 │   ├── application/                 … ユースケース層
 │   │   ├── prefecture/
-│   │   │   └── get_prefecture_use_case.py … 都道府県一覧の取得
+│   │   │   └── list_prefecture_use_case.py … 都道府県一覧の取得
 │   │   ├── station/
-│   │   │   └── get_station_use_case.py   … 観測地点一覧の取得
+│   │   │   └── list_station_use_case.py   … 観測地点一覧の取得
 │   │   └── temperature/
 │   │       ├── fetch_month_use_case.py     … 気象庁からの月別データ取得
 │   │       └── get_temperature_use_case.py … キャッシュ済みデータのクエリ

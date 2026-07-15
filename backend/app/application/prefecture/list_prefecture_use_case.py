@@ -71,8 +71,8 @@ class PrefectureOutput:
     name: str
 
 
-class GetPrefectureUseCase:
-    def get_all(self) -> list[PrefectureOutput]:
+class ListPrefectureUseCase:
+    def list_prefectures(self) -> list[PrefectureOutput]:
         return [
             PrefectureOutput(prec_no=prec_no, name=name)
             for prec_no, name in PREFECTURES.items()
