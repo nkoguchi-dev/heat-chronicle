@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiClient } from "@/features/shared/libs/api-client";
 import type {
@@ -10,18 +10,31 @@ import type {
   TemperatureResponse,
 } from "@/types/api";
 
+export type TemperatureLoadMode = "initial" | "more";
+
+export interface TemperatureLoadOperation {
+  mode: TemperatureLoadMode;
+  stationId: number;
+  endYear: number;
+}
+
+export interface TemperatureLoadError {
+  operation: TemperatureLoadOperation;
+  message: string;
+}
+
 interface UseTemperatureDataReturn {
   records: TemperatureRecord[];
-  isLoading: boolean;
-  isLoadingMore: boolean;
-  isFetching: boolean;
+  activeOperation: TemperatureLoadOperation | null;
   progress: ProgressEvent | null;
-  error: string | null;
+  error: TemperatureLoadError | null;
   hasOlderData: boolean;
   nextEndYear: number | null;
   startYear: number | null;
   fetchData: (stationId: number, endYear: number) => void;
   fetchMoreData: (stationId: number, endYear: number) => void;
+  retry: () => void;
+  reset: () => void;
 }
 
 function buildMonthsToFetch(
@@ -48,6 +61,48 @@ function buildMonthsToFetch(
   return months;
 }
 
+function mergeRecords(
+  current: TemperatureRecord[],
+  incoming: TemperatureRecord[]
+): TemperatureRecord[] {
+  if (incoming.length === 0) return current;
+
+  const next = [...current];
+  const indexByDate = new Map(
+    current.map((record, index) => [record.date, index])
+  );
+
+  for (const record of incoming) {
+    const existingIndex = indexByDate.get(record.date);
+    if (existingIndex === undefined) {
+      indexByDate.set(record.date, next.length);
+      next.push(record);
+    } else {
+      next[existingIndex] = record;
+    }
+  }
+
+  return next;
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+async function waitForNextRequest(signal: AbortSignal): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(resolve, 1000);
+    signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true }
+    );
+  });
+}
+
 async function fetchMissingMonths(
   stationId: number,
   months: { year: number; month: number }[],
@@ -56,11 +111,12 @@ async function fetchMissingMonths(
   fetchIdRef: React.RefObject<number>,
   setRecords: React.Dispatch<React.SetStateAction<TemperatureRecord[]>>,
   setProgress: React.Dispatch<React.SetStateAction<ProgressEvent | null>>
-): Promise<void> {
+): Promise<number> {
   const total = months.length;
+  let failedCount = 0;
 
   for (let i = 0; i < months.length; i++) {
-    if (fetchIdRef.current !== fetchId) break;
+    if (fetchIdRef.current !== fetchId || controller.signal.aborted) break;
 
     const { year, month } = months[i];
     setProgress({ year, month, completed: i, total });
@@ -73,198 +129,205 @@ async function fetchMissingMonths(
 
       if (fetchIdRef.current !== fetchId) break;
 
-      if (monthData.records.length > 0) {
-        setRecords((prev) => [...prev, ...monthData.records]);
-      }
+      setRecords((current) => mergeRecords(current, monthData.records));
+      setProgress({ year, month, completed: i + 1, total });
+    } catch (requestError) {
+      if (isAbortError(requestError)) break;
+      failedCount += 1;
+      console.error(`Failed to fetch ${year}-${month}:`, requestError);
+    }
 
-      // Rate limit: wait 1s between requests
-      if (i < months.length - 1) {
-        await new Promise<void>((resolve, reject) => {
-          const timer = setTimeout(resolve, 1000);
-          controller.signal.addEventListener(
-            "abort",
-            () => {
-              clearTimeout(timer);
-              reject(new DOMException("Aborted", "AbortError"));
-            },
-            { once: true }
-          );
-        });
+    if (i < months.length - 1 && !controller.signal.aborted) {
+      try {
+        await waitForNextRequest(controller.signal);
+      } catch (requestError) {
+        if (isAbortError(requestError)) break;
+        throw requestError;
       }
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        break;
-      }
-      console.error(`Failed to fetch ${year}-${month}:`, err);
     }
   }
+
+  return failedCount;
 }
 
-async function runScrapingFlow(
-  stationId: number,
-  startYear: number,
-  endYear: number,
-  fetchedMonths: string[],
-  controller: AbortController,
-  fetchId: number,
-  fetchIdRef: React.RefObject<number>,
-  setRecords: React.Dispatch<React.SetStateAction<TemperatureRecord[]>>,
-  setIsFetching: React.Dispatch<React.SetStateAction<boolean>>,
-  setProgress: React.Dispatch<React.SetStateAction<ProgressEvent | null>>
-): Promise<void> {
-  const months = buildMonthsToFetch(startYear, endYear, fetchedMonths);
-  if (months.length === 0) return;
-
-  setIsFetching(true);
-  await fetchMissingMonths(
-    stationId,
-    months,
-    controller,
-    fetchId,
-    fetchIdRef,
-    setRecords,
-    setProgress
-  );
-
-  if (fetchIdRef.current === fetchId) {
-    setIsFetching(false);
-    setProgress(null);
+function getErrorMessage(
+  operation: TemperatureLoadOperation,
+  partialFailure: boolean
+): string {
+  if (partialFailure) {
+    return "一部の月の気温データを取得できませんでした。";
   }
+  if (operation.mode === "more") {
+    return `〜${operation.endYear}年の気温データを取得できませんでした。`;
+  }
+  return "気温データを取得できませんでした。";
 }
 
 export function useTemperatureData(): UseTemperatureDataReturn {
   const [records, setRecords] = useState<TemperatureRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
+  const [activeOperation, setActiveOperation] =
+    useState<TemperatureLoadOperation | null>(null);
   const [progress, setProgress] = useState<ProgressEvent | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<TemperatureLoadError | null>(null);
   const [hasOlderData, setHasOlderData] = useState(false);
   const [nextEndYear, setNextEndYear] = useState<number | null>(null);
   const [startYear, setStartYear] = useState<number | null>(null);
+
   const fetchIdRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const isLoadingMoreRef = useRef(false);
+  const activeOperationRef = useRef<TemperatureLoadOperation | null>(null);
+  const failedOperationRef = useRef<TemperatureLoadOperation | null>(null);
 
-  const fetchData = useCallback(
-    (stationId: number, endYear: number) => {
-      // Cancel any existing fetch/fetchMore sequence
-      abortControllerRef.current?.abort();
-      isLoadingMoreRef.current = false;
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-      const myFetchId = ++fetchIdRef.current;
-
-      setIsLoading(true);
-      setIsLoadingMore(false);
-      setIsFetching(false);
+  const finishOperation = useCallback(
+    (operation: TemperatureLoadOperation, fetchId: number) => {
+      if (fetchIdRef.current !== fetchId) return;
+      if (activeOperationRef.current === operation) {
+        activeOperationRef.current = null;
+      }
+      abortControllerRef.current = null;
+      setActiveOperation(null);
       setProgress(null);
-      setError(null);
-      setRecords([]);
-      setHasOlderData(false);
-      setNextEndYear(null);
-      setStartYear(null);
-
-      apiClient
-        .get<TemperatureResponse>(
-          `/api/temperature/${stationId}?end_year=${endYear}`,
-          { signal: controller.signal }
-        )
-        .then(async (response) => {
-          if (fetchIdRef.current !== myFetchId) return;
-
-          setRecords(response.data);
-          setStartYear(response.metadata.start_year);
-          setHasOlderData(response.metadata.has_older_data);
-          setNextEndYear(response.metadata.next_end_year);
-          setIsLoading(false);
-
-          if (!response.metadata.fetching_required) return;
-
-          await runScrapingFlow(
-            stationId,
-            response.metadata.start_year,
-            endYear,
-            response.metadata.fetched_months,
-            controller,
-            myFetchId,
-            fetchIdRef,
-            setRecords,
-            setIsFetching,
-            setProgress
-          );
-        })
-        .catch((err) => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          if (fetchIdRef.current === myFetchId) {
-            setError(err.message);
-            setIsLoading(false);
-          }
-        });
     },
     []
   );
 
-  const fetchMoreData = useCallback(
-    (stationId: number, endYear: number) => {
-      // Block double execution
-      if (isLoadingMoreRef.current) return;
-      isLoadingMoreRef.current = true;
-
-      const controller = abortControllerRef.current ?? new AbortController();
+  const executeOperation = useCallback(
+    (operation: TemperatureLoadOperation) => {
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
       abortControllerRef.current = controller;
-      const myFetchId = fetchIdRef.current;
+      const fetchId = ++fetchIdRef.current;
 
-      setIsLoadingMore(true);
+      activeOperationRef.current = operation;
+      failedOperationRef.current = null;
+      setActiveOperation(operation);
+      setProgress(null);
       setError(null);
 
-      apiClient
+      if (operation.mode === "initial") {
+        setRecords([]);
+        setHasOlderData(false);
+        setNextEndYear(null);
+        setStartYear(null);
+      }
+
+      void apiClient
         .get<TemperatureResponse>(
-          `/api/temperature/${stationId}?end_year=${endYear}`,
+          `/api/temperature/${operation.stationId}?end_year=${operation.endYear}`,
           { signal: controller.signal }
         )
         .then(async (response) => {
-          if (fetchIdRef.current !== myFetchId) return;
+          if (fetchIdRef.current !== fetchId) return;
 
-          setRecords((prev) => [...prev, ...response.data]);
+          if (operation.mode === "initial") {
+            setRecords(response.data);
+          } else {
+            setRecords((current) => mergeRecords(current, response.data));
+          }
           setStartYear(response.metadata.start_year);
           setHasOlderData(response.metadata.has_older_data);
           setNextEndYear(response.metadata.next_end_year);
-          setIsLoadingMore(false);
-          isLoadingMoreRef.current = false;
 
-          if (!response.metadata.fetching_required) return;
+          let failedCount = 0;
+          if (response.metadata.fetching_required) {
+            const months = buildMonthsToFetch(
+              response.metadata.start_year,
+              operation.endYear,
+              response.metadata.fetched_months
+            );
+            failedCount = await fetchMissingMonths(
+              operation.stationId,
+              months,
+              controller,
+              fetchId,
+              fetchIdRef,
+              setRecords,
+              setProgress
+            );
+          }
 
-          await runScrapingFlow(
-            stationId,
-            response.metadata.start_year,
-            endYear,
-            response.metadata.fetched_months,
-            controller,
-            myFetchId,
-            fetchIdRef,
-            setRecords,
-            setIsFetching,
-            setProgress
-          );
+          if (fetchIdRef.current !== fetchId || controller.signal.aborted) {
+            return;
+          }
+
+          if (failedCount > 0) {
+            failedOperationRef.current = operation;
+            setError({
+              operation,
+              message: getErrorMessage(operation, true),
+            });
+          }
+
+          finishOperation(operation, fetchId);
         })
-        .catch((err) => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          if (fetchIdRef.current === myFetchId) {
-            setError(err.message);
-            setIsLoadingMore(false);
-            isLoadingMoreRef.current = false;
+        .catch((requestError) => {
+          if (isAbortError(requestError)) return;
+          console.error("Failed to fetch temperature data:", requestError);
+          if (fetchIdRef.current === fetchId) {
+            failedOperationRef.current = operation;
+            setError({
+              operation,
+              message: getErrorMessage(operation, false),
+            });
+            finishOperation(operation, fetchId);
           }
         });
+    },
+    [finishOperation]
+  );
+
+  const fetchData = useCallback(
+    (stationId: number, endYear: number) => {
+      executeOperation({ mode: "initial", stationId, endYear });
+    },
+    [executeOperation]
+  );
+
+  const fetchMoreData = useCallback(
+    (stationId: number, endYear: number) => {
+      if (
+        activeOperationRef.current !== null ||
+        failedOperationRef.current !== null
+      ) {
+        return;
+      }
+      executeOperation({ mode: "more", stationId, endYear });
+    },
+    [executeOperation]
+  );
+
+  const retry = useCallback(() => {
+    const operation = failedOperationRef.current;
+    if (operation) {
+      executeOperation(operation);
+    }
+  }, [executeOperation]);
+
+  const reset = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    ++fetchIdRef.current;
+    activeOperationRef.current = null;
+    failedOperationRef.current = null;
+    setRecords([]);
+    setActiveOperation(null);
+    setProgress(null);
+    setError(null);
+    setHasOlderData(false);
+    setNextEndYear(null);
+    setStartYear(null);
+  }, []);
+
+  useEffect(
+    () => () => {
+      abortControllerRef.current?.abort();
     },
     []
   );
 
   return {
     records,
-    isLoading,
-    isLoadingMore,
-    isFetching,
+    activeOperation,
     progress,
     error,
     hasOlderData,
@@ -272,5 +335,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
     startYear,
     fetchData,
     fetchMoreData,
+    retry,
+    reset,
   };
 }
