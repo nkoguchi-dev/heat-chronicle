@@ -46,7 +46,7 @@ poetry run pytest tests/ -v  # 5. テスト
 ### モデルと DTO の境界
 
 - **Domain Model**: Domain 層には外部フレームワークに依存しないドメインモデルを定義する。Pydantic の Request / Response / 永続化 DTO を置かない
-- **Application I/O**: 入出力をドメインモデルで表現できる場合はドメインモデル自体を利用する。ドメインモデルで表現できないユースケース固有の入出力だけを Application 専用の dataclass として定義する
+- **Application I/O**: 入出力そのものがドメインモデルで表現できる場合はドメインモデル自体を利用する。ユースケース固有の Application DTO を定義する場合、そのフィールドには Domain Model を使い回さず、形が同じでも Application 専用の dataclass を定義する
 - **Presentation DTO**: HTTP の Request / Response は Presentation 層にエンドポイント専用の Pydantic Model として定義する
 - **Infrastructure DTO**: DynamoDB、外部 API、ファイルなどの外部ペイロードは Infrastructure 層に用途専用の Pydantic Model として定義する
 - **DTO の使い回し禁止**: レイヤー、ユースケース、エンドポイント、外部境界が異なる DTO は、フィールド構成が偶然同じでも共有しない

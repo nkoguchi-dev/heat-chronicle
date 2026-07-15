@@ -3,7 +3,6 @@ from datetime import date, datetime, timezone
 
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
-from app.domain.temperature.model import DailyTemperature
 from app.domain.temperature.repository import TemperatureRepository
 
 CHUNK_SIZE = 50
@@ -24,9 +23,17 @@ class TemperatureMetadataOutput:
 
 
 @dataclass(frozen=True)
+class TemperatureRecordOutput:
+    date: date
+    max_temp: float | None = None
+    min_temp: float | None = None
+    avg_temp: float | None = None
+
+
+@dataclass(frozen=True)
 class GetTemperatureDataOutput:
     metadata: TemperatureMetadataOutput
-    data: list[DailyTemperature]
+    data: list[TemperatureRecordOutput]
 
 
 def _build_date_range(start_year: int, end_year: int) -> tuple[str, str]:
@@ -105,4 +112,14 @@ class TemperatureService:
             next_end_year=next_end_year,
         )
 
-        return GetTemperatureDataOutput(metadata=metadata, data=records)
+        data = [
+            TemperatureRecordOutput(
+                date=record.date,
+                max_temp=record.max_temp,
+                min_temp=record.min_temp,
+                avg_temp=record.avg_temp,
+            )
+            for record in records
+        ]
+
+        return GetTemperatureDataOutput(metadata=metadata, data=data)
