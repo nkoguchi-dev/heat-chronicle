@@ -21,17 +21,18 @@ Codex による実装・レビューで使用します。
 - [ ] Domain Model、業務ルール、Repository / Port がドメインリソース単位のディレクトリに整理されているか
 - [ ] Presentation 層の知識（HTTP ステータスコード、`Request`/`Response` オブジェクト等）が Application 層に漏れていないか
 - [ ] Domain 層に Presentation / Infrastructure の DTO が置かれていないか
-- [ ] Application Service が Presentation 層へ Domain Model を直接返さず、ユースケース専用の Output DTO に変換しているか
+- [ ] UseCase が Presentation 層へ Domain Model を直接返さず、ユースケース専用の Output DTO に変換しているか
 - [ ] Application 専用 DTO のフィールドに Domain Model を使い回していないか
 - [ ] 形が同じだけの DTO をレイヤー・ユースケース・エンドポイント間で使い回していないか
 
-### Service パターン
+### UseCase / Service パターン
 
-- [ ] Application Service が機能単位のディレクトリに整理されているか
-- [ ] Service クラスがドメインロジックの実行に集中しているか（HTTP 知識を持たない）
-- [ ] Presentation 層から呼び出せる公開メソッドが1つの Service クラスにつき1つ以下になっているか
-- [ ] 複数の Service で使う共通処理が `application/shared/` に分離され、Presentation 層から直接呼び出されていないか
-- [ ] 複数の責務を 1 つの Service に詰め込んでいないか
+- [ ] UseCase が機能単位のディレクトリに整理されているか
+- [ ] UseCase クラスが `GetStationUseCase`、ファイルが `get_station_use_case.py` のように命名されているか
+- [ ] 1つの UseCase クラスが1つのユースケースの実行に集中しているか（HTTP 知識を持たない）
+- [ ] Presentation 層から呼び出せる公開メソッドが1つの UseCase クラスにつき1つ以下になっているか
+- [ ] 複数の UseCase から呼び出される処理が `application/shared/` の Service に分離され、Presentation 層から直接呼び出されていないか
+- [ ] 複数の責務を 1 つの UseCase または Service に詰め込んでいないか
 - [ ] 補助的なロジックはプライベートメソッド（`_` プレフィックス）になっているか
 
 ### リポジトリパターン
@@ -42,7 +43,7 @@ Codex による実装・レビューで使用します。
 
 ### 依存性注入（DI）
 
-- [ ] FastAPI の `Depends` を使った DI になっているか（Presentation には Application Service の型エイリアスを注入）
+- [ ] FastAPI の `Depends` を使った DI になっているか（Presentation には UseCase の型エイリアスを注入）
 - [ ] コンストラクタや関数内で外部依存を直接生成（インスタンス化）していないか
 
 ## 2. FastAPI 固有
