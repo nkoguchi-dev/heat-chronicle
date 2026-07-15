@@ -39,7 +39,7 @@ export function useStationOptions({
   const [stations, setStations] = useState<Station[]>([]);
   const [loadingPhase, setLoadingPhase] = useState<StationOptionsLoadPhase | null>('prefectures');
   const [error, setError] = useState<StationOptionsError | null>(null);
-  const [prefecturesLoaded, setPrefecturesLoaded] = useState(false);
+  const [hasLoadedPrefectures, setHasLoadedPrefectures] = useState(false);
 
   const prefecturesControllerRef = useRef<AbortController | null>(null);
   const stationsControllerRef = useRef<AbortController | null>(null);
@@ -57,7 +57,7 @@ export function useStationOptions({
     onInitialStationResolvedRef.current = onInitialStationResolved;
   }, [onInitialStationResolved]);
 
-  const loadStations = useCallback((precNo: number) => {
+  const loadStations = useCallback((precNo: number): void => {
     stationsControllerRef.current?.abort();
     const controller = new AbortController();
     stationsControllerRef.current = controller;
@@ -101,7 +101,7 @@ export function useStationOptions({
     });
   }, []);
 
-  const loadPrefectures = useCallback(() => {
+  const loadPrefectures = useCallback((): void => {
     prefecturesControllerRef.current?.abort();
     const controller = new AbortController();
     prefecturesControllerRef.current = controller;
@@ -119,7 +119,7 @@ export function useStationOptions({
         if (controller.signal.aborted) return;
 
         setPrefectures(data);
-        setPrefecturesLoaded(true);
+        setHasLoadedPrefectures(true);
 
         const precNo = selectedPrecNoRef.current;
         if (precNo !== null) {
@@ -149,7 +149,7 @@ export function useStationOptions({
   }, [loadPrefectures]);
 
   useEffect(() => {
-    if (!prefecturesLoaded) return;
+    if (!hasLoadedPrefectures) return;
 
     if (selectedPrecNo === null) {
       stationsControllerRef.current?.abort();
@@ -165,9 +165,9 @@ export function useStationOptions({
     if (lastRequestedPrecNoRef.current !== selectedPrecNo) {
       void loadStations(selectedPrecNo);
     }
-  }, [loadStations, prefecturesLoaded, selectedPrecNo]);
+  }, [hasLoadedPrefectures, loadStations, selectedPrecNo]);
 
-  const retry = useCallback(() => {
+  const retry = useCallback((): void => {
     if (error?.phase === 'prefectures') {
       void loadPrefectures();
       return;

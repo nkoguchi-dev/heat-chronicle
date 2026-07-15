@@ -27,9 +27,21 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Check formatting (Prettier)
+        working-directory: frontend
+        run: npm run format:check
+
       - name: Lint (ESLint)
         working-directory: frontend
         run: npm run lint
+
+      - name: Type check (TypeScript)
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Unit and component tests (Vitest)
+        working-directory: frontend
+        run: npm run test:coverage
 
       - name: Build
         working-directory: frontend

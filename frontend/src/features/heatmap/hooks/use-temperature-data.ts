@@ -3,25 +3,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiClient } from '@/features/shared/libs/api-client';
+import {
+  buildMonthsToFetch,
+  getTemperatureLoadErrorMessage,
+  mergeTemperatureRecords,
+  type TemperatureMonth,
+} from '@/features/heatmap/libs/temperature-data';
 import type {
   MonthTemperatureResponse,
   ProgressEvent,
   TemperatureRecord,
   TemperatureResponse,
 } from '@/features/heatmap/types/api';
+import type { TemperatureLoadError, TemperatureLoadOperation } from '@/features/heatmap/types/temperature-data';
 
-export type TemperatureLoadMode = 'initial' | 'more';
-
-export interface TemperatureLoadOperation {
-  mode: TemperatureLoadMode;
-  stationId: number;
-  endYear: number;
-}
-
-export interface TemperatureLoadError {
-  operation: TemperatureLoadOperation;
-  message: string;
-}
+export type { TemperatureLoadError, TemperatureLoadOperation } from '@/features/heatmap/types/temperature-data';
 
 interface UseTemperatureDataReturn {
   records: TemperatureRecord[];
@@ -37,70 +33,27 @@ interface UseTemperatureDataReturn {
   reset: () => void;
 }
 
-function buildMonthsToFetch(
-  startYear: number,
-  endYear: number,
-  fetchedMonths: string[],
-): { year: number; month: number }[] {
-  const fetchedSet = new Set(fetchedMonths);
-  const months: { year: number; month: number }[] = [];
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-
-  for (let y = endYear; y >= startYear; y--) {
-    for (let m = 12; m >= 1; m--) {
-      if (y > currentYear || (y === currentYear && m > currentMonth)) continue;
-      const key = `${y}-${String(m).padStart(2, '0')}`;
-      if (!fetchedSet.has(key)) {
-        months.push({ year: y, month: m });
-      }
-    }
-  }
-
-  return months;
-}
-
-function mergeRecords(current: TemperatureRecord[], incoming: TemperatureRecord[]): TemperatureRecord[] {
-  if (incoming.length === 0) return current;
-
-  const next = [...current];
-  const indexByDate = new Map(current.map((record, index) => [record.date, index]));
-
-  for (const record of incoming) {
-    const existingIndex = indexByDate.get(record.date);
-    if (existingIndex === undefined) {
-      indexByDate.set(record.date, next.length);
-      next.push(record);
-    } else {
-      next[existingIndex] = record;
-    }
-  }
-
-  return next;
-}
-
 function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
 }
 
 async function waitForNextRequest(signal: AbortSignal): Promise<void> {
   await new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(resolve, 1000);
-    signal.addEventListener(
-      'abort',
-      () => {
-        clearTimeout(timer);
-        reject(new DOMException('Aborted', 'AbortError'));
-      },
-      { once: true },
-    );
+    const handleAbort = (): void => {
+      clearTimeout(timer);
+      reject(new DOMException('Aborted', 'AbortError'));
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', handleAbort);
+      resolve();
+    }, 1000);
+    signal.addEventListener('abort', handleAbort, { once: true });
   });
 }
 
 async function fetchMissingMonths(
   stationId: number,
-  months: { year: number; month: number }[],
+  months: TemperatureMonth[],
   controller: AbortController,
   fetchId: number,
   fetchIdRef: React.RefObject<number>,
@@ -110,11 +63,11 @@ async function fetchMissingMonths(
   const total = months.length;
   let failedCount = 0;
 
-  for (let i = 0; i < months.length; i++) {
+  for (let monthIndex = 0; monthIndex < months.length; monthIndex++) {
     if (fetchIdRef.current !== fetchId || controller.signal.aborted) break;
 
-    const { year, month } = months[i];
-    setProgress({ year, month, completed: i, total });
+    const { year, month } = months[monthIndex];
+    setProgress({ year, month, completed: monthIndex, total });
 
     try {
       const monthData = await apiClient.get<MonthTemperatureResponse>(
@@ -124,15 +77,15 @@ async function fetchMissingMonths(
 
       if (fetchIdRef.current !== fetchId) break;
 
-      setRecords((current) => mergeRecords(current, monthData.records));
-      setProgress({ year, month, completed: i + 1, total });
+      setRecords((current) => mergeTemperatureRecords(current, monthData.records));
+      setProgress({ year, month, completed: monthIndex + 1, total });
     } catch (requestError) {
       if (isAbortError(requestError)) break;
       failedCount += 1;
       console.error(`Failed to fetch ${year}-${month}:`, requestError);
     }
 
-    if (i < months.length - 1 && !controller.signal.aborted) {
+    if (monthIndex < months.length - 1 && !controller.signal.aborted) {
       try {
         await waitForNextRequest(controller.signal);
       } catch (requestError) {
@@ -143,16 +96,6 @@ async function fetchMissingMonths(
   }
 
   return failedCount;
-}
-
-function getErrorMessage(operation: TemperatureLoadOperation, partialFailure: boolean): string {
-  if (partialFailure) {
-    return '一部の月の気温データを取得できませんでした。';
-  }
-  if (operation.mode === 'more') {
-    return `〜${operation.endYear}年の気温データを取得できませんでした。`;
-  }
-  return '気温データを取得できませんでした。';
 }
 
 export function useTemperatureData(): UseTemperatureDataReturn {
@@ -169,7 +112,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   const activeOperationRef = useRef<TemperatureLoadOperation | null>(null);
   const failedOperationRef = useRef<TemperatureLoadOperation | null>(null);
 
-  const finishOperation = useCallback((operation: TemperatureLoadOperation, fetchId: number) => {
+  const finishOperation = useCallback((operation: TemperatureLoadOperation, fetchId: number): void => {
     if (fetchIdRef.current !== fetchId) return;
     if (activeOperationRef.current === operation) {
       activeOperationRef.current = null;
@@ -180,7 +123,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   }, []);
 
   const executeOperation = useCallback(
-    (operation: TemperatureLoadOperation) => {
+    (operation: TemperatureLoadOperation): void => {
       abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -209,7 +152,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
           if (operation.mode === 'initial') {
             setRecords(response.data);
           } else {
-            setRecords((current) => mergeRecords(current, response.data));
+            setRecords((current) => mergeTemperatureRecords(current, response.data));
           }
           setStartYear(response.metadata.start_year);
           setHasOlderData(response.metadata.has_older_data);
@@ -241,7 +184,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
             failedOperationRef.current = operation;
             setError({
               operation,
-              message: getErrorMessage(operation, true),
+              message: getTemperatureLoadErrorMessage(operation, true),
             });
           }
 
@@ -254,7 +197,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
             failedOperationRef.current = operation;
             setError({
               operation,
-              message: getErrorMessage(operation, false),
+              message: getTemperatureLoadErrorMessage(operation, false),
             });
             finishOperation(operation, fetchId);
           }
@@ -264,14 +207,14 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   );
 
   const fetchData = useCallback(
-    (stationId: number, endYear: number) => {
+    (stationId: number, endYear: number): void => {
       executeOperation({ mode: 'initial', stationId, endYear });
     },
     [executeOperation],
   );
 
   const fetchMoreData = useCallback(
-    (stationId: number, endYear: number) => {
+    (stationId: number, endYear: number): void => {
       if (activeOperationRef.current !== null || failedOperationRef.current !== null) {
         return;
       }
@@ -280,14 +223,14 @@ export function useTemperatureData(): UseTemperatureDataReturn {
     [executeOperation],
   );
 
-  const retry = useCallback(() => {
+  const retry = useCallback((): void => {
     const operation = failedOperationRef.current;
     if (operation) {
       executeOperation(operation);
     }
   }, [executeOperation]);
 
-  const reset = useCallback(() => {
+  const reset = useCallback((): void => {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     ++fetchIdRef.current;

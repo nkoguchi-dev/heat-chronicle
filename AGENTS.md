@@ -47,7 +47,7 @@ black → isort → flake8 → mypy → pytest
 ### フロントエンド品質チェック
 
 ```
-npm run format:check → npm run lint → npm run typecheck → npm run build
+npm run format:check → npm run lint → npm run typecheck → npm run test:coverage → npm run build
 ```
 
 ## 開発のベストプラクティス

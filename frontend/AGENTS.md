@@ -13,6 +13,9 @@ npm run format          # Prettierでフォーマット
 npm run format:check    # Prettierの適用確認
 npm run lint            # ESLint
 npm run typecheck       # TypeScript型チェック
+npm run test            # Vitestを1回実行
+npm run test:watch      # Vitestをwatchモードで実行
+npm run test:coverage   # カバレッジ閾値を含めてテスト
 npm run build           # 本番ビルド（静的エクスポート）
 ```
 
@@ -35,6 +38,7 @@ npm run build           # 本番ビルド（静的エクスポート）
 - 各フィーチャーは自己完結させ、別フィーチャーの内部コードを直接importしない
 - 複数機能で利用するコードのみ `src/features/shared/` に配置し、機能間で共有する場合はこの層を経由する
 - `src/components/ui/` には機能固有のロジックを持たせない
+- `src/components/ui/` のshadcn/ui生成コードは、生成元との差分を避けるため、アプリ固有のファイル命名・Props宣言・カバレッジ規約の対象外とする。ただしlintと型チェックは必須とする
 
 ## 命名規則
 
@@ -64,6 +68,15 @@ npm run build           # 本番ビルド（静的エクスポート）
 - ネストが深くなる場合は早期returnや処理の分割で平坦化する
 - スタイリング: Tailwind CSS v4
 - UIコンポーネント: shadcn/ui（new-yorkスタイル）
+
+## テスト
+
+- Vitest、React Testing Library、jsdomを使用する
+- 新規・変更されたロジックには正常系、異常系、境界値のテストを追加する
+- コンポーネントは実装詳細ではなく、表示、アクセシブルな名前、ユーザー操作を検証する
+- APIやブラウザAPI、タイマーはテストごとにリセットし、テスト間の依存を作らない
+- アプリ固有コードのカバレッジ閾値はlines / statements / functions 80%、branches 75%を維持する
+- `src/components/ui/` のshadcn/ui生成コード、型定義、App Routerの薄い配線はカバレッジ対象外とする
 
 ## APIアクセス
 
@@ -119,5 +132,6 @@ npm run build           # 本番ビルド（静的エクスポート）
 npm run format:check
 npm run lint
 npm run typecheck
+npm run test:coverage
 npm run build
 ```

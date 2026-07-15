@@ -11,18 +11,18 @@ export interface GridCell {
 export type HeatmapGrid = Map<number, Map<number, GridCell>>;
 
 function dayOfYear(dateStr: string): number {
-  const d = new Date(dateStr);
-  const start = new Date(d.getFullYear(), 0, 0);
-  const diff = d.getTime() - start.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24)) - 1; // 0-based
+  const date = new Date(dateStr);
+  const startOfYear = new Date(date.getFullYear(), 0, 0);
+  const differenceInMilliseconds = date.getTime() - startOfYear.getTime();
+  return Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24)) - 1; // 0-based
 }
 
 export function buildGrid(records: TemperatureRecord[], startYear: number, endYear: number): HeatmapGrid {
   const grid: HeatmapGrid = new Map();
 
   // Initialize empty years
-  for (let y = startYear; y <= endYear; y++) {
-    grid.set(y, new Map());
+  for (let year = startYear; year <= endYear; year++) {
+    grid.set(year, new Map());
   }
 
   for (const record of records) {
@@ -30,8 +30,8 @@ export function buildGrid(records: TemperatureRecord[], startYear: number, endYe
     const yearMap = grid.get(year);
     if (!yearMap) continue;
 
-    const doy = dayOfYear(record.date);
-    yearMap.set(doy, {
+    const dayIndex = dayOfYear(record.date);
+    yearMap.set(dayIndex, {
       date: record.date,
       maxTemp: record.max_temp,
       minTemp: record.min_temp,
