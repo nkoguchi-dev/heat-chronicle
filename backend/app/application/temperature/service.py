@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 
-from app.domain.station.model import Station
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.model import DailyTemperature
@@ -61,12 +60,6 @@ class TemperatureService:
     ):
         self.station_repo = station_repo
         self.temp_repo = temp_repo
-
-    def get_all_stations(self) -> list[Station]:
-        return self.station_repo.get_all()
-
-    def get_stations_by_prec_no(self, prec_no: int) -> list[Station]:
-        return self.station_repo.get_by_prec_no(prec_no)
 
     def get_temperature_data(
         self, station_id: int, end_year: int

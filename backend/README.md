@@ -31,9 +31,13 @@ backend/
 │   │       ├── fetch_month.py       … 月別データ取得
 │   │       └── get_temperature.py   … キャッシュ済みデータ取得
 │   ├── application/                 … サービス層
-│   │   ├── prefecture_service.py    … 都道府県一覧の取得
-│   │   ├── scrape_service.py        … 気象庁からの月別データ取得
-│   │   └── temperature_service.py   … キャッシュ済みデータのクエリ
+│   │   ├── prefecture/
+│   │   │   └── service.py           … 都道府県一覧の取得
+│   │   ├── station/
+│   │   │   └── service.py           … 観測地点一覧の取得
+│   │   └── temperature/
+│   │       ├── scrape_service.py    … 気象庁からの月別データ取得
+│   │       └── service.py           … キャッシュ済みデータのクエリ
 │   ├── domain/                      … ドメインモデル、業務ルール、I/O Port
 │   │   ├── station/                … 観測地点ドメイン
 │   │   │   ├── model.py            … 観測地点モデル

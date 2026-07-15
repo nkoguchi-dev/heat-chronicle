@@ -32,6 +32,12 @@ def test_domain_files_are_grouped_by_resource() -> None:
     assert root_python_files == {"__init__.py"}
 
 
+def test_application_files_are_grouped_by_feature() -> None:
+    root_python_files = {path.name for path in (APP_DIR / "application").glob("*.py")}
+
+    assert root_python_files == {"__init__.py"}
+
+
 def test_application_only_depends_on_domain_layer() -> None:
     imports = _imports_under(APP_DIR / "application")
     project_imports = {name for name in imports if name.startswith("app.")}

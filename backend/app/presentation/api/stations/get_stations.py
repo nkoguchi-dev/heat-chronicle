@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
-from app.di.container import TemperatureServiceDep
+from app.di.container import StationServiceDep
 
 router = APIRouter()
 
@@ -23,13 +23,13 @@ class StationResponse(BaseModel):
 
 @router.get("/", response_model=list[StationResponse])
 def get_stations(
-    service: TemperatureServiceDep,
+    service: StationServiceDep,
     prec_no: int | None = None,
 ) -> list[StationResponse]:
     if prec_no is not None:
-        stations = service.get_stations_by_prec_no(prec_no)
+        stations = service.get_by_prec_no(prec_no)
     else:
-        stations = service.get_all_stations()
+        stations = service.get_all()
     return [
         StationResponse(
             id=station.id,

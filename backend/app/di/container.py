@@ -2,9 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.application.prefecture_service import PrefectureService
-from app.application.scrape_service import ScrapeService
-from app.application.temperature_service import TemperatureService
+from app.application.prefecture.service import PrefectureService
+from app.application.station.service import StationService
+from app.application.temperature.scrape_service import ScrapeService
+from app.application.temperature.service import TemperatureService
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.repository import TemperatureRepository
@@ -48,6 +49,10 @@ def get_temperature_service(
     return TemperatureService(station_repo, temp_repo)
 
 
+def get_station_service(station_repo: StationRepoDep) -> StationService:
+    return StationService(station_repo)
+
+
 def get_scrape_service(
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
@@ -57,5 +62,6 @@ def get_scrape_service(
 
 
 PrefectureServiceDep = Annotated[PrefectureService, Depends(get_prefecture_service)]
+StationServiceDep = Annotated[StationService, Depends(get_station_service)]
 TemperatureServiceDep = Annotated[TemperatureService, Depends(get_temperature_service)]
 ScrapeServiceDep = Annotated[ScrapeService, Depends(get_scrape_service)]
