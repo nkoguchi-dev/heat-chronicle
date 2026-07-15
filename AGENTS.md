@@ -4,7 +4,7 @@ Codex（OpenAI）がこのリポジトリで作業する際のガイドです。
 
 ## プロジェクト概要
 
-heat-chronicle は気象庁の公開データをスクレイピングし、日別の最高・最低・平均気温をヒートマップとして可視化する Web アプリケーションです。プロジェクト全体の構成と設計上の判断は [README.md](./README.md) を参照してください。
+heat-chronicle は気象庁が公開している過去の気象観測データを取得・解析し、日別の最高・最低・平均気温をヒートマップとして可視化する Web アプリケーションです。プロジェクト全体の構成と設計上の判断は [README.md](./README.md) を参照してください。
 
 ## サブ AGENTS.md
 
@@ -28,7 +28,7 @@ docker compose up dynamodb-local    # DynamoDB Local のみ起動
 |---------|-----|------|
 | `stations` | id（GSI: prec_no-index） | 気象観測地点マスタ |
 | `daily-temperature` | station_id + date | 日別気温レコード |
-| `fetch-log` | station_id + year_month | スクレイピング済み年月の管理 |
+| `fetch-log` | station_id + year_month | 取得済み年月の管理 |
 
 ## コード品質基準
 

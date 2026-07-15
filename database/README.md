@@ -14,7 +14,7 @@
 |-----------|------|-------------------|-----|
 | `stations` | 気象観測地点マスタ | `id` (N) | `prec_no-index` (prec_no → id) |
 | `daily-temperature` | 日別気温レコード | `station_id#date` (S) | — |
-| `fetch-log` | スクレイピング取得履歴 | `station_id#year_month` (S) | — |
+| `fetch-log` | 気象データ取得履歴 | `station_id#year_month` (S) | — |
 
 ## ファイル
 

@@ -30,15 +30,15 @@ poetry run pytest tests/ -v  # 5. テスト
 | レイヤー | ディレクトリ | 責務 |
 |----------|------------|------|
 | Presentation | `presentation/api/` | FastAPI ルーター（HTTP ハンドリング） |
-| Application | `application/` | ビジネスロジック（スクレイピング、キャッシュ判定） |
+| Application | `application/` | ビジネスロジック（気象データ取得、キャッシュ判定） |
 | Domain | `domain/` | Pydantic レスポンススキーマ |
-| Infrastructure | `infrastructure/` | DynamoDB アクセス、気象庁スクレイパー |
+| Infrastructure | `infrastructure/` | DynamoDB アクセス、気象庁データ取得・解析 |
 
 ### レイヤー間の制約
 
 - **Presentation → Application**: ルーターはサービス層のみを呼び出す
 - **Presentation → Infrastructure**: 直接呼び出し禁止（必ず Application 層を経由する）
-- **Application → Infrastructure**: リポジトリ・スクレイパーを利用可能
+- **Application → Infrastructure**: リポジトリ・気象庁データ取得機能を利用可能
 - **Domain**: 他レイヤーに依存しない（純粋なスキーマ定義）
 - **Infrastructure → Application/Presentation**: 逆方向の依存禁止
 
@@ -46,7 +46,7 @@ poetry run pytest tests/ -v  # 5. テスト
 
 - **リポジトリパターン**: `StationRepository` と `TemperatureRepository` が全 DB クエリをカプセル化
 - **依存性注入**: FastAPI の `Depends` を使用（`StationRepoDep`, `TempRepoDep`）
-- **レート制限スクレイピング**: `JmaClient` がリクエスト間隔 2 秒以上を強制、3 回リトライ + 指数バックオフ
+- **負荷を抑えたデータ取得**: `JmaClient` がリクエスト間隔 2 秒以上を強制、3 回リトライ + 指数バックオフ
 
 ## API エンドポイント
 
