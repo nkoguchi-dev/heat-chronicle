@@ -1,9 +1,9 @@
 # --- AWS デプロイ関連 ---
 
 resource "github_actions_secret" "aws_role_arn" {
-  repository      = var.github_repository
-  secret_name     = "AWS_ROLE_ARN"
-  plaintext_value = var.aws_role_arn
+  repository  = var.github_repository
+  secret_name = "AWS_ROLE_ARN"
+  value       = var.aws_role_arn
 }
 
 resource "github_actions_variable" "aws_region" {

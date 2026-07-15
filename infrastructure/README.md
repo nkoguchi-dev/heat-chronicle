@@ -21,6 +21,7 @@ infrastructure/aws/
 
 infrastructure/github/
 ├── main.tf                    … GitHub Actions Secrets / Variables
+├── security.tf                … Dependabot alerts / security updates
 ├── variables.tf               … 入力変数定義
 ├── outputs.tf                 … 出力値定義
 ├── provider.tf                … GitHub プロバイダ設定
@@ -64,6 +65,10 @@ infrastructure/docs/
 - **Actions Variable** — `LAMBDA_FUNCTION_NAME`（バックエンド Lambda 関数名）
 - **Actions Variable** — `NEXT_PUBLIC_API_URL`（フロントエンド API エンドポイント）
 - **Actions Variable** — `S3_BUCKET_NAME`（フロントエンドデプロイ先 S3 バケット）
+- **Dependabot alerts** — 脆弱性を含む依存関係の検出
+- **Dependabot security updates** — 脆弱な依存関係を更新する Pull Request の自動作成
+
+Dependabot の更新対象と実行スケジュールは `.github/dependabot.yml` で管理しています。
 
 ## 使い方
 
