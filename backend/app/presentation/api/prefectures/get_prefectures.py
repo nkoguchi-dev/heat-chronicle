@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
-from app.di.container import PrefectureServiceDep
+from app.di.container import GetPrefectureUseCaseDep
 
 router = APIRouter()
 
@@ -15,9 +15,9 @@ class PrefectureResponse(BaseModel):
 
 @router.get("/", response_model=list[PrefectureResponse])
 async def get_prefectures(
-    service: PrefectureServiceDep,
+    use_case: GetPrefectureUseCaseDep,
 ) -> list[PrefectureResponse]:
     return [
         PrefectureResponse(prec_no=item.prec_no, name=item.name)
-        for item in service.get_all()
+        for item in use_case.get_all()
     ]

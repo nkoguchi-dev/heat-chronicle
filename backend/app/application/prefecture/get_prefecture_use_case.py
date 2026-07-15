@@ -71,7 +71,7 @@ class PrefectureOutput:
     name: str
 
 
-class PrefectureService:
+class GetPrefectureUseCase:
     def get_all(self) -> list[PrefectureOutput]:
         return [
             PrefectureOutput(prec_no=prec_no, name=name)

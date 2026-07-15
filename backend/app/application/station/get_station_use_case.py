@@ -16,7 +16,7 @@ class StationOutput:
     earliest_year: int | None = None
 
 
-class StationService:
+class GetStationUseCase:
     def __init__(self, station_repo: StationRepository):
         self.station_repo = station_repo
 
