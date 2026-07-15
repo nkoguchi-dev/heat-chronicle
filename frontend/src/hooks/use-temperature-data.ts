@@ -285,7 +285,12 @@ export function useTemperatureData(): UseTemperatureDataReturn {
 
   const fetchMoreData = useCallback(
     (stationId: number, endYear: number) => {
-      if (activeOperationRef.current !== null) return;
+      if (
+        activeOperationRef.current !== null ||
+        failedOperationRef.current !== null
+      ) {
+        return;
+      }
       executeOperation({ mode: "more", stationId, endYear });
     },
     [executeOperation]

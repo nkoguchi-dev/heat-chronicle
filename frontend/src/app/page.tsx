@@ -235,13 +235,13 @@ export default function Home() {
 
       {loadMoreStatus}
 
-      {moreTemperatureError === null &&
+      {temperatureError === null &&
         loadingMoreEndYear !== null &&
         startYear !== null &&
         (hasOlderData || moreTemperatureLoading) && (
           <LoadMoreButton
             nextEndYear={loadingMoreEndYear}
-            loading={moreTemperatureLoading}
+            loading={activeOperation !== null}
             onLoadMore={handleLoadMore}
           />
         )}
