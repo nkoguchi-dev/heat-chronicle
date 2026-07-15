@@ -1,0 +1,73 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/"
+      - "/backend"
+      - "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    groups:
+      docker-images:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "terraform"
+    directories:
+      - "/infrastructure/aws/environments/prod"
+      - "/infrastructure/github"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    groups:
+      terraform-providers:
+        patterns:
+          - "*"

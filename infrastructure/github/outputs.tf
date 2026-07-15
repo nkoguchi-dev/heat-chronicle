@@ -34,3 +34,15 @@ output "s3_bucket_name" {
   description = "S3_BUCKET_NAME variable value"
   value       = github_actions_variable.s3_bucket_name.value
 }
+
+# --- Dependency security ---
+
+output "dependabot_alerts_enabled" {
+  description = "Whether Dependabot vulnerability alerts are enabled"
+  value       = github_repository_vulnerability_alerts.dependabot.enabled
+}
+
+output "dependabot_security_updates_enabled" {
+  description = "Whether Dependabot security updates are enabled"
+  value       = github_repository_dependabot_security_updates.dependabot.enabled
+}
