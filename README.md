@@ -109,7 +109,7 @@
 | レイヤー | 技術 |
 |---|---|
 | フロントエンド | Next.js 16 / React 19 / TypeScript / Tailwind CSS v4 / Canvas 2D API |
-| バックエンド | Python 3.12 / FastAPI / Pydantic / httpx / BeautifulSoup4 / Mangum |
+| バックエンド | Python 3.14 / FastAPI / Pydantic / httpx / BeautifulSoup4 / Mangum |
 | データストア | Amazon DynamoDB / DynamoDB Local |
 | インフラ | AWS Lambda / API Gateway / ECR / S3 / CloudFront / Route 53 / Terraform |
 | CI/CD | GitHub Actions / AWS OIDC |
@@ -132,7 +132,7 @@ heat-chronicle/
 
 ## ローカル開発
 
-前提: Docker / Docker Compose、Python 3.12 + Poetry、Node.js 22 + npm
+前提: Docker / Docker Compose、Python 3.14 + Poetry、Node.js 22 + npm
 
 ```bash
 # DynamoDB Local、バックエンド、フロントエンドをまとめて起動
