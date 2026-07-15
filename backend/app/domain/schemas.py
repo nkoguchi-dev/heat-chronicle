@@ -1,4 +1,4 @@
-from datetime import date
+import datetime
 
 from pydantic import BaseModel
 
@@ -20,7 +20,7 @@ class PrefectureResponse(BaseModel):
 
 
 class TemperatureRecord(BaseModel):
-    date: date
+    date: datetime.date
     max_temp: float | None = None
     min_temp: float | None = None
     avg_temp: float | None = None

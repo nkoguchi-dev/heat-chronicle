@@ -8,7 +8,7 @@ packages = [{include = "app"}]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.14"
 fastapi = ">=0.115,<0.140"
 uvicorn = {extras = ["standard"], version = ">=0.32,<0.52"}
 boto3 = "^1.35.0"
@@ -20,14 +20,14 @@ lxml = ">=5,<7"
 mangum = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.0"
+pytest = "^9.1.1"
 pytest-asyncio = ">=0.24,<1.5"
 pytest-cov = ">=6,<8"
 httpx = "^0.28.0"
 black = ">=24.10,<27.0"
-isort = "^5.13.0"
+isort = "^8.0.1"
 flake8 = "^7.1.0"
-mypy = "^1.13.0"
+mypy = "^2.3.0"
 moto = {extras = ["dynamodb"], version = "^5.0.0"}
 types-boto3 = {extras = ["dynamodb"], version = "^1.35.0"}
 
@@ -37,7 +37,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
-target-version = ['py312']
+target-version = ['py314']
 
 [tool.isort]
 profile = "black"
@@ -50,6 +50,6 @@ testpaths = ["tests", "integration_tests"]
 pythonpath = ["."]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.14"
 strict = true
 ignore_missing_imports = true
