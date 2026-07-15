@@ -31,16 +31,17 @@ poetry run pytest tests/ -v  # 5. テスト
 |----------|------------|------|
 | Presentation | `presentation/api/` | FastAPI ルーター（HTTP ハンドリング） |
 | Application | `application/` | ビジネスロジック（気象データ取得、キャッシュ判定） |
-| Domain | `domain/` | ドメインモデルと純粋な業務ルール |
+| Domain | `domain/` | ドメインモデル、純粋な業務ルール、I/O Port |
 | Infrastructure | `infrastructure/` | DynamoDB アクセス、気象庁データ取得・解析 |
 
 ### レイヤー間の制約
 
 - **Presentation → Application**: ルーターはサービス層のみを呼び出す
 - **Presentation → Infrastructure**: 直接呼び出し禁止（必ず Application 層を経由する）
-- **Application → Infrastructure**: リポジトリ・気象庁データ取得機能を利用可能
+- **Application → Domain**: Application 層が import できるプロジェクト内レイヤーは Domain 層だけとする。Infrastructure / Presentation / DI の import を禁止する
 - **Domain**: 他レイヤーに依存しない（純粋なドメインモデルと業務ルール）
-- **Infrastructure → Application/Presentation**: 逆方向の依存禁止
+- **Infrastructure → Domain**: Infrastructure 層は Domain 層の Repository / Port インターフェースを実装する。Application / Presentation / DI の import を禁止する
+- **DI / Composition Root**: Application と Infrastructure の両方を import し、Domain のインターフェースに Infrastructure 実装を注入する唯一の場所とする
 
 ### モデルと DTO の境界
 
@@ -55,6 +56,8 @@ poetry run pytest tests/ -v  # 5. テスト
 - **SDK の型を優先**: boto3 など公式の型定義がある設定値やレスポンス外枠には独自 DTO を重ねず、公式 stubs を利用する
 
 Domain Model は `frozen=True` の dataclass を基本とし、Application 専用 DTO は標準 dataclass、外部境界 DTO は Pydantic Model を使用します。
+
+Repository や外部データ取得など、Application が必要とする I/O は Domain 層に `Protocol` として定義し、Infrastructure 層で実装します。Application は具体実装を知らず、DI が実装を組み立てます。
 
 ### Presentation のファイル構成
 
@@ -74,8 +77,8 @@ presentation/api/temperature/
 
 ## 主要パターン
 
-- **リポジトリパターン**: `StationRepository` と `TemperatureRepository` が全 DB クエリをカプセル化
-- **依存性注入**: FastAPI の `Depends` を使用（`StationRepoDep`, `TempRepoDep`）
+- **リポジトリパターン**: Domain 層の `StationRepository` / `TemperatureRepository` Port を Infrastructure 層の DynamoDB Repository が実装する
+- **依存性注入**: FastAPI の `Depends` を使用し、Presentation 層には Application Service を注入する
 - **負荷を抑えたデータ取得**: フロントエンドが2秒以上の間隔で順次取得し、`JmaClient` は3回リトライ + 指数バックオフ
 
 ## API エンドポイント

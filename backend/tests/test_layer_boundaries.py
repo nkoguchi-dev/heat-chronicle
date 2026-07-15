@@ -26,6 +26,37 @@ def test_domain_and_application_do_not_depend_on_pydantic() -> None:
     )
 
 
+def test_application_only_depends_on_domain_layer() -> None:
+    imports = _imports_under(APP_DIR / "application")
+    project_imports = {name for name in imports if name.startswith("app.")}
+
+    assert all(name.startswith("app.domain") for name in project_imports)
+
+
+def test_domain_does_not_depend_on_outer_layers() -> None:
+    imports = _imports_under(APP_DIR / "domain")
+    project_imports = {name for name in imports if name.startswith("app.")}
+
+    assert all(name.startswith("app.domain") for name in project_imports)
+
+
+def test_infrastructure_does_not_depend_on_outer_layers() -> None:
+    imports = _imports_under(APP_DIR / "infrastructure")
+    forbidden_prefixes = (
+        "app.application",
+        "app.presentation",
+        "app.di",
+    )
+
+    assert not any(name.startswith(forbidden_prefixes) for name in imports)
+
+
+def test_presentation_does_not_depend_on_infrastructure() -> None:
+    imports = _imports_under(APP_DIR / "presentation")
+
+    assert not any(name.startswith("app.infrastructure") for name in imports)
+
+
 def test_infrastructure_dto_does_not_leak_to_upper_layers() -> None:
     imports = (
         _imports_under(APP_DIR / "domain")

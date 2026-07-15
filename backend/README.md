@@ -34,10 +34,13 @@ backend/
 │   │   ├── prefecture_service.py    … 都道府県一覧の取得
 │   │   ├── scrape_service.py        … 気象庁からの月別データ取得
 │   │   └── temperature_service.py   … キャッシュ済みデータのクエリ
-│   ├── domain/                      … ドメインモデルと純粋な業務ルール
+│   ├── domain/                      … ドメインモデル、業務ルール、I/O Port
 │   │   ├── fetch_freshness.py       … 取得鮮度の業務ルール
 │   │   ├── station.py              … 観測地点モデル
-│   │   └── temperature.py          … 日別気温モデル
+│   │   ├── station_repository.py   … 観測地点Repository Port
+│   │   ├── temperature.py          … 日別気温モデル
+│   │   ├── temperature_data_source.py … 気象データ取得Port
+│   │   └── temperature_repository.py … 気温Repository Port
 │   └── infrastructure/              … DB / 外部サービス
 │       ├── database.py              … DynamoDB クライアント初期化
 │       ├── dto/                     … 外部ペイロードの Pydantic DTO
@@ -48,7 +51,8 @@ backend/
 │       │   └── temperature_repository.py
 │       └── scraper/                 … 気象庁データの取得・解析
 │           ├── jma_client.py        … HTTP クライアント（リトライ付き）
-│           └── jma_parser.py        … HTML パーサー
+│           ├── jma_parser.py        … HTML パーサー
+│           └── jma_temperature_data_source.py … 気象データ取得Port実装
 ├── data/                            … シードデータ（地点マスタ CSV 等）
 ├── tests/                           … ユニットテスト
 ├── pyproject.toml                   … Poetry 設定

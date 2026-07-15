@@ -1,15 +1,11 @@
 import calendar
-import logging
 from datetime import date, datetime, timezone
 
 from app.domain.fetch_freshness import FetchFreshnessPolicy, FetchStatus
+from app.domain.station_repository import StationRepository
 from app.domain.temperature import DailyTemperature
-from app.infrastructure.repositories.station_repository import StationRepository
-from app.infrastructure.repositories.temperature_repository import TemperatureRepository
-from app.infrastructure.scraper.jma_client import JmaClient
-from app.infrastructure.scraper.jma_parser import parse_daily_page
-
-logger = logging.getLogger(__name__)
+from app.domain.temperature_data_source import TemperatureDataSource
+from app.domain.temperature_repository import TemperatureRepository
 
 
 class ScrapeService:
@@ -17,9 +13,11 @@ class ScrapeService:
         self,
         station_repo: StationRepository,
         temp_repo: TemperatureRepository,
+        temperature_data_source: TemperatureDataSource,
     ):
         self.station_repo = station_repo
         self.temp_repo = temp_repo
+        self.temperature_data_source = temperature_data_source
 
     async def fetch_month(
         self,
@@ -45,25 +43,16 @@ class ScrapeService:
         status = policy.evaluate(year, month, fetched_at, datetime.now(timezone.utc))
 
         if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
-            # JMAからスクレイプ
-            client = JmaClient()
-            try:
-                html = await client.fetch_daily_page(
-                    prec_no=station.prec_no,
-                    block_no=station.block_no,
-                    year=year,
-                    month=month,
-                    station_type=station.station_type,
-                )
+            records = await self.temperature_data_source.fetch_daily_temperatures(
+                station,
+                year,
+                month,
+            )
 
-                records = parse_daily_page(html, year, month, station.station_type)
+            if records:
+                self.temp_repo.bulk_insert_temperatures(station_id, records)
 
-                if records:
-                    self.temp_repo.bulk_insert_temperatures(station_id, records)
-
-                self.temp_repo.insert_fetch_log(station_id, year, month)
-            finally:
-                await client.close()
+            self.temp_repo.insert_fetch_log(station_id, year, month)
 
         # DBからデータを取得して返す
         start_date = date(year, month, 1).isoformat()

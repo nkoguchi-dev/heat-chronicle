@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from mypy_boto3_dynamodb import DynamoDBServiceResource
 
 
-class TemperatureRepository:
+class DynamoDBTemperatureRepository:
     def __init__(self, dynamodb: DynamoDBServiceResource):
         self.temp_table = dynamodb.Table(settings.table_name("daily-temperature"))
         self.log_table = dynamodb.Table(settings.table_name("fetch-log"))

@@ -14,7 +14,9 @@ Codex による実装・レビューで使用します。
 ### レイヤーの依存方向
 
 - [ ] 依存の方向が内側に向かっているか（Presentation → Application → Domain ← Infrastructure）
-- [ ] Infrastructure への依存が Application 層を介しているか（Presentation から Infrastructure を直接呼ばない）
+- [ ] Application 層が Domain 層以外のプロジェク内レイヤーを import していないか
+- [ ] Infrastructure 層が Application / Presentation / DI を import していないか
+- [ ] Presentation 層が Infrastructure を直接呼び出していないか
 - [ ] Domain 層が外部ライブラリや他レイヤーに依存していないか
 - [ ] Presentation 層の知識（HTTP ステータスコード、`Request`/`Response` オブジェクト等）が Application 層に漏れていないか
 - [ ] Domain 層に Presentation / Infrastructure の DTO が置かれていないか
@@ -30,12 +32,12 @@ Codex による実装・レビューで使用します。
 ### リポジトリパターン
 
 - [ ] DynamoDB へのアクセスが Infrastructure 層（Repository）に閉じているか
-- [ ] Repository インターフェースが Application 層または Domain 層に定義されているか
+- [ ] Repository / 外部 I/O のインターフェースが Domain 層に `Protocol` として定義されているか
 - [ ] Application 層や Presentation 層から DynamoDB クライアントを直接操作していないか
 
 ### 依存性注入（DI）
 
-- [ ] FastAPI の `Depends` を使った DI になっているか（`TempRepoDep`, `StationRepoDep` 等の型エイリアスを使用）
+- [ ] FastAPI の `Depends` を使った DI になっているか（Presentation には Application Service の型エイリアスを注入）
 - [ ] コンストラクタや関数内で外部依存を直接生成（インスタンス化）していないか
 
 ## 2. FastAPI 固有

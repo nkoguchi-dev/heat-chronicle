@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from mypy_boto3_dynamodb import DynamoDBServiceResource
 
 
-class StationRepository:
+class DynamoDBStationRepository:
     def __init__(self, dynamodb: DynamoDBServiceResource):
         self.table = dynamodb.Table(settings.table_name("stations"))
 

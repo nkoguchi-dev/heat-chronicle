@@ -126,7 +126,8 @@ def setup_tables(
 @pytest.fixture(scope="session", autouse=True)
 def patch_settings(test_settings: Settings) -> Generator[None, None, None]:
     """リポジトリが参照する settings をテスト用設定にパッチする。
-    StationRepository / TemperatureRepository はコンストラクタで settings を参照するため、
+    DynamoDBStationRepository / DynamoDBTemperatureRepository は
+    コンストラクタで settings を参照するため、
     DI ファクトリ実行前にパッチしておく必要がある。
     """
     with (
