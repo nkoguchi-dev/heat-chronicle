@@ -8,7 +8,6 @@ class Settings(BaseSettings):
     dynamodb_region: str = "ap-northeast-1"
     dynamodb_table_prefix: str = ""
     debug: bool = False
-    scrape_interval_sec: float = 2.0
     cors_allow_origins: str = "http://localhost:3000"
 
     def table_name(self, base_name: str) -> str:

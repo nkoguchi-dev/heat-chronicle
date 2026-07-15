@@ -37,7 +37,7 @@ backend/
 │       │   ├── station_repository.py
 │       │   └── temperature_repository.py
 │       └── scraper/                 … 気象庁データの取得・解析
-│           ├── jma_client.py        … HTTP クライアント（レート制限付き）
+│           ├── jma_client.py        … HTTP クライアント（リトライ付き）
 │           └── jma_parser.py        … HTML パーサー
 ├── data/                            … シードデータ（地点マスタ CSV 等）
 ├── tests/                           … ユニットテスト
@@ -52,7 +52,7 @@ backend/
 
 気象庁への負荷を抑えるため、以下のルールに従ってデータを取得します。
 
-- リクエスト間隔: 最低 2 秒（`JmaClient` で制御）
+- リクエスト間隔: フロントエンドから最低 2 秒間隔で順次呼び出し
 - リトライ: 最大 3 回 + 指数バックオフ
 - 取得単位: 1 リクエスト = 1 ヶ月分
 - キャッシュ: `fetch-log` テーブルで取得済み年月を管理し、再取得を防止

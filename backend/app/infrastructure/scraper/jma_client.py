@@ -3,8 +3,6 @@ import logging
 
 import httpx
 
-from app.config import settings
-
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.data.jma.go.jp/stats/etrn/view"
@@ -14,7 +12,6 @@ MAX_RETRIES = 3
 
 class JmaClient:
     def __init__(self) -> None:
-        self._last_request_time: float = 0.0
         self._client = httpx.AsyncClient(
             timeout=REQUEST_TIMEOUT_SECONDS,
             headers={"User-Agent": "heat-chronicle/1.0"},
@@ -23,13 +20,6 @@ class JmaClient:
 
     async def close(self) -> None:
         await self._client.aclose()
-
-    async def _wait_interval(self) -> None:
-        now = asyncio.get_event_loop().time()
-        elapsed = now - self._last_request_time
-        wait = settings.scrape_interval_sec - elapsed
-        if wait > 0:
-            await asyncio.sleep(wait)
 
     async def fetch_daily_page(
         self,
@@ -53,9 +43,7 @@ class JmaClient:
         last_exc: Exception | None = None
         for attempt in range(MAX_RETRIES):
             try:
-                await self._wait_interval()
                 response = await self._client.get(url, params=params)
-                self._last_request_time = asyncio.get_event_loop().time()
                 response.raise_for_status()
                 return response.text
             except httpx.HTTPError as e:

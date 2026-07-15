@@ -46,7 +46,7 @@ poetry run pytest tests/ -v  # 5. テスト
 
 - **リポジトリパターン**: `StationRepository` と `TemperatureRepository` が全 DB クエリをカプセル化
 - **依存性注入**: FastAPI の `Depends` を使用（`StationRepoDep`, `TempRepoDep`）
-- **負荷を抑えたデータ取得**: `JmaClient` がリクエスト間隔 2 秒以上を強制、3 回リトライ + 指数バックオフ
+- **負荷を抑えたデータ取得**: フロントエンドが2秒以上の間隔で順次取得し、`JmaClient` は3回リトライ + 指数バックオフ
 
 ## API エンドポイント
 

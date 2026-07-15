@@ -19,6 +19,8 @@ import type { TemperatureLoadError, TemperatureLoadOperation } from '@/features/
 
 export type { TemperatureLoadError, TemperatureLoadOperation } from '@/features/heatmap/types/temperature-data';
 
+const REQUEST_INTERVAL_MS = 2000;
+
 interface UseTemperatureDataReturn {
   records: TemperatureRecord[];
   activeOperation: TemperatureLoadOperation | null;
@@ -46,7 +48,7 @@ async function waitForNextRequest(signal: AbortSignal): Promise<void> {
     const timer = setTimeout(() => {
       signal.removeEventListener('abort', handleAbort);
       resolve();
-    }, 1000);
+    }, REQUEST_INTERVAL_MS);
     signal.addEventListener('abort', handleAbort, { once: true });
   });
 }

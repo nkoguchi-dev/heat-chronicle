@@ -22,7 +22,6 @@ def test_settings() -> Settings:
     return Settings(
         dynamodb_table_prefix=TEST_TABLE_PREFIX,
         cors_allow_origins="http://localhost:3000",
-        scrape_interval_sec=0.0,
     )
 
 
