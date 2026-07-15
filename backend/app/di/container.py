@@ -68,6 +68,4 @@ GetStationUseCaseDep = Annotated[GetStationUseCase, Depends(get_station_use_case
 GetTemperatureUseCaseDep = Annotated[
     GetTemperatureUseCase, Depends(get_temperature_use_case)
 ]
-FetchMonthUseCaseDep = Annotated[
-    FetchMonthUseCase, Depends(get_fetch_month_use_case)
-]
+FetchMonthUseCaseDep = Annotated[FetchMonthUseCase, Depends(get_fetch_month_use_case)]
