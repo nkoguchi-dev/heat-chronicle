@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { Github } from 'lucide-react';
+import { GitBranch } from 'lucide-react';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ColorLegend } from '@/features/heatmap/components/ColorLegend';
@@ -226,7 +226,7 @@ export function HeatmapPage(): React.JSX.Element {
           className="inline-flex items-center gap-1.5 font-medium text-foreground underline-offset-4 transition-colors hover:underline"
           aria-label="Heat ChronicleのソースコードをGitHubで開く（新しいタブ）"
         >
-          <Github aria-hidden="true" className="h-3.5 w-3.5" />
+          <GitBranch aria-hidden="true" className="h-3.5 w-3.5" />
           GitHub
         </a>
       </footer>
