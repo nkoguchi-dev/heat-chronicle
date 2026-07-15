@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Any
 from boto3.dynamodb.conditions import Key
 
 from app.config import settings
-from app.domain.schemas import StationResponse
+from app.domain.station import Station
+from app.infrastructure.dto.dynamodb import StationItemDTO
 
 if TYPE_CHECKING:
     from mypy_boto3_dynamodb import DynamoDBServiceResource
@@ -15,7 +16,7 @@ class StationRepository:
     def __init__(self, dynamodb: DynamoDBServiceResource):
         self.table = dynamodb.Table(settings.table_name("stations"))
 
-    def get_all(self) -> list[StationResponse]:
+    def get_all(self) -> list[Station]:
         items: list[dict[str, Any]] = []
         kwargs: dict[str, Any] = {}
         while True:
@@ -26,9 +27,9 @@ class StationRepository:
             kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         items = [item for item in items if int(item["id"]) != 0]
         items.sort(key=lambda x: int(x["id"]))
-        return [self._to_schema(item) for item in items]
+        return [self._to_domain(item) for item in items]
 
-    def get_by_prec_no(self, prec_no: int) -> list[StationResponse]:
+    def get_by_prec_no(self, prec_no: int) -> list[Station]:
         items: list[dict[str, Any]] = []
         kwargs: dict[str, Any] = {
             "IndexName": "prec_no-index",
@@ -41,25 +42,26 @@ class StationRepository:
                 break
             kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         items.sort(key=lambda x: x["station_name"])
-        return [self._to_schema(item) for item in items]
+        return [self._to_domain(item) for item in items]
 
-    def get_by_id(self, station_id: int) -> StationResponse | None:
+    def get_by_id(self, station_id: int) -> Station | None:
         if station_id == 0:
             return None
         response = self.table.get_item(Key={"id": station_id})
         item = response.get("Item")
-        return self._to_schema(item) if item else None
+        return self._to_domain(item) if item else None
 
-    def _to_schema(self, item: dict[str, Any]) -> StationResponse:
-        return StationResponse(
-            id=int(item["id"]),
-            station_name=item["station_name"],
-            prec_no=int(item["prec_no"]),
-            block_no=item["block_no"],
-            station_type=item["station_type"],
-            latitude=float(item["latitude"]) if "latitude" in item else None,
-            longitude=float(item["longitude"]) if "longitude" in item else None,
+    def _to_domain(self, item: dict[str, Any]) -> Station:
+        dto = StationItemDTO.model_validate(item)
+        return Station(
+            id=int(dto.id),
+            station_name=dto.station_name,
+            prec_no=int(dto.prec_no),
+            block_no=dto.block_no,
+            station_type=dto.station_type,
+            latitude=float(dto.latitude) if dto.latitude is not None else None,
+            longitude=float(dto.longitude) if dto.longitude is not None else None,
             earliest_year=(
-                int(item["earliest_year"]) if "earliest_year" in item else None
+                int(dto.earliest_year) if dto.earliest_year is not None else None
             ),
         )

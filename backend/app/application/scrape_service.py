@@ -3,7 +3,7 @@ import logging
 from datetime import date, datetime, timezone
 
 from app.domain.fetch_freshness import FetchFreshnessPolicy, FetchStatus
-from app.domain.schemas import MonthTemperatureResponse, TemperatureRecord
+from app.domain.temperature import DailyTemperature
 from app.infrastructure.repositories.station_repository import StationRepository
 from app.infrastructure.repositories.temperature_repository import TemperatureRepository
 from app.infrastructure.scraper.jma_client import JmaClient
@@ -26,7 +26,7 @@ class ScrapeService:
         station_id: int,
         year: int,
         month: int,
-    ) -> MonthTemperatureResponse:
+    ) -> list[DailyTemperature]:
         """1ヶ月分のデータを取得して返す。キャッシュ済みならDBから返す。"""
         station = self.station_repo.get_by_id(station_id)
         if station is None:
@@ -35,7 +35,7 @@ class ScrapeService:
         # 未来の月はリクエストしない
         today = date.today()
         if year > today.year or (year == today.year and month > today.month):
-            return MonthTemperatureResponse(year=year, month=month, records=[])
+            return []
 
         # キャッシュ済みか確認
         fetched_months = self.temp_repo.get_fetched_months(station_id)
@@ -59,17 +59,7 @@ class ScrapeService:
                 records = parse_daily_page(html, year, month, station.station_type)
 
                 if records:
-                    db_records = [
-                        {
-                            "station_id": station_id,
-                            "date": r.date.isoformat(),
-                            "max_temp": r.max_temp,
-                            "min_temp": r.min_temp,
-                            "avg_temp": r.avg_temp,
-                        }
-                        for r in records
-                    ]
-                    self.temp_repo.bulk_insert_temperatures(db_records)
+                    self.temp_repo.bulk_insert_temperatures(station_id, records)
 
                 self.temp_repo.insert_fetch_log(station_id, year, month)
             finally:
@@ -84,16 +74,4 @@ class ScrapeService:
             station_id, start_date, end_date
         )
 
-        return MonthTemperatureResponse(
-            year=year,
-            month=month,
-            records=[
-                TemperatureRecord(
-                    date=r.date,
-                    max_temp=r.max_temp,
-                    min_temp=r.min_temp,
-                    avg_temp=r.avg_temp,
-                )
-                for r in temperature_records
-            ],
-        )
+        return temperature_records

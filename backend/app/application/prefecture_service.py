@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 PREFECTURES: dict[int, str] = {
     11: "宗谷地方",
     12: "上川地方",
@@ -61,3 +63,17 @@ PREFECTURES: dict[int, str] = {
     91: "沖縄県",
     99: "南極",
 }
+
+
+@dataclass(frozen=True)
+class PrefectureOutput:
+    prec_no: int
+    name: str
+
+
+class PrefectureService:
+    def get_all(self) -> list[PrefectureOutput]:
+        return [
+            PrefectureOutput(prec_no=prec_no, name=name)
+            for prec_no, name in PREFECTURES.items()
+        ]

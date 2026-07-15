@@ -31,7 +31,7 @@ poetry run pytest tests/ -v  # 5. テスト
 |----------|------------|------|
 | Presentation | `presentation/api/` | FastAPI ルーター（HTTP ハンドリング） |
 | Application | `application/` | ビジネスロジック（気象データ取得、キャッシュ判定） |
-| Domain | `domain/` | Pydantic レスポンススキーマ |
+| Domain | `domain/` | ドメインモデルと純粋な業務ルール |
 | Infrastructure | `infrastructure/` | DynamoDB アクセス、気象庁データ取得・解析 |
 
 ### レイヤー間の制約
@@ -39,8 +39,22 @@ poetry run pytest tests/ -v  # 5. テスト
 - **Presentation → Application**: ルーターはサービス層のみを呼び出す
 - **Presentation → Infrastructure**: 直接呼び出し禁止（必ず Application 層を経由する）
 - **Application → Infrastructure**: リポジトリ・気象庁データ取得機能を利用可能
-- **Domain**: 他レイヤーに依存しない（純粋なスキーマ定義）
+- **Domain**: 他レイヤーに依存しない（純粋なドメインモデルと業務ルール）
 - **Infrastructure → Application/Presentation**: 逆方向の依存禁止
+
+### モデルと DTO の境界
+
+- **Domain Model**: Domain 層には外部フレームワークに依存しないドメインモデルを定義する。Pydantic の Request / Response / 永続化 DTO を置かない
+- **Application I/O**: 入出力をドメインモデルで表現できる場合はドメインモデル自体を利用する。ドメインモデルで表現できないユースケース固有の入出力だけを Application 専用の dataclass として定義する
+- **Presentation DTO**: HTTP の Request / Response は Presentation 層にエンドポイント専用の Pydantic Model として定義する
+- **Infrastructure DTO**: DynamoDB、外部 API、ファイルなどの外部ペイロードは Infrastructure 層に用途専用の Pydantic Model として定義する
+- **DTO の使い回し禁止**: レイヤー、ユースケース、エンドポイント、外部境界が異なる DTO は、フィールド構成が偶然同じでも共有しない
+- **明示的な変換**: Presentation / Infrastructure の DTO は定義したレイヤーの外へ公開せず、境界で Domain Model または Application の型へ明示的に変換する
+- **厳密な外部検証**: Presentation / Infrastructure の DTO は原則 `ConfigDict(strict=True, extra="forbid")` を設定し、暗黙の型変換と未知フィールドを許可しない
+- **単純な HTTP パラメーター**: path / query の単純値は FastAPI の型付き引数で検証し、複合入力を扱う場合のみ専用 Request DTO を定義する
+- **SDK の型を優先**: boto3 など公式の型定義がある設定値やレスポンス外枠には独自 DTO を重ねず、公式 stubs を利用する
+
+Domain Model は `frozen=True` の dataclass を基本とし、Application 専用 DTO は標準 dataclass、外部境界 DTO は Pydantic Model を使用します。
 
 ## 主要パターン
 

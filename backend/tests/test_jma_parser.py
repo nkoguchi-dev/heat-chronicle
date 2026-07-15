@@ -1,11 +1,8 @@
 from datetime import date
 from typing import Any
 
-from app.infrastructure.scraper.jma_parser import (
-    DailyRecord,
-    _parse_temp,
-    parse_daily_page,
-)
+from app.domain.temperature import DailyTemperature
+from app.infrastructure.scraper.jma_parser import _parse_temp, parse_daily_page
 
 
 class TestParseTemp:
@@ -69,7 +66,7 @@ class TestParseDailyPage:
         html = self._make_s1_html([(1, "x", "x", "x", "x", "x", "5.0", "10.0", "0.5")])
         records = parse_daily_page(html, 2024, 1, "s")
         assert len(records) == 1
-        assert records[0] == DailyRecord(
+        assert records[0] == DailyTemperature(
             date=date(2024, 1, 1),
             max_temp=10.0,
             min_temp=0.5,

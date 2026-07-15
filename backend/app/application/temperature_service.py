@@ -1,12 +1,33 @@
+from dataclasses import dataclass
 from datetime import date, datetime, timezone
 
 from app.domain.fetch_freshness import FetchFreshnessPolicy, FetchStatus
-from app.domain.schemas import StationResponse, TemperatureMetadata, TemperatureResponse
+from app.domain.station import Station
+from app.domain.temperature import DailyTemperature
 from app.infrastructure.repositories.station_repository import StationRepository
 from app.infrastructure.repositories.temperature_repository import TemperatureRepository
 
 CHUNK_SIZE = 50
 FALLBACK_START_YEAR = 1975
+
+
+@dataclass(frozen=True)
+class TemperatureMetadataOutput:
+    station_id: int
+    station_name: str
+    start_year: int
+    end_year: int
+    total_records: int
+    fetched_months: list[str]
+    fetching_required: bool
+    has_older_data: bool
+    next_end_year: int | None
+
+
+@dataclass(frozen=True)
+class GetTemperatureDataOutput:
+    metadata: TemperatureMetadataOutput
+    data: list[DailyTemperature]
 
 
 def _build_date_range(start_year: int, end_year: int) -> tuple[str, str]:
@@ -41,15 +62,15 @@ class TemperatureService:
         self.station_repo = station_repo
         self.temp_repo = temp_repo
 
-    def get_all_stations(self) -> list[StationResponse]:
+    def get_all_stations(self) -> list[Station]:
         return self.station_repo.get_all()
 
-    def get_stations_by_prec_no(self, prec_no: int) -> list[StationResponse]:
+    def get_stations_by_prec_no(self, prec_no: int) -> list[Station]:
         return self.station_repo.get_by_prec_no(prec_no)
 
     def get_temperature_data(
         self, station_id: int, end_year: int
-    ) -> TemperatureResponse:
+    ) -> GetTemperatureDataOutput:
         station = self.station_repo.get_by_id(station_id)
         if station is None:
             raise ValueError(f"Station {station_id} not found")
@@ -79,7 +100,7 @@ class TemperatureService:
             in (FetchStatus.FINALIZED, FetchStatus.TEMPORARILY_CACHED)
         ]
 
-        metadata = TemperatureMetadata(
+        metadata = TemperatureMetadataOutput(
             station_id=station_id,
             station_name=station.station_name,
             start_year=start_year,
@@ -91,4 +112,4 @@ class TemperatureService:
             next_end_year=next_end_year,
         )
 
-        return TemperatureResponse(metadata=metadata, data=records)
+        return GetTemperatureDataOutput(metadata=metadata, data=records)

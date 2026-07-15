@@ -24,13 +24,16 @@ backend/
 │   │   ├── stations.py              … 観測地点一覧
 │   │   └── temperature.py           … 気温データ取得
 │   ├── application/                 … サービス層
+│   │   ├── prefecture_service.py    … 都道府県一覧の取得
 │   │   ├── scrape_service.py        … 気象庁からの月別データ取得
 │   │   └── temperature_service.py   … キャッシュ済みデータのクエリ
-│   ├── domain/                      … Pydantic レスポンススキーマ
-│   │   ├── prefectures.py           … 都道府県マスタ
-│   │   └── schemas.py               … API レスポンス型定義
+│   ├── domain/                      … ドメインモデルと純粋な業務ルール
+│   │   ├── fetch_freshness.py       … 取得鮮度の業務ルール
+│   │   ├── station.py              … 観測地点モデル
+│   │   └── temperature.py          … 日別気温モデル
 │   └── infrastructure/              … DB / 外部サービス
 │       ├── database.py              … DynamoDB クライアント初期化
+│       ├── dto/                     … 外部ペイロードの Pydantic DTO
 │       ├── init_tables.py           … テーブル自動作成
 │       ├── seed.py                  … 初期データ投入
 │       ├── repositories/            … リポジトリパターン

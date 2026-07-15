@@ -1,11 +1,23 @@
 from fastapi import APIRouter
+from pydantic import BaseModel, ConfigDict
 
-from app.domain.prefectures import PREFECTURES
-from app.domain.schemas import PrefectureResponse
+from app.di.container import PrefectureServiceDep
 
 router = APIRouter()
 
 
+class PrefectureResponse(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    prec_no: int
+    name: str
+
+
 @router.get("/", response_model=list[PrefectureResponse])
-async def get_prefectures() -> list[PrefectureResponse]:
-    return [PrefectureResponse(prec_no=k, name=v) for k, v in PREFECTURES.items()]
+async def get_prefectures(
+    service: PrefectureServiceDep,
+) -> list[PrefectureResponse]:
+    return [
+        PrefectureResponse(prec_no=item.prec_no, name=item.name)
+        for item in service.get_all()
+    ]

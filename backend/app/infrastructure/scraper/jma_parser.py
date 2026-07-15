@@ -1,23 +1,18 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 from datetime import date
 from functools import partial
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
+from app.domain.station import StationType
+from app.domain.temperature import DailyTemperature
+from app.infrastructure.dto.jma import JmaDailyTemperatureDTO
+
 if TYPE_CHECKING:
     from bs4.element import ResultSet, Tag
-
-
-@dataclass
-class DailyRecord:
-    date: date
-    max_temp: float | None
-    min_temp: float | None
-    avg_temp: float | None
 
 
 # Pattern to strip quality flags like ], ), *, #
@@ -58,15 +53,15 @@ def _parse_row(
 
 
 def parse_daily_page(
-    html: str, year: int, month: int, station_type: str
-) -> list[DailyRecord]:
+    html: str, year: int, month: int, station_type: StationType
+) -> list[DailyTemperature]:
     """Parse a JMA daily data page and extract temperature records."""
     soup = BeautifulSoup(html, "lxml")
     table = soup.find("table", class_="data2_s")
     if table is None:
         return []
 
-    records: list[DailyRecord] = []
+    records: list[DailyTemperature] = []
     tbody = table.find("tbody") or table
 
     if station_type == "s":
@@ -106,12 +101,18 @@ def parse_daily_page(
             continue
 
         avg_temp, max_temp, min_temp = temps
+        dto = JmaDailyTemperatureDTO(
+            date=record_date,
+            max_temp=max_temp,
+            min_temp=min_temp,
+            avg_temp=avg_temp,
+        )
         records.append(
-            DailyRecord(
-                date=record_date,
-                max_temp=max_temp,
-                min_temp=min_temp,
-                avg_temp=avg_temp,
+            DailyTemperature(
+                date=dto.date,
+                max_temp=dto.max_temp,
+                min_temp=dto.min_temp,
+                avg_temp=dto.avg_temp,
             )
         )
 

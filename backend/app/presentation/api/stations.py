@@ -1,19 +1,45 @@
-from fastapi import APIRouter
+from typing import Literal
 
-from app.application.temperature_service import TemperatureService
-from app.di.container import StationRepoDep, TempRepoDep
-from app.domain.schemas import StationResponse
+from fastapi import APIRouter
+from pydantic import BaseModel, ConfigDict
+
+from app.di.container import TemperatureServiceDep
 
 router = APIRouter()
 
 
+class StationResponse(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    id: int
+    station_name: str
+    prec_no: int
+    block_no: str
+    station_type: Literal["s", "a"]
+    latitude: float | None = None
+    longitude: float | None = None
+    earliest_year: int | None = None
+
+
 @router.get("/", response_model=list[StationResponse])
 def get_stations(
-    station_repo: StationRepoDep,
-    temp_repo: TempRepoDep,
+    service: TemperatureServiceDep,
     prec_no: int | None = None,
 ) -> list[StationResponse]:
-    service = TemperatureService(station_repo, temp_repo)
     if prec_no is not None:
-        return service.get_stations_by_prec_no(prec_no)
-    return service.get_all_stations()
+        stations = service.get_stations_by_prec_no(prec_no)
+    else:
+        stations = service.get_all_stations()
+    return [
+        StationResponse(
+            id=station.id,
+            station_name=station.station_name,
+            prec_no=station.prec_no,
+            block_no=station.block_no,
+            station_type=station.station_type,
+            latitude=station.latitude,
+            longitude=station.longitude,
+            earliest_year=station.earliest_year,
+        )
+        for station in stations
+    ]
