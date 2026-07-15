@@ -28,7 +28,7 @@ Codex による実装・レビューで使用します。
 ### UseCase / Service パターン
 
 - [ ] UseCase が機能単位のディレクトリに整理されているか
-- [ ] UseCase クラスが `GetStationUseCase`、ファイルが `get_station_use_case.py` のように命名されているか
+- [ ] UseCase クラスが `ListStationUseCase`、ファイルが `list_station_use_case.py` のように操作名を含めて命名されているか
 - [ ] 1つの UseCase クラスが1つのユースケースの実行に集中しているか（HTTP 知識を持たない）
 - [ ] Presentation 層から呼び出せる公開メソッドが1つの UseCase クラスにつき1つ以下になっているか
 - [ ] 複数の UseCase から呼び出される処理が `application/shared/` の Service に分離され、Presentation 層から直接呼び出されていないか

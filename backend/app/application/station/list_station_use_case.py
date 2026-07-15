@@ -16,11 +16,11 @@ class StationOutput:
     earliest_year: int | None = None
 
 
-class StationService:
+class ListStationUseCase:
     def __init__(self, station_repo: StationRepository):
         self.station_repo = station_repo
 
-    def get_stations(self, prec_no: int | None = None) -> list[StationOutput]:
+    def list_stations(self, prec_no: int | None = None) -> list[StationOutput]:
         if prec_no is not None:
             stations = self.station_repo.get_by_prec_no(prec_no)
         else:

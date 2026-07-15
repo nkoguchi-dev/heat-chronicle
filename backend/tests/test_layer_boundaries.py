@@ -1,4 +1,5 @@
 import ast
+import re
 from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parents[1] / "app"
@@ -14,6 +15,21 @@ def _imports_under(directory: Path) -> set[str]:
             elif isinstance(node, ast.ImportFrom) and node.module is not None:
                 imports.add(node.module)
     return imports
+
+
+def _is_dataclass(node: ast.ClassDef) -> bool:
+    for decorator in node.decorator_list:
+        target = decorator.func if isinstance(decorator, ast.Call) else decorator
+        if isinstance(target, ast.Name) and target.id == "dataclass":
+            return True
+        if isinstance(target, ast.Attribute) and target.attr == "dataclass":
+            return True
+    return False
+
+
+def _to_snake_case(name: str) -> str:
+    with_word_boundaries = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", with_word_boundaries).lower()
 
 
 def test_domain_and_application_do_not_depend_on_pydantic() -> None:
@@ -38,12 +54,32 @@ def test_application_files_are_grouped_by_feature() -> None:
     assert root_python_files == {"__init__.py"}
 
 
-def test_application_service_has_at_most_one_public_method() -> None:
+def test_application_behavior_classes_follow_naming_rules() -> None:
+    violations: dict[str, str] = {}
+    application_dir = APP_DIR / "application"
+    for path in application_dir.rglob("*.py"):
+        relative_path = path.relative_to(application_dir)
+        is_shared = relative_path.parts[0] == "shared"
+        expected_suffix = "Service" if is_shared else "UseCase"
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in tree.body:
+            if not isinstance(node, ast.ClassDef) or _is_dataclass(node):
+                continue
+            expected_file = f"{_to_snake_case(node.name)}.py"
+            if not node.name.endswith(expected_suffix) or path.name != expected_file:
+                violations[f"{relative_path}:{node.name}"] = (
+                    f"expected {expected_suffix} class in {expected_file}"
+                )
+
+    assert violations == {}
+
+
+def test_application_use_case_has_at_most_one_public_method() -> None:
     violations: dict[str, list[str]] = {}
     for path in (APP_DIR / "application").rglob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in tree.body:
-            if not isinstance(node, ast.ClassDef) or not node.name.endswith("Service"):
+            if not isinstance(node, ast.ClassDef) or not node.name.endswith("UseCase"):
                 continue
             public_methods = [
                 member.name
@@ -80,7 +116,7 @@ def test_application_outputs_do_not_reference_domain_types() -> None:
                     for member in node.body
                     if isinstance(member, ast.AnnAssign)
                 )
-            if node.name.endswith("Service"):
+            if node.name.endswith("UseCase"):
                 for member in node.body:
                     if (
                         isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))

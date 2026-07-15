@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
 
-from app.di.container import TemperatureServiceDep
+from app.di.container import GetTemperatureUseCaseDep
 
 router = APIRouter()
 
@@ -42,11 +42,11 @@ class TemperatureResponse(BaseModel):
 @router.get("/{station_id}", response_model=TemperatureResponse)
 def get_temperature(
     station_id: int,
-    service: TemperatureServiceDep,
+    use_case: GetTemperatureUseCaseDep,
     end_year: int = Query(default_factory=lambda: datetime.now().year),
 ) -> TemperatureResponse:
     try:
-        output = service.get_temperature_data(station_id, end_year)
+        output = use_case.get_temperature_data(station_id, end_year)
         metadata = output.metadata
         return TemperatureResponse(
             metadata=TemperatureMetadataResponse(

@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.application.prefecture.service import PrefectureService
-from app.application.station.service import StationService
-from app.application.temperature.scrape_service import ScrapeService
-from app.application.temperature.service import TemperatureService
+from app.application.prefecture.list_prefecture_use_case import ListPrefectureUseCase
+from app.application.station.list_station_use_case import ListStationUseCase
+from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
+from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.repository import TemperatureRepository
@@ -38,30 +38,34 @@ TemperatureDataSourceDep = Annotated[
 ]
 
 
-def get_prefecture_service() -> PrefectureService:
-    return PrefectureService()
+def get_prefecture_use_case() -> ListPrefectureUseCase:
+    return ListPrefectureUseCase()
 
 
-def get_temperature_service(
+def get_temperature_use_case(
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
-) -> TemperatureService:
-    return TemperatureService(station_repo, temp_repo)
+) -> GetTemperatureUseCase:
+    return GetTemperatureUseCase(station_repo, temp_repo)
 
 
-def get_station_service(station_repo: StationRepoDep) -> StationService:
-    return StationService(station_repo)
+def get_station_use_case(station_repo: StationRepoDep) -> ListStationUseCase:
+    return ListStationUseCase(station_repo)
 
 
-def get_scrape_service(
+def get_fetch_month_use_case(
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
     temperature_data_source: TemperatureDataSourceDep,
-) -> ScrapeService:
-    return ScrapeService(station_repo, temp_repo, temperature_data_source)
+) -> FetchMonthUseCase:
+    return FetchMonthUseCase(station_repo, temp_repo, temperature_data_source)
 
 
-PrefectureServiceDep = Annotated[PrefectureService, Depends(get_prefecture_service)]
-StationServiceDep = Annotated[StationService, Depends(get_station_service)]
-TemperatureServiceDep = Annotated[TemperatureService, Depends(get_temperature_service)]
-ScrapeServiceDep = Annotated[ScrapeService, Depends(get_scrape_service)]
+ListPrefectureUseCaseDep = Annotated[
+    ListPrefectureUseCase, Depends(get_prefecture_use_case)
+]
+ListStationUseCaseDep = Annotated[ListStationUseCase, Depends(get_station_use_case)]
+GetTemperatureUseCaseDep = Annotated[
+    GetTemperatureUseCase, Depends(get_temperature_use_case)
+]
+FetchMonthUseCaseDep = Annotated[FetchMonthUseCase, Depends(get_fetch_month_use_case)]
