@@ -3,10 +3,14 @@ from datetime import date
 import pytest
 from pydantic import ValidationError
 
-from app.presentation.api.error import InternalServerErrorResponse
-from app.presentation.api.stations import StationResponse
-from app.presentation.api.temperature import (
+from app.presentation.api.shared.internal_server_error import (
+    InternalServerErrorResponse,
+)
+from app.presentation.api.stations.get_stations import StationResponse
+from app.presentation.api.temperature.fetch_month import (
     MonthTemperatureRecordResponse,
+)
+from app.presentation.api.temperature.get_temperature import (
     TemperatureRecordResponse,
 )
 

@@ -19,10 +19,17 @@ backend/
 │   ├── handler.py                   … Lambda ハンドラ（Mangum）
 │   ├── config.py                    … 環境変数ベースの設定
 │   ├── presentation/api/            … API ルーター（HTTP ハンドラ）
-│   │   ├── hello.py                 … ヘルスチェック
-│   │   ├── prefectures.py           … 都道府県一覧
-│   │   ├── stations.py              … 観測地点一覧
-│   │   └── temperature.py           … 気温データ取得
+│   │   ├── health/get_health.py     … ヘルスチェック
+│   │   ├── hello/get_hello.py       … Hello API
+│   │   ├── prefectures/             … 都道府県一覧
+│   │   │   └── get_prefectures.py
+│   │   ├── shared/                 … Presentation 共通コード
+│   │   │   └── internal_server_error.py
+│   │   ├── stations/                … 観測地点一覧
+│   │   │   └── get_stations.py
+│   │   └── temperature/             … 気温データ取得
+│   │       ├── fetch_month.py       … 月別データ取得
+│   │       └── get_temperature.py   … キャッシュ済みデータ取得
 │   ├── application/                 … サービス層
 │   │   ├── prefecture_service.py    … 都道府県一覧の取得
 │   │   ├── scrape_service.py        … 気象庁からの月別データ取得

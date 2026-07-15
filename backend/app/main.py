@@ -11,7 +11,9 @@ from app.config import settings
 from app.infrastructure.init_tables import ensure_tables_exist
 from app.infrastructure.seed import seed_and_migrate
 from app.presentation.api import health, hello, prefectures, stations, temperature
-from app.presentation.api.error import InternalServerErrorResponse
+from app.presentation.api.shared.internal_server_error import (
+    InternalServerErrorResponse,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

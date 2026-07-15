@@ -42,6 +42,7 @@ Codex による実装・レビューで使用します。
 
 - [ ] エンドポイントのレスポンスモデルが `response_model` で明示されているか
 - [ ] Request / Response DTO が Presentation 層に専用の Pydantic Model として定義されているか
+- [ ] Presentation 層の API リソースがディレクトリ化され、各エンドポイントが 1 ファイルに分離されているか
 - [ ] Presentation DTO が原則 `strict=True`, `extra="forbid"` で外部入出力を厳密に検証しているか
 - [ ] `HTTPException` のステータスコードが適切か（404 / 400 / 422 / 500 の使い分け）
 - [ ] 500 エラーを返す際に `logger.error(..., exc_info=True)` でログが記録されているか

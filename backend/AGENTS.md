@@ -56,6 +56,22 @@ poetry run pytest tests/ -v  # 5. テスト
 
 Domain Model は `frozen=True` の dataclass を基本とし、Application 専用 DTO は標準 dataclass、外部境界 DTO は Pydantic Model を使用します。
 
+### Presentation のファイル構成
+
+- 1 つのファイルに定義できるエンドポイント（FastAPI のルートデコレータ）は 1 つだけとする
+- Request / Response DTO は、それを使用するエンドポイントと同じファイルに定義する
+- API リソースはエンドポイント数にかかわらず必ずリソース名のディレクトリを作成し、エンドポイントごとにファイルを分ける
+- 各ファイル名は `get_temperature.py` のようにエンドポイントの操作を snake_case で表す
+- リソースディレクトリの `__init__.py` は各ファイルの `router` を集約するだけとし、エンドポイント、DTO、ビジネスロジックを定義しない
+- 複数エンドポイントで共通する Presentation 層の補助コードは `shared/` 配下に置き、エンドポイントファイルと混在させない
+
+```text
+presentation/api/temperature/
+├── __init__.py          # router の集約のみ
+├── get_temperature.py  # GET /{station_id} + 専用 Response DTO
+└── fetch_month.py      # GET /{station_id}/fetch-month + 専用 Response DTO
+```
+
 ## 主要パターン
 
 - **リポジトリパターン**: `StationRepository` と `TemperatureRepository` が全 DB クエリをカプセル化

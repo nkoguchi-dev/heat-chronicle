@@ -11,5 +11,5 @@ class HelloResponse(BaseModel):
 
 
 @router.get("/", response_model=HelloResponse)
-async def hello() -> HelloResponse:
+async def get_hello() -> HelloResponse:
     return HelloResponse(message="Hello World")
