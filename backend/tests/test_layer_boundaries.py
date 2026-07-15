@@ -57,6 +57,51 @@ def test_application_service_has_at_most_one_public_method() -> None:
     assert violations == {}
 
 
+def test_application_outputs_do_not_reference_domain_types() -> None:
+    violations: dict[str, list[str]] = {}
+    for path in (APP_DIR / "application").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        domain_names = {
+            alias.asname or alias.name
+            for node in tree.body
+            if isinstance(node, ast.ImportFrom)
+            and node.module is not None
+            and node.module.startswith("app.domain")
+            for alias in node.names
+        }
+
+        for node in tree.body:
+            if not isinstance(node, ast.ClassDef):
+                continue
+            annotations: list[ast.expr] = []
+            if node.name.endswith("Output"):
+                annotations.extend(
+                    member.annotation
+                    for member in node.body
+                    if isinstance(member, ast.AnnAssign)
+                )
+            if node.name.endswith("Service"):
+                for member in node.body:
+                    if (
+                        isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+                        and not member.name.startswith("_")
+                        and member.returns is not None
+                    ):
+                        annotations.append(member.returns)
+
+            referenced_names = {
+                child.id
+                for annotation in annotations
+                for child in ast.walk(annotation)
+                if isinstance(child, ast.Name)
+            }
+            leaked_names = sorted(domain_names & referenced_names)
+            if leaked_names:
+                violations[f"{path.relative_to(APP_DIR)}:{node.name}"] = leaked_names
+
+    assert violations == {}
+
+
 def test_application_only_depends_on_domain_layer() -> None:
     imports = _imports_under(APP_DIR / "application")
     project_imports = {name for name in imports if name.startswith("app.")}

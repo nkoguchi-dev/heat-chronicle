@@ -46,10 +46,12 @@ poetry run pytest tests/ -v  # 5. テスト
 ### モデルと DTO の境界
 
 - **Domain Model**: Domain 層には外部フレームワークに依存しないドメインモデルを定義する。Pydantic の Request / Response / 永続化 DTO を置かない
-- **Application I/O**: 入出力そのものがドメインモデルで表現できる場合はドメインモデル自体を利用する。ユースケース固有の Application DTO を定義する場合、そのフィールドには Domain Model を使い回さず、形が同じでも Application 専用の dataclass を定義する
+- **Application Input**: Application 内部でドメイン処理に必要な入力には Domain Model を利用できる
+- **Application Output**: Presentation 層へ返す値は、形が Domain Model と同じでもユースケース専用の Output DTO を dataclass で定義する。Output DTO のフィールドにも Domain Model を使い回さない
 - **Presentation DTO**: HTTP の Request / Response は Presentation 層にエンドポイント専用の Pydantic Model として定義する
 - **Infrastructure DTO**: DynamoDB、外部 API、ファイルなどの外部ペイロードは Infrastructure 層に用途専用の Pydantic Model として定義する
 - **DTO の使い回し禁止**: レイヤー、ユースケース、エンドポイント、外部境界が異なる DTO は、フィールド構成が偶然同じでも共有しない
+- **Application の明示的な変換**: Repository / Port から受け取った Domain Model は、Application Service の戻り値を作る境界でユースケース専用の Output DTO へ変換する
 - **明示的な変換**: Presentation / Infrastructure の DTO は定義したレイヤーの外へ公開せず、境界で Domain Model または Application の型へ明示的に変換する
 - **厳密な外部検証**: Presentation / Infrastructure の DTO は原則 `ConfigDict(strict=True, extra="forbid")` を設定し、暗黙の型変換と未知フィールドを許可しない
 - **単純な HTTP パラメーター**: path / query の単純値は FastAPI の型付き引数で検証し、複合入力を扱う場合のみ専用 Request DTO を定義する

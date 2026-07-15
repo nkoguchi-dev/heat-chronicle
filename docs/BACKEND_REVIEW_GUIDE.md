@@ -21,7 +21,7 @@ Codex による実装・レビューで使用します。
 - [ ] Domain Model、業務ルール、Repository / Port がドメインリソース単位のディレクトリに整理されているか
 - [ ] Presentation 層の知識（HTTP ステータスコード、`Request`/`Response` オブジェクト等）が Application 層に漏れていないか
 - [ ] Domain 層に Presentation / Infrastructure の DTO が置かれていないか
-- [ ] Application の入出力全体を単一の Domain Model で表現できる場合、同形の専用 DTO を重複定義していないか
+- [ ] Application Service が Presentation 層へ Domain Model を直接返さず、ユースケース専用の Output DTO に変換しているか
 - [ ] Application 専用 DTO のフィールドに Domain Model を使い回していないか
 - [ ] 形が同じだけの DTO をレイヤー・ユースケース・エンドポイント間で使い回していないか
 

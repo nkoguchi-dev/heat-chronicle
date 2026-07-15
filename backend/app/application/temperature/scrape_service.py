@@ -1,11 +1,19 @@
 import calendar
+from dataclasses import dataclass
 from datetime import date, datetime, timezone
 
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
-from app.domain.temperature.model import DailyTemperature
 from app.domain.temperature.repository import TemperatureRepository
+
+
+@dataclass(frozen=True)
+class FetchMonthTemperatureOutput:
+    date: date
+    max_temp: float | None = None
+    min_temp: float | None = None
+    avg_temp: float | None = None
 
 
 class ScrapeService:
@@ -24,7 +32,7 @@ class ScrapeService:
         station_id: int,
         year: int,
         month: int,
-    ) -> list[DailyTemperature]:
+    ) -> list[FetchMonthTemperatureOutput]:
         """1ヶ月分のデータを取得して返す。キャッシュ済みならDBから返す。"""
         station = self.station_repo.get_by_id(station_id)
         if station is None:
@@ -63,4 +71,12 @@ class ScrapeService:
             station_id, start_date, end_date
         )
 
-        return temperature_records
+        return [
+            FetchMonthTemperatureOutput(
+                date=record.date,
+                max_temp=record.max_temp,
+                min_temp=record.min_temp,
+                avg_temp=record.avg_temp,
+            )
+            for record in temperature_records
+        ]
