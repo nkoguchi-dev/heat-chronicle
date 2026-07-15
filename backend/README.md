@@ -1,12 +1,12 @@
 # backend
 
-Python / FastAPI によるバックエンド API サーバーです。気象庁の公開ページからデータをスクレイピングし、DynamoDB にキャッシュしたうえで REST API として提供します。
+Python / FastAPI によるバックエンド API サーバーです。気象庁が公開している過去の気象観測データを取得・解析し、DynamoDB にキャッシュしたうえで REST API として提供します。
 
 ## 技術構成
 
 - **Python 3.14** / **FastAPI**
 - **boto3** — DynamoDB アクセス
-- **httpx + BeautifulSoup4 (lxml)** — 気象庁 HTML ページのスクレイピング
+- **httpx + BeautifulSoup4 (lxml)** — 気象庁 HTML ページからの観測データ取得・解析
 - **Mangum** — AWS Lambda 上での FastAPI 実行アダプタ
 - **Poetry** — 依存関係管理
 
@@ -36,7 +36,7 @@ backend/
 │       ├── repositories/            … リポジトリパターン
 │       │   ├── station_repository.py
 │       │   └── temperature_repository.py
-│       └── scraper/                 … 気象庁スクレイパー
+│       └── scraper/                 … 気象庁データの取得・解析
 │           ├── jma_client.py        … HTTP クライアント（レート制限付き）
 │           └── jma_parser.py        … HTML パーサー
 ├── data/                            … シードデータ（地点マスタ CSV 等）
@@ -48,7 +48,7 @@ backend/
 
 コーディング規約・開発コマンド・アーキテクチャの詳細は [AGENTS.md](./AGENTS.md) を参照してください。
 
-## スクレイピング仕様
+## 気象庁データ取得仕様
 
 気象庁への負荷を抑えるため、以下のルールに従ってデータを取得します。
 
