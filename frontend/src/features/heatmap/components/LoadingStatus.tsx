@@ -14,7 +14,13 @@ interface LoadingStatusProps {
   variant?: 'default' | 'compact';
 }
 
-export function LoadingStatus({ state, message, progress, onRetry, variant = 'default' }: LoadingStatusProps) {
+export function LoadingStatus({
+  state,
+  message,
+  progress,
+  onRetry,
+  variant = 'default',
+}: LoadingStatusProps): React.JSX.Element {
   const percent = progress ? Math.round((progress.completed / Math.max(progress.total, 1)) * 100) : 0;
 
   if (state === 'error') {

@@ -9,7 +9,7 @@ interface ErrorPageProps {
   reset: () => void;
 }
 
-export default function ErrorPage({ error, reset }: ErrorPageProps) {
+export default function ErrorPage({ error, reset }: ErrorPageProps): React.JSX.Element {
   useEffect(() => {
     console.error('Unexpected page error:', error);
   }, [error]);

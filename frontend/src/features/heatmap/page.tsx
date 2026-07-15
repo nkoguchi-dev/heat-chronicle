@@ -12,11 +12,12 @@ import { StationSelector } from '@/features/heatmap/components/StationSelector';
 import { useStationOptions } from '@/features/heatmap/hooks/use-station-options';
 import { useTemperatureData } from '@/features/heatmap/hooks/use-temperature-data';
 import { useUrlParams } from '@/features/heatmap/hooks/use-url-params';
+import { isTempType } from '@/features/heatmap/libs/url-params';
 import type { Station, TempType } from '@/features/heatmap/types/api';
 import { TEMP_TYPE_LABELS } from '@/features/heatmap/types/api';
 import { ThemeToggle } from '@/features/shared/components/ThemeToggle';
 
-export function HeatmapPage() {
+export function HeatmapPage(): React.JSX.Element {
   const { initialParams, updateUrl } = useUrlParams();
   const [selectedStationId, setSelectedStationId] = useState<number | null>(initialParams.station);
   const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(initialParams.pref);
@@ -37,7 +38,7 @@ export function HeatmapPage() {
   } = useTemperatureData();
 
   const handleStationSelect = useCallback(
-    (station: Station) => {
+    (station: Station): void => {
       setSelectedStationId(station.id);
       fetchData(station.id, currentYear);
       updateUrl({ station: station.id, pref: selectedPrecNo });
@@ -57,14 +58,14 @@ export function HeatmapPage() {
     onInitialStationResolved: handleStationSelect,
   });
 
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = useCallback((): void => {
     if (selectedStationId !== null && nextEndYear !== null) {
       fetchMoreData(selectedStationId, nextEndYear);
     }
   }, [selectedStationId, nextEndYear, fetchMoreData]);
 
   const handlePrefectureChange = useCallback(
-    (precNo: number) => {
+    (precNo: number): void => {
       resetTemperature();
       setSelectedStationId(null);
       setSelectedPrecNo(precNo);
@@ -73,17 +74,17 @@ export function HeatmapPage() {
     [resetTemperature, updateUrl],
   );
 
-  const handleTempTypeChange = (value: string) => {
-    const newType = value as TempType;
-    setTempType(newType);
-    updateUrl({ type: newType });
+  const handleTempTypeChange = (value: string): void => {
+    if (!isTempType(value)) return;
+    setTempType(value);
+    updateUrl({ type: value });
   };
 
-  const initialTemperatureLoading = activeOperation?.mode === 'initial';
-  const moreTemperatureLoading = activeOperation?.mode === 'more';
+  const isInitialTemperatureLoading = activeOperation?.mode === 'initial';
+  const isMoreTemperatureLoading = activeOperation?.mode === 'more';
   const initialTemperatureError = temperatureError?.operation.mode === 'initial' ? temperatureError : null;
   const moreTemperatureError = temperatureError?.operation.mode === 'more' ? temperatureError : null;
-  const singleMonthProgress = initialTemperatureLoading && progress?.total === 1 ? progress : null;
+  const singleMonthProgress = isInitialTemperatureLoading && progress?.total === 1 ? progress : null;
 
   const primaryStatus = stationOptionsError ? (
     <LoadingStatus state="error" message={stationOptionsError.message} onRetry={retryStationOptions} />
@@ -98,7 +99,7 @@ export function HeatmapPage() {
     />
   ) : initialTemperatureError ? (
     <LoadingStatus state="error" message={initialTemperatureError.message} onRetry={retryTemperature} />
-  ) : initialTemperatureLoading && singleMonthProgress === null ? (
+  ) : isInitialTemperatureLoading && singleMonthProgress === null ? (
     <LoadingStatus
       state={progress ? 'progress' : 'loading'}
       message={progress ? `${progress.year}年${progress.month}月を取得中...` : '気温データを読み込んでいます...'}
@@ -108,7 +109,7 @@ export function HeatmapPage() {
 
   const loadMoreStatus = moreTemperatureError ? (
     <LoadingStatus state="error" message={moreTemperatureError.message} onRetry={retryTemperature} />
-  ) : moreTemperatureLoading ? (
+  ) : isMoreTemperatureLoading ? (
     <LoadingStatus
       state={progress ? 'progress' : 'loading'}
       message={
@@ -150,8 +151,8 @@ export function HeatmapPage() {
           stations={stations}
           selectedPrecNo={selectedPrecNo}
           selectedStationId={selectedStationId}
-          loadingPrefectures={stationOptionsLoadingPhase === 'prefectures'}
-          loadingStations={stationOptionsLoadingPhase === 'stations'}
+          isLoadingPrefectures={stationOptionsLoadingPhase === 'prefectures'}
+          isLoadingStations={stationOptionsLoadingPhase === 'stations'}
           onSelect={handleStationSelect}
           onPrefectureChange={handlePrefectureChange}
         />

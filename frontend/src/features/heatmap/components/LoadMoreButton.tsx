@@ -7,7 +7,7 @@ interface LoadMoreButtonProps {
   onLoadMore: () => void;
 }
 
-export function LoadMoreButton({ nextEndYear, onLoadMore }: LoadMoreButtonProps) {
+export function LoadMoreButton({ nextEndYear, onLoadMore }: LoadMoreButtonProps): React.JSX.Element {
   return (
     <div className="flex w-full justify-center">
       <Button variant="outline" onClick={onLoadMore}>

@@ -16,6 +16,7 @@
 - [ ] 汎用 UI コンポーネントが `src/components/ui/` に配置されているか
 - [ ] `src/app/**/page.tsx` がルーティングの責務に限定され、画面実装を `src/features/[feature]/page.tsx` から読み込んでいるか
 - [ ] 既存のディレクトリ構成・命名規則と一貫しているか
+- [ ] `src/components/ui/` のshadcn/ui生成コードを変更する場合、生成元との差分を必要最小限にしているか
 
 ## 2. 命名規則
 
@@ -59,7 +60,17 @@
 - [ ] データフェッチがサーバーサイドで完結できる場合、Client Component を避けているか
 - [ ] 静的エクスポート前提のため、動的ルーティング（`generateStaticParams`）が正しく設定されているか
 
-## 8. ビルド確認
+## 8. テスト
+
+- [ ] 新規・変更された純粋ロジックに正常系・異常系・境界値のテストがあるか
+- [ ] Hooksのローディング、エラー、再試行、Abort、古いレスポンスの無視が検証されているか
+- [ ] コンポーネントが表示内容とユーザー操作を中心にテストされているか
+- [ ] カバレッジ閾値（lines / statements / functions 80%、branches 75%）を満たしているか
+- [ ] モック、タイマー、DOM、ストレージがテストごとにリセットされているか
+
+`src/components/ui/` のshadcn/ui生成コード、型定義、App Routerの薄い配線はカバレッジ対象外です。
+
+## 9. ビルド確認
 
 以下のコマンドが全て通ることを確認する:
 
@@ -67,10 +78,12 @@
 npm run format:check
 npm run lint
 npm run typecheck
+npm run test:coverage
 npm run build
 ```
 
 - [ ] `npm run format:check`（Prettier）が通るか
 - [ ] `npm run lint`（ESLint）が通るか
 - [ ] `npm run typecheck`（TypeScript）が通るか
+- [ ] `npm run test:coverage`（Vitest）が通り、カバレッジ閾値を満たすか
 - [ ] `npm run build`（Next.js ビルド）がエラーなく完了するか

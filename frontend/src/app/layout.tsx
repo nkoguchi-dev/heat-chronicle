@@ -20,11 +20,11 @@ export const metadata: Metadata = {
     '日本全国の気象観測地点から、日別の最高・最低・平均気温を選び、長期的な変化をヒートマップで比較できます。',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+interface RootLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+
+export default function RootLayout({ children }: Readonly<RootLayoutProps>): React.JSX.Element {
   return (
     <html lang="ja">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>

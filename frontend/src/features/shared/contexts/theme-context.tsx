@@ -9,6 +9,10 @@ interface ThemeContextValue {
   toggleTheme: () => void;
 }
 
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 const THEME_STORAGE_KEY = 'theme';
 const THEME_CHANGE_EVENT = 'theme-change';
@@ -26,7 +30,7 @@ function getServerTheme(): Theme {
 
 function subscribeToTheme(onStoreChange: () => void): () => void {
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  const handleChange = () => onStoreChange();
+  const handleChange = (): void => onStoreChange();
 
   window.addEventListener('storage', handleChange);
   window.addEventListener(THEME_CHANGE_EVENT, handleChange);
@@ -39,7 +43,7 @@ function subscribeToTheme(onStoreChange: () => void): () => void {
   };
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+export function ThemeProvider({ children }: ThemeProviderProps): React.JSX.Element {
   const theme = useSyncExternalStore(subscribeToTheme, getPreferredTheme, getServerTheme);
 
   useEffect(() => {
@@ -47,7 +51,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  const toggleTheme = useCallback(() => {
+  const toggleTheme = useCallback((): void => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
     localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
     window.dispatchEvent(new Event(THEME_CHANGE_EVENT));

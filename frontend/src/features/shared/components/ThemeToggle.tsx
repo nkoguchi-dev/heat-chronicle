@@ -3,7 +3,7 @@
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/features/shared/contexts/theme-context';
 
-export function ThemeToggle() {
+export function ThemeToggle(): React.JSX.Element {
   const { theme, toggleTheme } = useTheme();
 
   return (
