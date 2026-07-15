@@ -1,16 +1,13 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface LoadMoreButtonProps {
   nextEndYear: number;
   onLoadMore: () => void;
 }
 
-export function LoadMoreButton({
-  nextEndYear,
-  onLoadMore,
-}: LoadMoreButtonProps) {
+export function LoadMoreButton({ nextEndYear, onLoadMore }: LoadMoreButtonProps) {
   return (
     <div className="flex w-full justify-center">
       <Button variant="outline" onClick={onLoadMore}>

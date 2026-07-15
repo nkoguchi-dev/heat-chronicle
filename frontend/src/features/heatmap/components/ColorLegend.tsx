@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
-import { TEMP_MAX, TEMP_MIN, tempToColor } from "../lib/color-scale";
+import { TEMP_MAX, TEMP_MIN, tempToColor } from '../libs/color-scale';
 
 const LEGEND_HEIGHT = 16;
 
@@ -25,7 +25,7 @@ export function ColorLegend() {
       canvas.height = LEGEND_HEIGHT * dpr;
       canvas.style.height = `${LEGEND_HEIGHT}px`;
 
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       ctx.scale(dpr, dpr);
@@ -58,7 +58,7 @@ export function ColorLegend() {
             style={{
               /* 動的な left 値は Tailwind では表現できないためインラインスタイルを使用 */
               left: `${((temp - TEMP_MIN) / (TEMP_MAX - TEMP_MIN)) * 100}%`,
-              transform: "translateX(-50%)",
+              transform: 'translateX(-50%)',
             }}
           >
             {temp}℃

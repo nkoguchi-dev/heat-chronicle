@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { apiClient } from "@/features/shared/libs/api-client";
-import type { Prefecture, Station } from "@/types/api";
+import { apiClient } from '@/features/shared/libs/api-client';
+import type { Prefecture, Station } from '@/features/heatmap/types/api';
 
-export type StationOptionsLoadPhase = "prefectures" | "stations";
+export type StationOptionsLoadPhase = 'prefectures' | 'stations';
 
 export interface StationOptionsError {
   phase: StationOptionsLoadPhase;
@@ -27,7 +27,7 @@ interface UseStationOptionsReturn {
 }
 
 function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === "AbortError";
+  return error instanceof DOMException && error.name === 'AbortError';
 }
 
 export function useStationOptions({
@@ -37,8 +37,7 @@ export function useStationOptions({
 }: UseStationOptionsParams): UseStationOptionsReturn {
   const [prefectures, setPrefectures] = useState<Prefecture[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
-  const [loadingPhase, setLoadingPhase] =
-    useState<StationOptionsLoadPhase | null>("prefectures");
+  const [loadingPhase, setLoadingPhase] = useState<StationOptionsLoadPhase | null>('prefectures');
   const [error, setError] = useState<StationOptionsError | null>(null);
   const [prefecturesLoaded, setPrefecturesLoaded] = useState(false);
 
@@ -66,15 +65,12 @@ export function useStationOptions({
 
     void Promise.resolve().then(async () => {
       if (controller.signal.aborted) return;
-      setLoadingPhase("stations");
+      setLoadingPhase('stations');
       setError(null);
       setStations([]);
 
       try {
-        const data = await apiClient.get<Station[]>(
-          `/api/stations?prec_no=${precNo}`,
-          { signal: controller.signal }
-        );
+        const data = await apiClient.get<Station[]>(`/api/stations?prec_no=${precNo}`, { signal: controller.signal });
 
         if (controller.signal.aborted || selectedPrecNoRef.current !== precNo) {
           return;
@@ -84,9 +80,7 @@ export function useStationOptions({
 
         if (!initialStationResolvedRef.current) {
           initialStationResolvedRef.current = true;
-          const station = data.find(
-            (candidate) => candidate.id === initialStationIdRef.current
-          );
+          const station = data.find((candidate) => candidate.id === initialStationIdRef.current);
           if (station) {
             onInitialStationResolvedRef.current(station);
           }
@@ -95,12 +89,12 @@ export function useStationOptions({
         setLoadingPhase(null);
       } catch (requestError) {
         if (isAbortError(requestError)) return;
-        console.error("Failed to fetch stations:", requestError);
+        console.error('Failed to fetch stations:', requestError);
         if (selectedPrecNoRef.current === precNo) {
           setLoadingPhase(null);
           setError({
-            phase: "stations",
-            message: "観測地点一覧を取得できませんでした。",
+            phase: 'stations',
+            message: '観測地点一覧を取得できませんでした。',
           });
         }
       }
@@ -114,11 +108,11 @@ export function useStationOptions({
 
     void Promise.resolve().then(async () => {
       if (controller.signal.aborted) return;
-      setLoadingPhase("prefectures");
+      setLoadingPhase('prefectures');
       setError(null);
 
       try {
-        const data = await apiClient.get<Prefecture[]>("/api/prefectures", {
+        const data = await apiClient.get<Prefecture[]>('/api/prefectures', {
           signal: controller.signal,
         });
 
@@ -135,11 +129,11 @@ export function useStationOptions({
         }
       } catch (requestError) {
         if (isAbortError(requestError)) return;
-        console.error("Failed to fetch prefectures:", requestError);
+        console.error('Failed to fetch prefectures:', requestError);
         setLoadingPhase(null);
         setError({
-          phase: "prefectures",
-          message: "都道府県一覧を取得できませんでした。",
+          phase: 'prefectures',
+          message: '都道府県一覧を取得できませんでした。',
         });
       }
     });
@@ -163,9 +157,7 @@ export function useStationOptions({
       void Promise.resolve().then(() => {
         if (selectedPrecNoRef.current !== null) return;
         setStations([]);
-        setLoadingPhase((current) =>
-          current === "stations" ? null : current
-        );
+        setLoadingPhase((current) => (current === 'stations' ? null : current));
       });
       return;
     }
@@ -176,7 +168,7 @@ export function useStationOptions({
   }, [loadStations, prefecturesLoaded, selectedPrecNo]);
 
   const retry = useCallback(() => {
-    if (error?.phase === "prefectures") {
+    if (error?.phase === 'prefectures') {
       void loadPrefectures();
       return;
     }
