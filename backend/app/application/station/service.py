@@ -6,8 +6,7 @@ class StationService:
     def __init__(self, station_repo: StationRepository):
         self.station_repo = station_repo
 
-    def get_all(self) -> list[Station]:
+    def get_stations(self, prec_no: int | None = None) -> list[Station]:
+        if prec_no is not None:
+            return self.station_repo.get_by_prec_no(prec_no)
         return self.station_repo.get_all()
-
-    def get_by_prec_no(self, prec_no: int) -> list[Station]:
-        return self.station_repo.get_by_prec_no(prec_no)

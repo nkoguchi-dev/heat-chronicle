@@ -38,6 +38,25 @@ def test_application_files_are_grouped_by_feature() -> None:
     assert root_python_files == {"__init__.py"}
 
 
+def test_application_service_has_at_most_one_public_method() -> None:
+    violations: dict[str, list[str]] = {}
+    for path in (APP_DIR / "application").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in tree.body:
+            if not isinstance(node, ast.ClassDef) or not node.name.endswith("Service"):
+                continue
+            public_methods = [
+                member.name
+                for member in node.body
+                if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and not member.name.startswith("_")
+            ]
+            if len(public_methods) > 1:
+                violations[f"{path.relative_to(APP_DIR)}:{node.name}"] = public_methods
+
+    assert violations == {}
+
+
 def test_application_only_depends_on_domain_layer() -> None:
     imports = _imports_under(APP_DIR / "application")
     project_imports = {name for name in imports if name.startswith("app.")}
@@ -67,6 +86,12 @@ def test_presentation_does_not_depend_on_infrastructure() -> None:
     imports = _imports_under(APP_DIR / "presentation")
 
     assert not any(name.startswith("app.infrastructure") for name in imports)
+
+
+def test_presentation_does_not_call_application_shared_directly() -> None:
+    imports = _imports_under(APP_DIR / "presentation")
+
+    assert not any(name.startswith("app.application.shared") for name in imports)
 
 
 def test_infrastructure_dto_does_not_leak_to_upper_layers() -> None:

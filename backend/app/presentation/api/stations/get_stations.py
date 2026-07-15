@@ -26,10 +26,7 @@ def get_stations(
     service: StationServiceDep,
     prec_no: int | None = None,
 ) -> list[StationResponse]:
-    if prec_no is not None:
-        stations = service.get_by_prec_no(prec_no)
-    else:
-        stations = service.get_all()
+    stations = service.get_stations(prec_no)
     return [
         StationResponse(
             id=station.id,
