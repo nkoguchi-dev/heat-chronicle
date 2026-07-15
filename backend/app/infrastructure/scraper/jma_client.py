@@ -3,7 +3,7 @@ import logging
 
 import httpx
 
-from app.domain.station import StationType
+from app.domain.station.model import StationType
 from app.infrastructure.dto.jma import JmaDailyPageRequestDTO
 
 logger = logging.getLogger(__name__)

@@ -26,6 +26,12 @@ def test_domain_and_application_do_not_depend_on_pydantic() -> None:
     )
 
 
+def test_domain_files_are_grouped_by_resource() -> None:
+    root_python_files = {path.name for path in (APP_DIR / "domain").glob("*.py")}
+
+    assert root_python_files == {"__init__.py"}
+
+
 def test_application_only_depends_on_domain_layer() -> None:
     imports = _imports_under(APP_DIR / "application")
     project_imports = {name for name in imports if name.startswith("app.")}

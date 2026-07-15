@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Any
 
-from app.domain.temperature import DailyTemperature
+from app.domain.temperature.model import DailyTemperature
 from app.infrastructure.scraper.jma_parser import _parse_temp, parse_daily_page
 
 

@@ -18,6 +18,7 @@ Codex による実装・レビューで使用します。
 - [ ] Infrastructure 層が Application / Presentation / DI を import していないか
 - [ ] Presentation 層が Infrastructure を直接呼び出していないか
 - [ ] Domain 層が外部ライブラリや他レイヤーに依存していないか
+- [ ] Domain Model、業務ルール、Repository / Port がドメインリソース単位のディレクトリに整理されているか
 - [ ] Presentation 層の知識（HTTP ステータスコード、`Request`/`Response` オブジェクト等）が Application 層に漏れていないか
 - [ ] Domain 層に Presentation / Infrastructure の DTO が置かれていないか
 - [ ] Domain Model で表現できる Application の入出力に専用 DTO を重複定義していないか

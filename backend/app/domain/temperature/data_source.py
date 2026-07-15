@@ -1,7 +1,7 @@
 from typing import Protocol
 
-from app.domain.station import Station
-from app.domain.temperature import DailyTemperature
+from app.domain.station.model import Station
+from app.domain.temperature.model import DailyTemperature
 
 
 class TemperatureDataSource(Protocol):

@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 
-from app.domain.station import StationType
-from app.domain.temperature import DailyTemperature
+from app.domain.station.model import StationType
+from app.domain.temperature.model import DailyTemperature
 from app.infrastructure.dto.jma import JmaDailyTemperatureDTO
 
 if TYPE_CHECKING:

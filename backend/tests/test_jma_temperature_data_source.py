@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from app.domain.station import Station
-from app.domain.temperature import DailyTemperature
+from app.domain.station.model import Station
+from app.domain.temperature.model import DailyTemperature
 from app.infrastructure.scraper.jma_temperature_data_source import (
     JmaTemperatureDataSource,
 )

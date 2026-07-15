@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Protocol
 
-from app.domain.temperature import DailyTemperature
+from app.domain.temperature.model import DailyTemperature
 
 
 class TemperatureRepository(Protocol):

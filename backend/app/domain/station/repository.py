@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from app.domain.station import Station
+from app.domain.station.model import Station
 
 
 class StationRepository(Protocol):

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from boto3.dynamodb.conditions import Key
 
 from app.config import settings
-from app.domain.temperature import DailyTemperature
+from app.domain.temperature.model import DailyTemperature
 from app.infrastructure.dto.dynamodb import (
     DailyTemperatureItemDTO,
     DailyTemperatureWriteDTO,

@@ -35,12 +35,14 @@ backend/
 │   │   ├── scrape_service.py        … 気象庁からの月別データ取得
 │   │   └── temperature_service.py   … キャッシュ済みデータのクエリ
 │   ├── domain/                      … ドメインモデル、業務ルール、I/O Port
-│   │   ├── fetch_freshness.py       … 取得鮮度の業務ルール
-│   │   ├── station.py              … 観測地点モデル
-│   │   ├── station_repository.py   … 観測地点Repository Port
-│   │   ├── temperature.py          … 日別気温モデル
-│   │   ├── temperature_data_source.py … 気象データ取得Port
-│   │   └── temperature_repository.py … 気温Repository Port
+│   │   ├── station/                … 観測地点ドメイン
+│   │   │   ├── model.py            … 観測地点モデル
+│   │   │   └── repository.py       … 観測地点 Repository Port
+│   │   └── temperature/            … 気温ドメイン
+│   │       ├── data_source.py      … 気象データ取得 Port
+│   │       ├── fetch_freshness.py  … 取得鮮度の業務ルール
+│   │       ├── model.py            … 日別気温モデル
+│   │       └── repository.py       … 気温 Repository Port
 │   └── infrastructure/              … DB / 外部サービス
 │       ├── database.py              … DynamoDB クライアント初期化
 │       ├── dto/                     … 外部ペイロードの Pydantic DTO

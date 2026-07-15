@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from boto3.dynamodb.conditions import Key
 
 from app.config import settings
-from app.domain.station import Station
+from app.domain.station.model import Station
 from app.infrastructure.dto.dynamodb import StationItemDTO
 
 if TYPE_CHECKING:

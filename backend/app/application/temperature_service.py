@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 
-from app.domain.fetch_freshness import FetchFreshnessPolicy, FetchStatus
-from app.domain.station import Station
-from app.domain.station_repository import StationRepository
-from app.domain.temperature import DailyTemperature
-from app.domain.temperature_repository import TemperatureRepository
+from app.domain.station.model import Station
+from app.domain.station.repository import StationRepository
+from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
+from app.domain.temperature.model import DailyTemperature
+from app.domain.temperature.repository import TemperatureRepository
 
 CHUNK_SIZE = 50
 FALLBACK_START_YEAR = 1975
