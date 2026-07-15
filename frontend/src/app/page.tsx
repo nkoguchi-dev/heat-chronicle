@@ -95,9 +95,6 @@ export default function Home() {
     temperatureError?.operation.mode === "initial" ? temperatureError : null;
   const moreTemperatureError =
     temperatureError?.operation.mode === "more" ? temperatureError : null;
-  const loadingMoreEndYear = moreTemperatureLoading
-    ? activeOperation.endYear
-    : nextEndYear;
   const singleMonthProgress =
     initialTemperatureLoading && progress?.total === 1 ? progress : null;
 
@@ -236,12 +233,12 @@ export default function Home() {
       {loadMoreStatus}
 
       {temperatureError === null &&
-        loadingMoreEndYear !== null &&
+        activeOperation === null &&
+        nextEndYear !== null &&
         startYear !== null &&
-        (hasOlderData || moreTemperatureLoading) && (
+        hasOlderData && (
           <LoadMoreButton
-            nextEndYear={loadingMoreEndYear}
-            loading={activeOperation !== null}
+            nextEndYear={nextEndYear}
             onLoadMore={handleLoadMore}
           />
         )}
