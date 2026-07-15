@@ -3,7 +3,7 @@ from datetime import date as Date
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, ConfigDict
 
-from app.di.container import ScrapeServiceDep
+from app.di.container import FetchMonthUseCaseDep
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ class MonthTemperatureResponse(BaseModel):
 @router.get("/{station_id}/fetch-month", response_model=MonthTemperatureResponse)
 async def fetch_month(
     station_id: int,
-    service: ScrapeServiceDep,
+    use_case: FetchMonthUseCaseDep,
     year: int = Query(...),
     month: int = Query(...),
 ) -> MonthTemperatureResponse:
@@ -39,7 +39,7 @@ async def fetch_month(
         raise HTTPException(status_code=400, detail="month must be 1-12")
 
     try:
-        records = await service.fetch_month(station_id, year, month)
+        records = await use_case.fetch_month(station_id, year, month)
         return MonthTemperatureResponse(
             year=year,
             month=month,

@@ -59,7 +59,7 @@ def _find_missing_months(
     return required
 
 
-class TemperatureService:
+class GetTemperatureUseCase:
     def __init__(
         self,
         station_repo: StationRepository,

@@ -16,7 +16,7 @@ class FetchMonthTemperatureOutput:
     avg_temp: float | None = None
 
 
-class ScrapeService:
+class FetchMonthUseCase:
     def __init__(
         self,
         station_repo: StationRepository,

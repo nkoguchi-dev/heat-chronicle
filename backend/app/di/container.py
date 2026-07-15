@@ -4,8 +4,8 @@ from fastapi import Depends
 
 from app.application.prefecture.get_prefecture_use_case import GetPrefectureUseCase
 from app.application.station.get_station_use_case import GetStationUseCase
-from app.application.temperature.scrape_service import ScrapeService
-from app.application.temperature.service import TemperatureService
+from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
+from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.repository import TemperatureRepository
@@ -42,28 +42,32 @@ def get_prefecture_use_case() -> GetPrefectureUseCase:
     return GetPrefectureUseCase()
 
 
-def get_temperature_service(
+def get_temperature_use_case(
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
-) -> TemperatureService:
-    return TemperatureService(station_repo, temp_repo)
+) -> GetTemperatureUseCase:
+    return GetTemperatureUseCase(station_repo, temp_repo)
 
 
 def get_station_use_case(station_repo: StationRepoDep) -> GetStationUseCase:
     return GetStationUseCase(station_repo)
 
 
-def get_scrape_service(
+def get_fetch_month_use_case(
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
     temperature_data_source: TemperatureDataSourceDep,
-) -> ScrapeService:
-    return ScrapeService(station_repo, temp_repo, temperature_data_source)
+) -> FetchMonthUseCase:
+    return FetchMonthUseCase(station_repo, temp_repo, temperature_data_source)
 
 
 GetPrefectureUseCaseDep = Annotated[
     GetPrefectureUseCase, Depends(get_prefecture_use_case)
 ]
 GetStationUseCaseDep = Annotated[GetStationUseCase, Depends(get_station_use_case)]
-TemperatureServiceDep = Annotated[TemperatureService, Depends(get_temperature_service)]
-ScrapeServiceDep = Annotated[ScrapeService, Depends(get_scrape_service)]
+GetTemperatureUseCaseDep = Annotated[
+    GetTemperatureUseCase, Depends(get_temperature_use_case)
+]
+FetchMonthUseCaseDep = Annotated[
+    FetchMonthUseCase, Depends(get_fetch_month_use_case)
+]

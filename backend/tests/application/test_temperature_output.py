@@ -1,6 +1,6 @@
 from typing import get_args, get_type_hints
 
-from app.application.temperature.service import (
+from app.application.temperature.get_temperature_use_case import (
     GetTemperatureDataOutput,
     TemperatureRecordOutput,
 )
