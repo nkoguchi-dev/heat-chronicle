@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useTemperatureData } from '@/features/heatmap/hooks/use-temperature-data';
 import { apiClient } from '@/features/shared/libs/api-client';
@@ -37,7 +37,13 @@ function createResponse(overrides: Partial<TemperatureResponse['metadata']> = {}
 const getMock = vi.mocked(apiClient.get);
 
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-07-15T00:00:00Z'));
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('useTemperatureData', () => {
@@ -95,14 +101,25 @@ describe('useTemperatureData', () => {
     expect(result.current.activeOperation).toBeNull();
   });
 
-  it('resets loaded state and aborts the active request', () => {
-    getMock.mockReturnValueOnce(new Promise(() => undefined));
+  it('resets loaded state and ignores the active request abort error', async () => {
+    let rejectRequest: (reason?: unknown) => void = () => undefined;
+    const request = new Promise<TemperatureResponse>((_resolve, reject) => {
+      rejectRequest = reject;
+    });
+    getMock.mockReturnValueOnce(request);
     const { result } = renderHook(() => useTemperatureData());
     act(() => result.current.fetchData(4, 2026));
+    const signal = getMock.mock.calls[0]?.[1]?.signal;
     expect(result.current.activeOperation?.mode).toBe('initial');
+    expect(signal?.aborted).toBe(false);
 
     act(() => result.current.reset());
+    await act(async () => {
+      rejectRequest(new DOMException('Aborted', 'AbortError'));
+      await Promise.resolve();
+    });
 
+    expect(signal?.aborted).toBe(true);
     expect(result.current).toMatchObject({
       records: [],
       activeOperation: null,
@@ -112,5 +129,45 @@ describe('useTemperatureData', () => {
       nextEndYear: null,
       startYear: null,
     });
+  });
+
+  it('aborts the active request when the hook unmounts', () => {
+    getMock.mockReturnValueOnce(new Promise(() => undefined));
+    const { result, unmount } = renderHook(() => useTemperatureData());
+    act(() => result.current.fetchData(4, 2026));
+    const signal = getMock.mock.calls[0]?.[1]?.signal;
+
+    unmount();
+
+    expect(signal?.aborted).toBe(true);
+  });
+
+  it('ignores a stale response after a newer request starts', async () => {
+    let resolveFirstRequest: (response: TemperatureResponse) => void = () => undefined;
+    const firstRequest = new Promise<TemperatureResponse>((resolve) => {
+      resolveFirstRequest = resolve;
+    });
+    const latestRecord = { ...RECORD, date: '2025-01-01' };
+    const latestResponse = {
+      ...createResponse({ station_id: 5, start_year: 2025, end_year: 2025 }),
+      data: [latestRecord],
+    };
+    getMock.mockReturnValueOnce(firstRequest).mockResolvedValueOnce(latestResponse);
+    const { result } = renderHook(() => useTemperatureData());
+
+    act(() => result.current.fetchData(4, 2026));
+    const firstSignal = getMock.mock.calls[0]?.[1]?.signal;
+    act(() => result.current.fetchData(5, 2025));
+
+    await waitFor(() => expect(result.current.records).toEqual([latestRecord]));
+    expect(firstSignal?.aborted).toBe(true);
+
+    await act(async () => {
+      resolveFirstRequest(createResponse());
+      await firstRequest;
+    });
+
+    expect(result.current.records).toEqual([latestRecord]);
+    expect(result.current.error).toBeNull();
   });
 });

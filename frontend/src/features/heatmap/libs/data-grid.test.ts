@@ -28,6 +28,12 @@ describe('buildGrid', () => {
 
     expect(grid.get(2023)?.size).toBe(0);
   });
+
+  it('ignores records with invalid calendar dates', () => {
+    const invalidRecord = { ...LEAP_DAY_RECORD, date: '2024-02-30' };
+
+    expect(buildGrid([invalidRecord], 2024, 2024).get(2024)?.size).toBe(0);
+  });
 });
 
 describe('getMonthStartDays', () => {

@@ -22,6 +22,18 @@ const STATIONS: Station[] = [
     earliest_year: 1887,
   },
 ];
+const TOKYO_STATIONS: Station[] = [
+  {
+    id: 1,
+    station_name: '東京',
+    prec_no: 13,
+    block_no: '47662',
+    station_type: 's',
+    latitude: null,
+    longitude: null,
+    earliest_year: 1875,
+  },
+];
 
 const getMock = vi.mocked(apiClient.get);
 
@@ -85,5 +97,36 @@ describe('useStationOptions', () => {
     rerender({ selectedPrecNo: null });
 
     await waitFor(() => expect(result.current.stations).toEqual([]));
+  });
+
+  it('aborts the previous station request and ignores its stale response', async () => {
+    let resolveFirstStations: (stations: Station[]) => void = () => undefined;
+    const firstStationsRequest = new Promise<Station[]>((resolve) => {
+      resolveFirstStations = resolve;
+    });
+    getMock
+      .mockResolvedValueOnce(PREFECTURES)
+      .mockReturnValueOnce(firstStationsRequest)
+      .mockResolvedValueOnce(TOKYO_STATIONS);
+    const { result, rerender } = renderHook(
+      ({ selectedPrecNo }) =>
+        useStationOptions({ selectedPrecNo, initialStationId: null, onInitialStationResolved: vi.fn() }),
+      { initialProps: { selectedPrecNo: 44 } },
+    );
+    await waitFor(() => expect(getMock).toHaveBeenCalledTimes(2));
+    const firstSignal = getMock.mock.calls[1]?.[1]?.signal;
+
+    rerender({ selectedPrecNo: 13 });
+
+    await waitFor(() => expect(result.current.stations).toEqual(TOKYO_STATIONS));
+    expect(firstSignal?.aborted).toBe(true);
+
+    await act(async () => {
+      resolveFirstStations(STATIONS);
+      await firstStationsRequest;
+    });
+
+    expect(result.current.stations).toEqual(TOKYO_STATIONS);
+    expect(result.current.error).toBeNull();
   });
 });

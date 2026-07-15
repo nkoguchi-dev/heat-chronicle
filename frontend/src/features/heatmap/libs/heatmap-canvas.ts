@@ -1,5 +1,6 @@
 import { tempToColor } from '@/features/heatmap/libs/color-scale';
 import { getMonthStartDays, type GridCell, type HeatmapGrid } from '@/features/heatmap/libs/data-grid';
+import { formatJapaneseCalendarDate } from '@/features/heatmap/libs/calendar-date';
 import type { TempType } from '@/features/heatmap/types/api';
 
 export const CELL_WIDTH = 3;
@@ -86,8 +87,7 @@ export function getHeatmapTooltip(
   const cell = grid.get(endYear - yearIndex)?.get(dayIndex);
   if (!cell) return null;
 
-  const date = new Date(cell.date);
-  const dateLabel = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+  const dateLabel = formatJapaneseCalendarDate(cell.date);
   const temperature = getCellTemperature(cell, temperatureType);
   const temperatureLabel = temperature === null ? 'データなし' : `${temperature.toFixed(1)}℃`;
   const isRightAligned = horizontalPosition > dimensions.width / 2;

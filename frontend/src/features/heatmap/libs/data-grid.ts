@@ -1,4 +1,5 @@
 import type { TemperatureRecord } from '@/features/heatmap/types/api';
+import { parseCalendarDate } from '@/features/heatmap/libs/calendar-date';
 
 export interface GridCell {
   date: string;
@@ -10,13 +11,6 @@ export interface GridCell {
 // Map<year, Map<dayOfYear (0-based), GridCell>>
 export type HeatmapGrid = Map<number, Map<number, GridCell>>;
 
-function dayOfYear(dateStr: string): number {
-  const date = new Date(dateStr);
-  const startOfYear = new Date(date.getFullYear(), 0, 0);
-  const differenceInMilliseconds = date.getTime() - startOfYear.getTime();
-  return Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24)) - 1; // 0-based
-}
-
 export function buildGrid(records: TemperatureRecord[], startYear: number, endYear: number): HeatmapGrid {
   const grid: HeatmapGrid = new Map();
 
@@ -26,12 +20,13 @@ export function buildGrid(records: TemperatureRecord[], startYear: number, endYe
   }
 
   for (const record of records) {
-    const year = parseInt(record.date.substring(0, 4), 10);
-    const yearMap = grid.get(year);
+    const date = parseCalendarDate(record.date);
+    if (!date) continue;
+
+    const yearMap = grid.get(date.year);
     if (!yearMap) continue;
 
-    const dayIndex = dayOfYear(record.date);
-    yearMap.set(dayIndex, {
+    yearMap.set(date.dayOfYear, {
       date: record.date,
       maxTemp: record.max_temp,
       minTemp: record.min_temp,
