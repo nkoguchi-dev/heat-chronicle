@@ -69,8 +69,12 @@ resource "aws_dynamodb_table" "stations" {
 
   global_secondary_index {
     name            = "prec_no-index"
-    hash_key        = "prec_no"
     projection_type = "ALL"
+
+    key_schema {
+      attribute_name = "prec_no"
+      key_type       = "HASH"
+    }
   }
 
   tags = merge(var.tags, {
