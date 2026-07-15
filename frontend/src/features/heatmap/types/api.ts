@@ -51,10 +51,10 @@ export interface ProgressEvent {
   total: number;
 }
 
-export type TempType = "max" | "min" | "avg";
+export type TempType = 'max' | 'min' | 'avg';
 
 export const TEMP_TYPE_LABELS: Record<TempType, string> = {
-  max: "最高気温",
-  min: "最低気温",
-  avg: "平均気温",
+  max: '最高気温',
+  min: '最低気温',
+  avg: '平均気温',
 };

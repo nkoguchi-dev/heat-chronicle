@@ -17,7 +17,7 @@ function lerp(a: number, b: number, t: number): number {
 
 export function tempToColor(temp: number | null): string {
   if (temp === null || temp === undefined) {
-    return "rgba(200, 200, 200, 0.3)";
+    return 'rgba(200, 200, 200, 0.3)';
   }
 
   // Clamp to range
@@ -43,7 +43,7 @@ export function tempToColor(temp: number | null): string {
     }
   }
 
-  return "rgba(200, 200, 200, 0.3)";
+  return 'rgba(200, 200, 200, 0.3)';
 }
 
 // Pre-compute gradient for legend rendering

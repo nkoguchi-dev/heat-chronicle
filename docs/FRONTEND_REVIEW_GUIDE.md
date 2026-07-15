@@ -11,8 +11,10 @@
 ## 1. ディレクトリ構成
 
 - [ ] 機能コードが `src/features/` 以下に配置されているか
+- [ ] 各フィーチャーが `page.tsx`、`components/`、`hooks/`、`libs/`、`types/` を内包し、自己完結しているか
+- [ ] 別フィーチャーの内部コードを直接 import せず、横断的なコードが `src/features/shared/` を経由しているか
 - [ ] 汎用 UI コンポーネントが `src/components/ui/` に配置されているか
-- [ ] ページコンポーネントが `src/app/` 以下の適切な場所に配置されているか
+- [ ] `src/app/**/page.tsx` がルーティングの責務に限定され、画面実装を `src/features/[feature]/page.tsx` から読み込んでいるか
 - [ ] 既存のディレクトリ構成・命名規則と一貫しているか
 
 ## 2. 命名規則
@@ -26,11 +28,11 @@
 
 - [ ] バックエンド API へのリクエストが `src/features/shared/libs/api-client.ts` 経由で行われているか（直接 `fetch` しない）
 - [ ] エラーハンドリングが適切に行われているか
-- [ ] レスポンスの型が `src/types/` の型定義と整合しているか
+- [ ] レスポンスの型が `src/features/[feature]/types/` の型定義と整合しているか
 
 ## 4. 型安全性
 
-- [ ] `src/types/` の型定義がバックエンド API のレスポンス仕様と整合しているか
+- [ ] `src/features/[feature]/types/` の型定義がバックエンド API のレスポンス仕様と整合しているか
 - [ ] `any` の安易な使用がないか（型推論・型定義で代替できるか）
 - [ ] `null` / `undefined` な値の安全なハンドリングがされているか
 - [ ] コンポーネントの Props に適切な型定義があるか
@@ -62,10 +64,13 @@
 以下のコマンドが全て通ることを確認する:
 
 ```bash
+npm run format:check
 npm run lint
+npm run typecheck
 npm run build
 ```
 
+- [ ] `npm run format:check`（Prettier）が通るか
 - [ ] `npm run lint`（ESLint）が通るか
+- [ ] `npm run typecheck`（TypeScript）が通るか
 - [ ] `npm run build`（Next.js ビルド）がエラーなく完了するか
-- [ ] TypeScript のコンパイルエラーがないか

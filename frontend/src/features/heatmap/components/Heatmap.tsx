@@ -1,22 +1,20 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { tempToColor } from "../lib/color-scale";
-import {
-  type GridCell,
-  type HeatmapGrid,
-  buildGrid,
-  getMonthStartDays,
-} from "../lib/data-grid";
-import type { TemperatureRecord, TempType } from "@/types/api";
+import { tempToColor } from '../libs/color-scale';
+import { type GridCell, type HeatmapGrid, buildGrid, getMonthStartDays } from '../libs/data-grid';
+import type { TemperatureRecord, TempType } from '@/features/heatmap/types/api';
 
 function getCellTemp(cell: GridCell | undefined, tempType: TempType): number | null {
   if (!cell) return null;
   switch (tempType) {
-    case "max": return cell.maxTemp;
-    case "min": return cell.minTemp;
-    case "avg": return cell.avgTemp;
+    case 'max':
+      return cell.maxTemp;
+    case 'min':
+      return cell.minTemp;
+    case 'avg':
+      return cell.avgTemp;
   }
 }
 
@@ -41,10 +39,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
     alignRight: boolean;
   } | null>(null);
 
-  const grid = useMemo(
-    () => buildGrid(records, startYear, endYear),
-    [records, startYear, endYear]
-  );
+  const grid = useMemo(() => buildGrid(records, startYear, endYear), [records, startYear, endYear]);
 
   const years = endYear - startYear + 1;
   const canvasWidth = LEFT_MARGIN + 366 * CELL_WIDTH;
@@ -61,16 +56,16 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
       canvas.style.width = `${canvasWidth}px`;
       canvas.style.height = `${canvasHeight}px`;
 
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
       // Draw month labels
-      ctx.fillStyle = "#666";
-      ctx.font = "11px sans-serif";
-      ctx.textAlign = "center";
+      ctx.fillStyle = '#666';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
       const months = getMonthStartDays();
       for (const { label, day } of months) {
         ctx.fillText(label, LEFT_MARGIN + day * CELL_WIDTH + 12, TOP_MARGIN - 8);
@@ -82,9 +77,9 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
         const y = TOP_MARGIN + yi * CELL_HEIGHT;
 
         // Year label
-        ctx.fillStyle = "#666";
-        ctx.font = "10px sans-serif";
-        ctx.textAlign = "right";
+        ctx.fillStyle = '#666';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
         ctx.fillText(String(year), LEFT_MARGIN - 6, y + CELL_HEIGHT - 2);
 
         // Draw cells
@@ -98,7 +93,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
         }
       }
     },
-    [canvasWidth, canvasHeight, years, endYear, tempType]
+    [canvasWidth, canvasHeight, years, endYear, tempType],
   );
 
   useEffect(() => {
@@ -117,12 +112,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
       const day = Math.floor((x - LEFT_MARGIN) / CELL_WIDTH);
       const yearIdx = Math.floor((y - TOP_MARGIN) / CELL_HEIGHT);
 
-      if (
-        day < 0 ||
-        day >= 366 ||
-        yearIdx < 0 ||
-        yearIdx >= years
-      ) {
+      if (day < 0 || day >= 366 || yearIdx < 0 || yearIdx >= years) {
         setTooltip(null);
         return;
       }
@@ -134,8 +124,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
         const d = new Date(cell.date);
         const dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
         const temp = getCellTemp(cell, tempType);
-        const tempStr =
-          temp !== null ? `${temp.toFixed(1)}℃` : "データなし";
+        const tempStr = temp !== null ? `${temp.toFixed(1)}℃` : 'データなし';
         const cursorX = e.clientX - rect.left;
         const alignRight = cursorX > canvasWidth / 2;
         setTooltip({
@@ -148,7 +137,7 @@ export function Heatmap({ records, startYear, endYear, tempType }: HeatmapProps)
         setTooltip(null);
       }
     },
-    [grid, years, endYear, tempType, canvasWidth]
+    [grid, years, endYear, tempType, canvasWidth],
   );
 
   const handleMouseLeave = useCallback(() => {
