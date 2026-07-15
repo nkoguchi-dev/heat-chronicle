@@ -1,24 +1,31 @@
-class MockJmaClient:
-    """JmaClient のモック。デフォルトではエラーを投げ、テストごとにレスポンスを設定する。"""
+from app.domain.station.model import Station
+from app.domain.temperature.model import DailyTemperature
+from app.infrastructure.scraper.jma_parser import parse_daily_page
+
+
+class MockTemperatureDataSource:
+    """気象データ取得Portのモック。テストごとにJMA HTMLを設定する。"""
 
     def __init__(self) -> None:
         self.responses: dict[tuple[int, int], str] = {}
 
-    async def fetch_daily_page(
+    async def fetch_daily_temperatures(
         self,
-        prec_no: int,
-        block_no: str,
+        station: Station,
         year: int,
         month: int,
-        station_type: str,
-    ) -> str:
+    ) -> list[DailyTemperature]:
         key = (year, month)
         if key in self.responses:
-            return self.responses[key]
-        raise RuntimeError(f"MockJmaClient: 未設定のリクエスト ({year}-{month:02d})")
-
-    async def close(self) -> None:
-        pass
+            return parse_daily_page(
+                self.responses[key],
+                year,
+                month,
+                station.station_type,
+            )
+        raise RuntimeError(
+            f"MockTemperatureDataSource: 未設定のリクエスト " f"({year}-{month:02d})"
+        )
 
     def set_response(self, year: int, month: int, html: str) -> None:
         """テストから呼び出してモックレスポンスを設定する。"""

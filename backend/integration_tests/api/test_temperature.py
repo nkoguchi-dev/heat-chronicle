@@ -6,7 +6,7 @@ from boto3.dynamodb.conditions import Key
 from httpx import AsyncClient
 
 from app.config import Settings
-from integration_tests.fixtures.mock_overrides import MockJmaClient
+from integration_tests.fixtures.mock_overrides import MockTemperatureDataSource
 from integration_tests.fixtures.test_data import (
     SAMPLE_JMA_HTML,
     insert_fetch_log_entry,
@@ -128,10 +128,10 @@ async def test_get_temperature_has_older_data(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_fetch_month_success(
     client: AsyncClient,
-    mock_jma_client: MockJmaClient,
+    mock_temperature_data_source: MockTemperatureDataSource,
 ) -> None:
     """新規月のスクレイピングが成功し、records にデータが返る。"""
-    mock_jma_client.set_response(2024, 8, SAMPLE_JMA_HTML)
+    mock_temperature_data_source.set_response(2024, 8, SAMPLE_JMA_HTML)
 
     response = await client.get(
         "/api/temperature/47662/fetch-month",
@@ -149,8 +149,8 @@ async def test_fetch_month_cached(
     dynamodb_resource: Any,
     test_settings: Settings,
 ) -> None:
-    """フェッチ済み（FINALIZED）の月は JmaClient を呼び出さず DB からデータを返す。
-    mock_jma_client にレスポンスを設定せず、もし呼ばれれば RuntimeError になる。
+    """フェッチ済み（FINALIZED）の月は気象データ取得Portを呼ばずDBから返す。
+    モックにレスポンスを設定せず、もし呼ばれれば RuntimeError になる。
     """
     # 2024-08 の finalize_line は 2024-09-02。それ以降の fetched_at → FINALIZED
     fetched_at = datetime(2024, 10, 1, tzinfo=timezone.utc)
@@ -169,7 +169,7 @@ async def test_fetch_month_cached(
         params={"year": 2024, "month": 8},
     )
 
-    # JmaClient が呼ばれていれば RuntimeError → 500 になるため、200 であれば未呼び出し
+    # 取得Portが呼ばれていれば RuntimeError → 500 になるため、200 であれば未呼び出し
     assert response.status_code == 200
     body = response.json()
     assert len(body["records"]) > 0
@@ -226,10 +226,10 @@ async def test_fetch_month_db_side_effects(
     client: AsyncClient,
     dynamodb_resource: Any,
     test_settings: Settings,
-    mock_jma_client: MockJmaClient,
+    mock_temperature_data_source: MockTemperatureDataSource,
 ) -> None:
     """スクレイピング後、daily-temperature と fetch-log にデータが書き込まれる。"""
-    mock_jma_client.set_response(2024, 8, SAMPLE_JMA_HTML)
+    mock_temperature_data_source.set_response(2024, 8, SAMPLE_JMA_HTML)
 
     response = await client.get(
         "/api/temperature/47662/fetch-month",
@@ -259,10 +259,10 @@ async def test_fetch_month_db_side_effects(
 @pytest.mark.asyncio
 async def test_fetch_month_response_structure(
     client: AsyncClient,
-    mock_jma_client: MockJmaClient,
+    mock_temperature_data_source: MockTemperatureDataSource,
 ) -> None:
     """レスポンスに year、month、records が含まれ、各レコードに必要フィールドがある。"""
-    mock_jma_client.set_response(2024, 8, SAMPLE_JMA_HTML)
+    mock_temperature_data_source.set_response(2024, 8, SAMPLE_JMA_HTML)
 
     response = await client.get(
         "/api/temperature/47662/fetch-month",

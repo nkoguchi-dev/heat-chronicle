@@ -3,6 +3,9 @@ import logging
 
 import httpx
 
+from app.domain.station.model import StationType
+from app.infrastructure.dto.jma import JmaDailyPageRequestDTO
+
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.data.jma.go.jp/stats/etrn/view"
@@ -27,23 +30,21 @@ class JmaClient:
         block_no: str,
         year: int,
         month: int,
-        station_type: str,
+        station_type: StationType,
     ) -> str:
-        page = "daily_s1.php" if station_type == "s" else "daily_a1.php"
-        url = f"{BASE_URL}/{page}"
-        params: dict[str, str | int] = {
-            "prec_no": prec_no,
-            "block_no": block_no,
-            "year": year,
-            "month": month,
-            "day": "",
-            "view": "p1",
-        }
+        request = JmaDailyPageRequestDTO(
+            prec_no=prec_no,
+            block_no=block_no,
+            year=year,
+            month=month,
+            station_type=station_type,
+        )
+        url = f"{BASE_URL}/{request.page}"
 
         last_exc: Exception | None = None
         for attempt in range(MAX_RETRIES):
             try:
-                response = await self._client.get(url, params=params)
+                response = await self._client.get(url, params=request.to_query_params())
                 response.raise_for_status()
                 return response.text
             except httpx.HTTPError as e:

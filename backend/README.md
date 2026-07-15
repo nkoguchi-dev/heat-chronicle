@@ -19,18 +19,37 @@ backend/
 │   ├── handler.py                   … Lambda ハンドラ（Mangum）
 │   ├── config.py                    … 環境変数ベースの設定
 │   ├── presentation/api/            … API ルーター（HTTP ハンドラ）
-│   │   ├── hello.py                 … ヘルスチェック
-│   │   ├── prefectures.py           … 都道府県一覧
-│   │   ├── stations.py              … 観測地点一覧
-│   │   └── temperature.py           … 気温データ取得
+│   │   ├── health/get_health.py     … ヘルスチェック
+│   │   ├── hello/get_hello.py       … Hello API
+│   │   ├── prefectures/             … 都道府県一覧
+│   │   │   └── get_prefectures.py
+│   │   ├── shared/                 … Presentation 共通コード
+│   │   │   └── internal_server_error.py
+│   │   ├── stations/                … 観測地点一覧
+│   │   │   └── get_stations.py
+│   │   └── temperature/             … 気温データ取得
+│   │       ├── fetch_month.py       … 月別データ取得
+│   │       └── get_temperature.py   … キャッシュ済みデータ取得
 │   ├── application/                 … サービス層
-│   │   ├── scrape_service.py        … 気象庁からの月別データ取得
-│   │   └── temperature_service.py   … キャッシュ済みデータのクエリ
-│   ├── domain/                      … Pydantic レスポンススキーマ
-│   │   ├── prefectures.py           … 都道府県マスタ
-│   │   └── schemas.py               … API レスポンス型定義
+│   │   ├── prefecture/
+│   │   │   └── service.py           … 都道府県一覧の取得
+│   │   ├── station/
+│   │   │   └── service.py           … 観測地点一覧の取得
+│   │   └── temperature/
+│   │       ├── scrape_service.py    … 気象庁からの月別データ取得
+│   │       └── service.py           … キャッシュ済みデータのクエリ
+│   ├── domain/                      … ドメインモデル、業務ルール、I/O Port
+│   │   ├── station/                … 観測地点ドメイン
+│   │   │   ├── model.py            … 観測地点モデル
+│   │   │   └── repository.py       … 観測地点 Repository Port
+│   │   └── temperature/            … 気温ドメイン
+│   │       ├── data_source.py      … 気象データ取得 Port
+│   │       ├── fetch_freshness.py  … 取得鮮度の業務ルール
+│   │       ├── model.py            … 日別気温モデル
+│   │       └── repository.py       … 気温 Repository Port
 │   └── infrastructure/              … DB / 外部サービス
 │       ├── database.py              … DynamoDB クライアント初期化
+│       ├── dto/                     … 外部ペイロードの Pydantic DTO
 │       ├── init_tables.py           … テーブル自動作成
 │       ├── seed.py                  … 初期データ投入
 │       ├── repositories/            … リポジトリパターン
@@ -38,7 +57,8 @@ backend/
 │       │   └── temperature_repository.py
 │       └── scraper/                 … 気象庁データの取得・解析
 │           ├── jma_client.py        … HTTP クライアント（リトライ付き）
-│           └── jma_parser.py        … HTML パーサー
+│           ├── jma_parser.py        … HTML パーサー
+│           └── jma_temperature_data_source.py … 気象データ取得Port実装
 ├── data/                            … シードデータ（地点マスタ CSV 等）
 ├── tests/                           … ユニットテスト
 ├── pyproject.toml                   … Poetry 設定

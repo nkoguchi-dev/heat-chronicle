@@ -2,7 +2,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from app.domain.fetch_freshness import FetchFreshnessPolicy, FetchStatus
+from app.domain.temperature.fetch_freshness import (
+    FetchFreshnessPolicy,
+    FetchStatus,
+)
 
 UTC = timezone.utc
 
