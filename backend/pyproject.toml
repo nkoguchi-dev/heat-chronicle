@@ -9,7 +9,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.14"
-fastapi = ">=0.115,<0.140"
+fastapi = ">=0.115,<0.141"
 uvicorn = {extras = ["standard"], version = ">=0.32,<0.52"}
 boto3 = "^1.35.0"
 pydantic = "^2.10.0"
