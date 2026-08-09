@@ -8,11 +8,16 @@
 >
 > インフラの変更を含む PR は、本ガイドに加えて
 > [インフラ PR レビューガイド](./INFRA_REVIEW_GUIDE.md) も参照してください。
+>
+> 仕様関連文書の変更を含む PR は、本ガイドに加えて
+> [仕様書レビューガイド](./REVIEW_GUIDE_SPECS.md) も参照してください。
 
 ---
 
 ## 1. 全般
 
+- [ ] PR がIssueに紐づき、目的、スコープ、完了条件を満たしているか
+- [ ] PR の説明に目的、主な変更、確認方法、`Closes #<issue-id>` または `Fixes #<issue-id>` があるか
 - [ ] PR の粒度が適切か（1 つの PR に複数の目的が混在していないか）
 - [ ] コミットメッセージが変更内容を簡潔に説明しているか
 - [ ] 変更と無関係なファイルが含まれていないか（フォーマッタによる意図しない変更等）
@@ -50,6 +55,7 @@
 
 ## 4. テスト
 
+- [ ] [`TESTING_STRATEGY.md`](./TESTING_STRATEGY.md) に沿って、変更に適したテスト層を選んでいるか
 - [ ] 新規・変更された機能にテストが追加されているか
 - [ ] 正常系だけでなく異常系（エラーケース）のテストがあるか
 - [ ] 境界値のテストがあるか（空文字、0、null、上限値等）
@@ -96,3 +102,4 @@
 | バックエンド（FastAPI / DynamoDB / Python） | [バックエンド PR レビューガイド](./BACKEND_REVIEW_GUIDE.md) |
 | フロントエンド（Next.js / TypeScript） | [フロントエンド PR レビューガイド](./FRONTEND_REVIEW_GUIDE.md) |
 | インフラ（Terraform / AWS / GitHub Actions） | [インフラ PR レビューガイド](./INFRA_REVIEW_GUIDE.md) |
+| 仕様書・Gherkin・技術資料 | [仕様書レビューガイド](./REVIEW_GUIDE_SPECS.md) |
