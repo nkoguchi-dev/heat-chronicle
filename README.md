@@ -17,6 +17,7 @@
 ### AGENTS.mdとPRレビューガイドによる開発標準化
 
 - [`frontend/AGENTS.md`](./frontend/AGENTS.md) と [`backend/AGENTS.md`](./backend/AGENTS.md) に、アーキテクチャ、命名規則、品質基準、テスト方針を明文化
+- [`docs/specs/`](./docs/specs/) に、利用者向け仕様とGherkinによる受け入れ条件を実装から独立した正本として整備
 - [`docs/REVIEW_GUIDE.md`](./docs/REVIEW_GUIDE.md) を起点に、共通・バックエンド・フロントエンド・インフラ別のレビュー観点を整備
 - Codexも同じガイドを参照して実装と自己レビューを行い、lint、型検査、テスト、ビルドによって変更を検証
 - AIの提案を自動採用するのではなく、既存設計との一貫性や影響範囲を確認してから反映
@@ -128,6 +129,15 @@ docker compose up
 
 個別の開発コマンドと設計ルールは、[`backend/AGENTS.md`](./backend/AGENTS.md) と
 [`frontend/AGENTS.md`](./frontend/AGENTS.md) を参照してください。
+
+## 仕様とテスト
+
+- [プロダクト仕様](./docs/specs/product.md)
+- [ヒートマップ画面仕様](./docs/specs/ui/heatmap.md)
+- [テスト戦略](./docs/TESTING_STRATEGY.md)
+
+利用者から見える振る舞いはMarkdown仕様書、具体的な受け入れ条件はGherkinを正本とします。
+Unit、Integration、Component、Browser Smoke、本番手動確認の責務分担はテスト戦略を参照してください。
 
 ## CI/CD
 
