@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiClient } from '@/features/shared/libs/api-client';
+import { prefecturesResponseSchema, stationsResponseSchema } from '@/features/heatmap/libs/api-response-schemas';
 import type { Prefecture, Station } from '@/features/heatmap/types/api';
 
 export type StationOptionsLoadPhase = 'prefectures' | 'stations';
@@ -70,7 +71,10 @@ export function useStationOptions({
       setStations([]);
 
       try {
-        const data = await apiClient.get<Station[]>(`/api/stations?prec_no=${precNo}`, { signal: controller.signal });
+        const data = await apiClient.get<Station[]>(`/api/stations?prec_no=${precNo}`, {
+          signal: controller.signal,
+          schema: stationsResponseSchema,
+        });
 
         if (controller.signal.aborted || selectedPrecNoRef.current !== precNo) {
           return;
@@ -114,6 +118,7 @@ export function useStationOptions({
       try {
         const data = await apiClient.get<Prefecture[]>('/api/prefectures', {
           signal: controller.signal,
+          schema: prefecturesResponseSchema,
         });
 
         if (controller.signal.aborted) return;

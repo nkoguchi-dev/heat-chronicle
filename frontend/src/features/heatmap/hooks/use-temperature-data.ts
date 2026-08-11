@@ -4,6 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { apiClient } from '@/features/shared/libs/api-client';
 import {
+  monthTemperatureResponseSchema,
+  temperatureResponseSchema,
+} from '@/features/heatmap/libs/api-response-schemas';
+import {
   buildMonthsToFetch,
   getTemperatureLoadErrorMessage,
   mergeTemperatureRecords,
@@ -74,7 +78,7 @@ async function fetchMissingMonths(
     try {
       const monthData = await apiClient.get<MonthTemperatureResponse>(
         `/api/temperature/${stationId}/fetch-month?year=${year}&month=${month}`,
-        { signal: controller.signal },
+        { signal: controller.signal, schema: monthTemperatureResponseSchema },
       );
 
       if (fetchIdRef.current !== fetchId) break;
@@ -147,6 +151,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
       void apiClient
         .get<TemperatureResponse>(`/api/temperature/${operation.stationId}?end_year=${operation.endYear}`, {
           signal: controller.signal,
+          schema: temperatureResponseSchema,
         })
         .then(async (response) => {
           if (fetchIdRef.current !== fetchId) return;

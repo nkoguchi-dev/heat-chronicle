@@ -8,7 +8,7 @@ export interface Station {
   station_name: string;
   prec_no: number;
   block_no: string;
-  station_type: string;
+  station_type: 's' | 'a';
   latitude: number | null;
   longitude: number | null;
   earliest_year: number | null;

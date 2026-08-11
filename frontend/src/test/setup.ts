@@ -1,7 +1,13 @@
 import '@testing-library/jest-dom/vitest';
 
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, vi } from 'vitest';
+
+import { server } from '@/test/server';
+
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+
+afterAll(() => server.close());
 
 function createMediaQueryList(query: string): MediaQueryList {
   return {
@@ -17,6 +23,7 @@ function createMediaQueryList(query: string): MediaQueryList {
 }
 
 afterEach(() => {
+  server.resetHandlers();
   cleanup();
   localStorage.clear();
   document.documentElement.classList.remove('dark');
