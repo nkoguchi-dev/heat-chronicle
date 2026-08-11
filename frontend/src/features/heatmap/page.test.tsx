@@ -49,6 +49,7 @@ describe('HeatmapPage', () => {
     render(<HeatmapPage />);
 
     expect(screen.getByRole('heading', { name: 'Heat Chronicle' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: '気温種別' })).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('観測地点一覧を読み込んでいます');
     expect(screen.getByRole('link', { name: /ソースコードをGitHubで開く/ })).toBeInTheDocument();
   });

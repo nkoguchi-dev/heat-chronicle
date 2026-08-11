@@ -1,235 +1,72 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { GitBranch } from 'lucide-react';
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ColorLegend } from '@/features/heatmap/components/ColorLegend';
-import { Heatmap } from '@/features/heatmap/components/Heatmap';
-import { LoadingStatus } from '@/features/heatmap/components/LoadingStatus';
-import { LoadMoreButton } from '@/features/heatmap/components/LoadMoreButton';
-import { StationSelector } from '@/features/heatmap/components/StationSelector';
-import { useStationOptions } from '@/features/heatmap/hooks/use-station-options';
-import { useTemperatureData } from '@/features/heatmap/hooks/use-temperature-data';
-import { useUrlParams } from '@/features/heatmap/hooks/use-url-params';
-import { isTempType } from '@/features/heatmap/libs/url-params';
-import type { Station, TempType } from '@/features/heatmap/types/api';
-import { TEMP_TYPE_LABELS } from '@/features/heatmap/types/api';
-import { ThemeToggle } from '@/features/shared/components/ThemeToggle';
+import { ColorLegend } from './components/ColorLegend';
+import { HeatmapControls } from './components/HeatmapControls';
+import { HeatmapFooter } from './components/HeatmapFooter';
+import { HeatmapHeader } from './components/HeatmapHeader';
+import { HeatmapViewport } from './components/HeatmapViewport';
+import { LoadMoreButton } from './components/LoadMoreButton';
+import { LoadMoreStatus } from './components/LoadMoreStatus';
+import { PrimaryLoadingStatus } from './components/PrimaryLoadingStatus';
+import { useHeatmapPage } from './hooks/use-heatmap-page';
+import { TEMP_TYPE_LABELS } from './types/api';
 
 export function HeatmapPage(): React.JSX.Element {
-  const { initialParams, updateUrl } = useUrlParams();
-  const [selectedStationId, setSelectedStationId] = useState<number | null>(initialParams.station);
-  const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(initialParams.pref);
-  const [tempType, setTempType] = useState<TempType>(initialParams.type);
-  const currentYear = new Date().getFullYear();
-  const {
-    records,
-    activeOperation,
-    progress,
-    error: temperatureError,
-    hasOlderData,
-    nextEndYear,
-    startYear,
-    fetchData,
-    fetchMoreData,
-    retry: retryTemperature,
-    reset: resetTemperature,
-  } = useTemperatureData();
-
-  const handleStationSelect = useCallback(
-    (station: Station): void => {
-      setSelectedStationId(station.id);
-      fetchData(station.id, currentYear);
-      updateUrl({ station: station.id, pref: selectedPrecNo });
-    },
-    [fetchData, currentYear, selectedPrecNo, updateUrl],
-  );
-
-  const {
-    prefectures,
-    stations,
-    loadingPhase: stationOptionsLoadingPhase,
-    error: stationOptionsError,
-    retry: retryStationOptions,
-  } = useStationOptions({
-    selectedPrecNo,
-    initialStationId: initialParams.station,
-    onInitialStationResolved: handleStationSelect,
-  });
-
-  const handleLoadMore = useCallback((): void => {
-    if (selectedStationId !== null && nextEndYear !== null) {
-      fetchMoreData(selectedStationId, nextEndYear);
-    }
-  }, [selectedStationId, nextEndYear, fetchMoreData]);
-
-  const handlePrefectureChange = useCallback(
-    (precNo: number): void => {
-      resetTemperature();
-      setSelectedStationId(null);
-      setSelectedPrecNo(precNo);
-      updateUrl({ pref: precNo, station: null });
-    },
-    [resetTemperature, updateUrl],
-  );
-
-  const handleTempTypeChange = (value: string): void => {
-    if (!isTempType(value)) return;
-    setTempType(value);
-    updateUrl({ type: value });
-  };
-
-  const isInitialTemperatureLoading = activeOperation?.mode === 'initial';
-  const isMoreTemperatureLoading = activeOperation?.mode === 'more';
-  const initialTemperatureError = temperatureError?.operation.mode === 'initial' ? temperatureError : null;
-  const moreTemperatureError = temperatureError?.operation.mode === 'more' ? temperatureError : null;
-  const singleMonthProgress = isInitialTemperatureLoading && progress?.total === 1 ? progress : null;
-
-  const primaryStatus = stationOptionsError ? (
-    <LoadingStatus state="error" message={stationOptionsError.message} onRetry={retryStationOptions} />
-  ) : stationOptionsLoadingPhase ? (
-    <LoadingStatus
-      state="loading"
-      message={
-        stationOptionsLoadingPhase === 'prefectures'
-          ? '都道府県一覧を読み込んでいます...'
-          : '観測地点一覧を読み込んでいます...'
-      }
-    />
-  ) : initialTemperatureError ? (
-    <LoadingStatus state="error" message={initialTemperatureError.message} onRetry={retryTemperature} />
-  ) : isInitialTemperatureLoading && singleMonthProgress === null ? (
-    <LoadingStatus
-      state={progress ? 'progress' : 'loading'}
-      message={progress ? `${progress.year}年${progress.month}月を取得中...` : '気温データを読み込んでいます...'}
-      progress={progress ?? undefined}
-    />
-  ) : null;
-
-  const loadMoreStatus = moreTemperatureError ? (
-    <LoadingStatus state="error" message={moreTemperatureError.message} onRetry={retryTemperature} />
-  ) : isMoreTemperatureLoading ? (
-    <LoadingStatus
-      state={progress ? 'progress' : 'loading'}
-      message={
-        progress
-          ? `${progress.year}年${progress.month}月を取得中...`
-          : `〜${activeOperation.endYear}年のデータを読み込んでいます...`
-      }
-      progress={progress ?? undefined}
-    />
-  ) : null;
+  const page = useHeatmapPage();
+  const singleMonthProgress =
+    page.activeOperation?.mode === 'initial' && page.progress?.total === 1 ? page.progress : null;
 
   return (
     <div
       className="flex min-h-screen flex-col items-center gap-4 p-4 md:gap-6 md:p-8"
-      aria-busy={stationOptionsLoadingPhase !== null || activeOperation !== null}
+      aria-busy={page.stationOptionsLoadingPhase !== null || page.activeOperation !== null}
     >
-      <div className="relative flex w-full items-center justify-center">
-        <h1 className="text-xl font-bold md:text-2xl">Heat Chronicle</h1>
-        <div className="absolute right-0 flex items-center gap-2">
-          {singleMonthProgress && (
-            <LoadingStatus
-              state="progress"
-              message={`${singleMonthProgress.year}年${singleMonthProgress.month}月を取得中...`}
-              progress={singleMonthProgress}
-              variant="compact"
-            />
-          )}
-          <ThemeToggle />
-        </div>
-      </div>
+      <HeatmapHeader progress={singleMonthProgress} />
       <p className="text-muted-foreground">
-        日本の観測地点における{TEMP_TYPE_LABELS[tempType]}
-        の長期傾向ヒートマップ
+        日本の観測地点における{TEMP_TYPE_LABELS[page.tempType]}の長期傾向ヒートマップ
       </p>
-
-      <div className="flex w-full max-w-md flex-col items-stretch gap-3 md:w-auto md:max-w-none md:flex-row md:items-center md:gap-4">
-        <StationSelector
-          prefectures={prefectures}
-          stations={stations}
-          selectedPrecNo={selectedPrecNo}
-          selectedStationId={selectedStationId}
-          isLoadingPrefectures={stationOptionsLoadingPhase === 'prefectures'}
-          isLoadingStations={stationOptionsLoadingPhase === 'stations'}
-          onSelect={handleStationSelect}
-          onPrefectureChange={handlePrefectureChange}
+      <HeatmapControls
+        prefectures={page.stationOptions.prefectures}
+        stations={page.stationOptions.stations}
+        selectedPrecNo={page.selectedPrecNo}
+        selectedStationId={page.selectedStationId}
+        tempType={page.tempType}
+        isLoadingPrefectures={page.stationOptionsLoadingPhase === 'prefectures'}
+        isLoadingStations={page.stationOptionsLoadingPhase === 'stations'}
+        onStationSelect={page.handleStationSelect}
+        onPrefectureChange={page.handlePrefectureChange}
+        onTempTypeChange={page.handleTempTypeChange}
+      />
+      <PrimaryLoadingStatus
+        stationError={page.stationOptions.error?.message ?? null}
+        stationLoadingPhase={page.stationOptionsLoadingPhase}
+        temperatureError={page.temperatureError}
+        activeOperation={page.activeOperation}
+        progress={page.progress}
+        onRetryStation={page.stationOptions.retry}
+        onRetryTemperature={page.retryTemperature}
+      />
+      {page.selectedStationId !== null && page.startYear !== null && (
+        <HeatmapViewport
+          records={page.records}
+          startYear={page.startYear}
+          endYear={page.currentYear}
+          tempType={page.tempType}
         />
-        <Select value={tempType} onValueChange={handleTempTypeChange}>
-          <SelectTrigger className="w-full md:w-[140px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {(Object.entries(TEMP_TYPE_LABELS) as [TempType, string][]).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {primaryStatus}
-
-      {selectedStationId !== null && startYear !== null && (
-        <div className="w-full">
-          <p id="heatmap-scroll-hint" className="mb-2 text-center text-xs text-muted-foreground md:hidden">
-            横にスクロールして期間を確認できます
-            <span aria-hidden="true"> →</span>
-          </p>
-          <div
-            className="relative w-full overflow-x-auto"
-            role="region"
-            aria-label="気温ヒートマップ"
-            aria-describedby="heatmap-scroll-hint"
-            tabIndex={0}
-          >
-            <Heatmap records={records} startYear={startYear} endYear={currentYear} tempType={tempType} />
-          </div>
-        </div>
       )}
-
-      {loadMoreStatus}
-
-      {temperatureError === null &&
-        activeOperation === null &&
-        nextEndYear !== null &&
-        startYear !== null &&
-        hasOlderData && <LoadMoreButton nextEndYear={nextEndYear} onLoadMore={handleLoadMore} />}
-
-      {selectedStationId !== null && startYear !== null && (
-        <div className="flex flex-col items-center gap-2">
-          <ColorLegend />
-        </div>
-      )}
-
-      <footer className="mt-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-2 pt-8 text-xs text-muted-foreground">
-        <span>
-          データ出典:{' '}
-          <a
-            href="https://www.data.jma.go.jp/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-4 transition-colors hover:text-foreground"
-          >
-            気象庁ホームページ
-          </a>
-        </span>
-        <span aria-hidden="true" className="hidden text-border sm:inline">
-          |
-        </span>
-        <a
-          href="https://github.com/nkoguchi-dev/heat-chronicle"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 font-medium text-foreground underline-offset-4 transition-colors hover:underline"
-          aria-label="Heat ChronicleのソースコードをGitHubで開く（新しいタブ）"
-        >
-          <GitBranch aria-hidden="true" className="h-3.5 w-3.5" />
-          GitHub
-        </a>
-      </footer>
+      <LoadMoreStatus
+        error={page.temperatureError}
+        activeOperation={page.activeOperation}
+        progress={page.progress}
+        onRetry={page.retryTemperature}
+      />
+      {page.temperatureError === null &&
+        page.activeOperation === null &&
+        page.nextEndYear !== null &&
+        page.startYear !== null &&
+        page.hasOlderData && <LoadMoreButton nextEndYear={page.nextEndYear} onLoadMore={page.handleLoadMore} />}
+      {page.selectedStationId !== null && page.startYear !== null && <ColorLegend />}
+      <HeatmapFooter />
     </div>
   );
 }
