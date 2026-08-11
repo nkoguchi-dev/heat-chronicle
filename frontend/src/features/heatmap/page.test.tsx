@@ -19,7 +19,7 @@ const useUrlParamsMock = vi.mocked(useUrlParams);
 
 beforeEach(() => {
   useUrlParamsMock.mockReturnValue({
-    initialParams: { station: 4, pref: 44, type: 'max' },
+    params: { station: 4, pref: 44, type: 'max' },
     updateUrl: vi.fn(),
   });
   useStationOptionsMock.mockReturnValue({

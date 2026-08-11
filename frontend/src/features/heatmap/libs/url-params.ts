@@ -8,7 +8,7 @@ export interface UrlParams {
 
 export interface ParsedUrlParams {
   params: UrlParams;
-  usesDefaults: boolean;
+  needsNormalization: boolean;
 }
 
 export const DEFAULT_PREFECTURE_NUMBER = 44;
@@ -28,23 +28,30 @@ export function isTempType(value: string | null): value is TempType {
 
 export function parseUrlParams(search: string): ParsedUrlParams {
   const searchParams = new URLSearchParams(search);
-  const station = parsePositiveInteger(searchParams.get('station'));
-  const pref = parsePositiveInteger(searchParams.get('pref'));
+  const rawStation = searchParams.get('station');
+  const rawPref = searchParams.get('pref');
+  const station = parsePositiveInteger(rawStation);
+  const pref = parsePositiveInteger(rawPref);
   const rawType = searchParams.get('type');
   const type = isTempType(rawType) ? rawType : 'max';
+  const hasCompleteLocation = pref !== null && station !== null;
+  const hasPrefectureSelection = pref !== null && rawStation === null;
 
-  if (station === null && pref === null) {
+  if (!hasCompleteLocation && !hasPrefectureSelection) {
     return {
       params: {
         station: DEFAULT_STATION_ID,
         pref: DEFAULT_PREFECTURE_NUMBER,
         type,
       },
-      usesDefaults: true,
+      needsNormalization: true,
     };
   }
 
-  return { params: { station, pref, type }, usesDefaults: false };
+  return {
+    params: { station, pref, type },
+    needsNormalization: (rawType !== null && !isTempType(rawType)) || rawType === 'max',
+  };
 }
 
 export function applyUrlParams(url: URL, params: Partial<UrlParams>): URL {

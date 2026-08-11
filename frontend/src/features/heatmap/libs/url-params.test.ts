@@ -12,7 +12,7 @@ describe('parseUrlParams', () => {
   it('parses valid station, prefecture, and temperature type values', () => {
     expect(parseUrlParams('?pref=13&station=47662&type=avg')).toEqual({
       params: { pref: 13, station: 47662, type: 'avg' },
-      usesDefaults: false,
+      needsNormalization: false,
     });
   });
 
@@ -23,20 +23,34 @@ describe('parseUrlParams', () => {
         station: DEFAULT_STATION_ID,
         type: 'max',
       },
-      usesDefaults: true,
+      needsNormalization: true,
     });
   });
 
   it('rejects zero and integers outside the safe range', () => {
     expect(parseUrlParams('?pref=0&station=999999999999999999999')).toMatchObject({
-      usesDefaults: true,
+      needsNormalization: true,
     });
   });
 
   it('preserves a valid partial location without applying defaults', () => {
     expect(parseUrlParams('?pref=1')).toEqual({
       params: { pref: 1, station: null, type: 'max' },
-      usesDefaults: false,
+      needsNormalization: false,
+    });
+  });
+
+  it('uses the default location when a station has no prefecture', () => {
+    expect(parseUrlParams('?station=4&type=min')).toEqual({
+      params: { pref: DEFAULT_PREFECTURE_NUMBER, station: DEFAULT_STATION_ID, type: 'min' },
+      needsNormalization: true,
+    });
+  });
+
+  it('normalizes an unsupported temperature type', () => {
+    expect(parseUrlParams('?pref=44&station=4&type=median')).toEqual({
+      params: { pref: 44, station: 4, type: 'max' },
+      needsNormalization: true,
     });
   });
 });
