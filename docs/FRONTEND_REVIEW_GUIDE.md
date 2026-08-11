@@ -79,6 +79,7 @@
 - [ ] アプリ固有コードのカバレッジ閾値（lines / statements / functions 80%、branches 75%）を維持している。
 - [ ] `src/components/ui/`のshadcn/ui生成コード、型定義、App Routerの薄い配線に価値の低いテストを追加していない。
 - [ ] 仕様または受け入れ条件を変更した場合、Markdown仕様書、Gherkin、Unit、Integration、Component、Browser Smokeの更新要否を判断している。
+- [ ] Browser Smokeはproduction配信、実ブラウザの履歴・再読み込み・キーボード操作に限定し、API固定応答とsemantic locatorで外部状態や画面構造へ依存していない。
 - [ ] AI生成コードにも同じ基準を適用し、未使用の抽象化、既存規約との不整合、存在しないAPI、誤った型、根拠のない依存追加がない。
 
 次のコマンドがすべて成功していることを確認する。
@@ -90,6 +91,8 @@ npm run typecheck
 npm run test:coverage
 npm run build
 ```
+
+Browser Smokeを変更した場合は、リポジトリルートで`sh tools/run-browser-smoke.sh`も実行する。
 
 - [ ] 自動確認を実行し、警告、失敗、未実施項目をPRへ記録している。
 - [ ] `npm run build`が成功し、静的成果物として`frontend/out`を生成している。

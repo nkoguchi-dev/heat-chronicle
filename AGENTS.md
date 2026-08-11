@@ -78,6 +78,15 @@ black → isort → flake8 → mypy → pytest
 npm run format:check → npm run lint → npm run typecheck → npm run test:coverage → npm run build
 ```
 
+Browser Smokeに関係する変更は、上記に加えてリポジトリルートで次を実行する。
+
+```bash
+sh tools/run-browser-smoke.sh
+```
+
+失敗時は`frontend/test-results/`のtrace・screenshotと`frontend/playwright-report/`のHTML reportを確認する。
+この決定的な固定応答テストは、後述の実AWS・実API・実データを使う本番手動確認を置き換えない。
+
 ## 本番環境の動作確認
 
 デプロイ後はブラウザで本番サイトにアクセスし、次のスモークテストを実施する。

@@ -34,6 +34,7 @@
 - バックエンドはpytestによるユニットテストと、DynamoDB Localを使用するAPI統合テストを分離
 - Black、isort、Flake8、mypyによるフォーマット・静的解析・型検査をCIで実行
 - フロントエンドはVitestとReact Testing Libraryによるテストに加え、カバレッジ閾値を設定
+- PlaywrightとChromiumでproduction用Docker/Nginxを検証し、直接アクセス、再読み込み、履歴、キーボード操作を自動確認
 - Prettier、ESLint、TypeScript、本番ビルドをCIで検証し、変更領域ごとの品質基準を継続的に確認
 
 ### DynamoDBキャッシュと鮮度管理
@@ -139,9 +140,20 @@ docker compose up
 利用者から見える振る舞いはMarkdown仕様書、具体的な受け入れ条件はGherkinを正本とします。
 Unit、Integration、Component、Browser Smoke、本番手動確認の責務分担はテスト戦略を参照してください。
 
+Browser SmokeはDockerとChromiumを使い、外部APIを固定応答に置き換えて実行します。
+
+```bash
+npx --prefix frontend playwright install chromium
+sh tools/run-browser-smoke.sh
+```
+
+ポートを変更する場合は`E2E_PORT=4174 sh tools/run-browser-smoke.sh`のように指定します。失敗時は
+`frontend/test-results/`のtrace・screenshotと`frontend/playwright-report/`のHTML reportを確認してください。
+
 ## CI/CD
 
-PRでは変更領域に応じたCIを実行し、`release/prod` ブランチへのpushでAWSへデプロイします。
+PRでは変更領域に応じたCIとBrowser Smokeを実行し、mainへのpushでもBrowser Smokeを再実行します。
+`release/prod` ブランチへのpushでAWSへデプロイします。
 
 - フロントエンド: `npm ci` → ESLint → 静的ビルド → S3同期 → CloudFrontキャッシュ無効化
 - バックエンド: 静的解析・ユニットテスト・統合テスト → Docker build → ECR push → Lambda更新

@@ -24,17 +24,22 @@ Browser Smokeでは、production用の静的成果物を実ブラウザで配信
 4. 過去50年分の追加と既存データの維持
 5. 戻る・進む操作による地点と気温種別の復元
 
-PlaywrightとGitHub Actionsによる自動化はIssue #70で導入する。それまでは既存のUnit、Integration、Componentテストと本番手動確認を維持し、Browser Smokeを実装済みであるかのように扱わない。
+PlaywrightとChromiumを使い、`frontend/Dockerfile.prod`で構築したproduction静的成果物をNginxから配信して確認する。
+API通信はブラウザコンテキストで固定応答へ置き換え、未定義リクエストはテスト失敗とする。
 
 境界値、APIエラー分類、再試行、リクエスト中断、古いレスポンスの無視、月別取得間隔は、Unit、Integration、Componentテストを優先する。
 
 ## 実行タイミング
 
 - Pull Request前に、変更領域のformat、lint、型チェック、Unit・Integration・Componentテスト、coverage、production buildを実行する
-- Browser Smoke導入後は、Pull Requestとmainへのpushで同じ決定的な主要導線を実行する
+- Pull Requestとmainへのpushで同じ決定的なBrowser Smokeを実行する
 - デプロイ後は、実AWS、実API、実データとの疎通を本番サイトで手動確認する
 - 仕様、画面、スタイル、配信構成を変更した場合は、必要に応じて視覚品質、レスポンシブ表示、キーボード操作を探索的に確認する
 - 失敗、警告、未実施項目は理由と影響をPull Requestへ記録する
+
+Browser Smokeはリポジトリルートで`sh tools/run-browser-smoke.sh`を実行する。使用中のポートを避ける場合は
+`E2E_PORT`を指定する。失敗時は`frontend/test-results/`のtrace・screenshotと
+`frontend/playwright-report/`のHTML reportを確認する。GitHub Actionsでは同じ成果物を失敗時artifactとして保存する。
 
 ## 本番手動確認
 
