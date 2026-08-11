@@ -1,21 +1,27 @@
+import type { ZodType } from 'zod';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+export type ApiErrorKind = 'http' | 'invalid-response';
 
 class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    public kind: ApiErrorKind = 'http',
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-interface RequestOptions {
+interface RequestOptions<T> {
   signal?: AbortSignal;
+  schema: ZodType<T>;
 }
 
 interface ApiClient {
-  get: <T>(path: string, options?: RequestOptions) => Promise<T>;
+  get: <T>(path: string, options: RequestOptions<T>) => Promise<T>;
   post: <T>(path: string, data?: unknown) => Promise<T | undefined>;
   put: <T>(path: string, data?: unknown) => Promise<T | undefined>;
   delete: <T>(path: string) => Promise<T | undefined>;
@@ -26,7 +32,7 @@ function getErrorDetail(payload: unknown): string | null {
   return typeof payload.detail === 'string' ? payload.detail : null;
 }
 
-async function handleResponse<T>(response: Response): Promise<T | undefined> {
+async function handleResponse<T>(response: Response, schema?: ZodType<T>): Promise<T | undefined> {
   if (!response.ok) {
     const payload: unknown = await response.json().catch(() => null);
     throw new ApiError(response.status, (getErrorDetail(payload) ?? response.statusText) || 'An error occurred');
@@ -34,19 +40,34 @@ async function handleResponse<T>(response: Response): Promise<T | undefined> {
 
   if (response.status === 204) return undefined;
 
-  return (await response.json()) as T;
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new ApiError(response.status, 'Expected a valid JSON response body', 'invalid-response');
+  }
+
+  if (!schema) return payload as T;
+
+  const result = schema.safeParse(payload);
+  if (!result.success) {
+    throw new ApiError(response.status, 'Response body did not match the expected schema', 'invalid-response');
+  }
+  return result.data;
 }
 
 export const apiClient: ApiClient = {
-  get: async <T>(path: string, options?: { signal?: AbortSignal }): Promise<T> => {
+  get: async <T>(path: string, options: RequestOptions<T>): Promise<T> => {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       headers: {
         'Content-Type': 'application/json',
       },
-      signal: options?.signal,
+      signal: options.signal,
     });
-    const data = await handleResponse<T>(response);
-    if (data === undefined) throw new ApiError(response.status, 'Expected a JSON response body');
+    const data = await handleResponse<T>(response, options.schema);
+    if (data === undefined) {
+      throw new ApiError(response.status, 'Expected a JSON response body', 'invalid-response');
+    }
     return data;
   },
 
