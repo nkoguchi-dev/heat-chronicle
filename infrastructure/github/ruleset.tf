@@ -6,6 +6,10 @@ resource "github_repository_ruleset" "protect_main" {
   target      = "branch"
   enforcement = "active"
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   conditions {
     ref_name {
       include = ["~DEFAULT_BRANCH"]

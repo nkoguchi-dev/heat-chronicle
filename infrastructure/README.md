@@ -132,7 +132,23 @@ Ruleset以外の変更やdestroy・replaceがないことを確認してapplyす
 gh api "repos/nkoguchi-dev/heat-chronicle/rulesets/$(terraform output -raw main_ruleset_id)"
 ```
 
-Rulesetの正本はTerraformとstateであり、GitHubのWeb UIから直接変更しないでください。
+Rulesetの正本はTerraformとstateであり、通常はGitHubのWeb UIから直接変更しないでください。
+
+### Rulesetのbreak-glass
+
+required checkの改名・削除やworkflowの不具合により、修正PRもmainへマージできなくなった場合に
+限り、repository adminが次の手順で一時的に自己ロックを解除します。恒常的なbypass actorは
+追加しません。
+
+1. GitHubの`Settings` → `Rules` → `Rulesets` → `Protect main`で、enforcementを`Disabled`へ変更する。
+2. 原因と一時無効化をGitHub Issueへ記録し、通常のPull RequestでworkflowまたはRulesetコードを修正する。
+3. 修正をmainへ反映した後、最新mainの`infrastructure/github/`からTerraform planを実行する。
+4. planが`Protect main`の`active`への復旧だけで、意図しない変更・destroy・replaceを含まないことを確認してapplyする。
+5. GitHub APIでRulesetとmainへ適用されるルールを再取得し、復旧結果をIssueへ記録する。
+
+`prevent_destroy`はresource定義が残っている状態での意図しない削除・再作成をplan段階で
+停止する。break-glassではRulesetを削除せず、一時的に無効化してTerraformから`active`へ
+戻します。
 
 ## 注意事項
 
