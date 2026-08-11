@@ -90,6 +90,12 @@ npm run build           # 本番ビルド（静的エクスポート）
 - UIコンポーネント: shadcn/ui（new-yorkスタイル）は選択肢の一つとし、新規UIでの利用を必須にしない
 - Canvasのcomputed寸法やtooltip位置など、実行時の値をCSSへ渡すinline styleは、理由が明確な場合に使用できる
 
+## 依存関係管理
+
+- `package.json`の`overrides`へ指定を追加する場合は、同じPull Requestで`//overrides`へパッケージごとのメタデータを追加する
+- `//overrides`には、overrideの追加理由、追加日、対応するGitHub Issue番号、具体的な解除条件を記録する
+- 依存更新によって解除条件を満たした場合は、不要になったoverrideと対応する`//overrides`のメタデータを同じPull Requestで削除する
+
 ## テスト
 
 - Vitest、React Testing Library、jsdomを使用する
