@@ -53,10 +53,12 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^4.1.10"
   },
+  "//overrides": "nanoid(GHSA-2v37-7h3g-55p8)を3.3.17へ固定。詳細: Issue #88。postcss経由で通常解決されるnanoidが3.3.17以上になったら削除可。",
   "overrides": {
     "@hono/node-server": "^2.0.5",
     "brace-expansion@^1.0.0": "1.1.18",
     "brace-expansion@^5.0.0": "5.0.9",
+    "nanoid@^3.3.16": "3.3.17",
     "sharp": "^0.35.0",
     "postcss": "^8.5.10"
   }
