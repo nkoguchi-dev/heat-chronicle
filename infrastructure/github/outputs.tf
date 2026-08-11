@@ -46,3 +46,10 @@ output "dependabot_security_updates_enabled" {
   description = "Whether Dependabot security updates are enabled"
   value       = github_repository_dependabot_security_updates.dependabot.enabled
 }
+
+# --- Default branch protection ---
+
+output "main_ruleset_id" {
+  description = "GitHub ruleset ID protecting the default branch"
+  value       = github_repository_ruleset.protect_main.ruleset_id
+}

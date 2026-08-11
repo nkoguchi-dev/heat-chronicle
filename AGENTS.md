@@ -20,7 +20,8 @@ heat-chronicle は気象庁が公開している過去の気象観測データ�
 - 作業を開始する前に最新の `origin/main` を取得し、必ず `origin/main` を基点に作業ブランチを作成する。`main` 上で直接作業しない
 - ブランチ名は `<type>/issue-<issue-id>/<title>` 形式の小文字ケバブケースとする。`type`には`feat`、`fix`、`docs`、`test`、`refactor`、`chore`などを使用する
 - 変更は意味のある単位にまとめ、こまめにコミットする
-- `main` への変更の取り込みは必ずPRを作成して行う。PRには目的、主な変更、確認方法、`Closes #<issue-id>`または`Fixes #<issue-id>`を記載する
+- `main` への変更の取り込みは必ずPRを作成して行う。PRには目的、主な変更、確認方法、`Closes #<issue-id>`または`Fixes #<issue-id>`を記載する。マージ後の適用や確認まで完了条件に含むIssueでは、自動closeを避けるため`Refs #<issue-id>`を使用する
+- `main`は`Protect main` Rulesetで保護し、Pull Requestとfrontend、backend、Browser Smokeのrequired checksをGitHub側でも強制する。Rulesetは`infrastructure/github/`のTerraformを正本とし、通常はWeb UIで直接変更しない。自己ロックからの復旧時だけ[インフラ手順](./infrastructure/README.md)のbreak-glassを使用し、復旧後にTerraformへ再同期する
 - coding agentへIssueを指定した場合、Issueの範囲に対する実装、検証、commit、push、PR作成、自己レビューコメントまでを担当範囲とする
 - PR 作成後に [`docs/REVIEW_GUIDE.md`](./docs/REVIEW_GUIDE.md) と変更領域に対応するレビューガイドを使って自己レビューし、結果を PR コメントとして追加する
 - 人が内容を確認するまでPRをマージせず、自動マージを有効にしない。coding agentの自己レビューは人による確認を置き換えない

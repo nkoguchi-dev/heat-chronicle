@@ -4,13 +4,19 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
-    paths:
-      - frontend/**
-      - .github/workflows/ci-frontend.yml
+
+concurrency:
+  group: ci-frontend-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   ci:
+    name: Frontend quality checks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository

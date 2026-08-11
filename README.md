@@ -152,8 +152,9 @@ sh tools/run-browser-smoke.sh
 
 ## CI/CD
 
-PRでは変更領域に応じたCIとBrowser Smokeを実行し、mainへのpushでもBrowser Smokeを再実行します。
-`release/prod` ブランチへのpushでAWSへデプロイします。
+main向けのすべてのPRでfrontend、backendの静的解析・テストとBrowser Smokeを実行し、
+`Protect main` Rulesetで4つの品質ゲートの成功を必須にします。mainへのpushでもBrowser Smokeを
+再実行し、`release/prod` ブランチへのpushでAWSへデプロイします。
 
 - フロントエンド: `npm ci` → ESLint → 静的ビルド → S3同期 → CloudFrontキャッシュ無効化
 - バックエンド: 静的解析・ユニットテスト・統合テスト → Docker build → ECR push → Lambda更新

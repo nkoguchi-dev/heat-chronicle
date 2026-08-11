@@ -4,16 +4,22 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
-    paths:
-      - backend/**
-      - .github/workflows/ci-backend.yml
+
+concurrency:
+  group: ci-backend-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   # ────────────────────────────────────────────
   # Job 1: 静的解析 + ユニットテスト
   # ────────────────────────────────────────────
   lint-and-unit-test:
+    name: Backend lint and unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -66,7 +72,9 @@ jobs:
   # Job 2: 統合テスト（DynamoDB Local 必要）
   # ────────────────────────────────────────────
   integration-test:
+    name: Backend integration tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: lint-and-unit-test
 
     services:
