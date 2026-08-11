@@ -15,8 +15,6 @@ export interface StationOptionsError {
 
 interface UseStationOptionsParams {
   selectedPrecNo: number | null;
-  initialStationId: number | null;
-  onInitialStationResolved: (station: Station) => void;
 }
 
 interface UseStationOptionsReturn {
@@ -31,11 +29,7 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
 }
 
-export function useStationOptions({
-  selectedPrecNo,
-  initialStationId,
-  onInitialStationResolved,
-}: UseStationOptionsParams): UseStationOptionsReturn {
+export function useStationOptions({ selectedPrecNo }: UseStationOptionsParams): UseStationOptionsReturn {
   const [prefectures, setPrefectures] = useState<Prefecture[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [loadingPhase, setLoadingPhase] = useState<StationOptionsLoadPhase | null>('prefectures');
@@ -45,18 +39,11 @@ export function useStationOptions({
   const prefecturesControllerRef = useRef<AbortController | null>(null);
   const stationsControllerRef = useRef<AbortController | null>(null);
   const selectedPrecNoRef = useRef(selectedPrecNo);
-  const initialStationIdRef = useRef(initialStationId);
-  const onInitialStationResolvedRef = useRef(onInitialStationResolved);
-  const initialStationResolvedRef = useRef(false);
   const lastRequestedPrecNoRef = useRef<number | null>(null);
 
   useEffect(() => {
     selectedPrecNoRef.current = selectedPrecNo;
   }, [selectedPrecNo]);
-
-  useEffect(() => {
-    onInitialStationResolvedRef.current = onInitialStationResolved;
-  }, [onInitialStationResolved]);
 
   const loadStations = useCallback((precNo: number): void => {
     stationsControllerRef.current?.abort();
@@ -81,15 +68,6 @@ export function useStationOptions({
         }
 
         setStations(data);
-
-        if (!initialStationResolvedRef.current) {
-          initialStationResolvedRef.current = true;
-          const station = data.find((candidate) => candidate.id === initialStationIdRef.current);
-          if (station) {
-            onInitialStationResolvedRef.current(station);
-          }
-        }
-
         setLoadingPhase(null);
       } catch (requestError) {
         if (isAbortError(requestError)) return;

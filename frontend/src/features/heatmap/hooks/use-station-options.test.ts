@@ -48,18 +48,13 @@ beforeEach(() => {
 });
 
 describe('useStationOptions', () => {
-  it('loads the requested HTTP resources and resolves the initial station once', async () => {
+  it('loads the requested HTTP resources', async () => {
     useSuccessfulStationHandlers();
-    const onInitialStationResolved = vi.fn();
-    const { result } = renderHook(() =>
-      useStationOptions({ selectedPrecNo: 44, initialStationId: 4, onInitialStationResolved }),
-    );
+    const { result } = renderHook(() => useStationOptions({ selectedPrecNo: 44 }));
 
     await waitFor(() => expect(result.current.loadingPhase).toBeNull());
     expect(result.current.prefectures).toEqual(PREFECTURES);
     expect(result.current.stations).toEqual(STATIONS);
-    expect(onInitialStationResolved).toHaveBeenCalledOnce();
-    expect(onInitialStationResolved).toHaveBeenCalledWith(STATIONS[0]);
   });
 
   it('reports a prefecture network error and retries successfully', async () => {
@@ -70,9 +65,7 @@ describe('useStationOptions', () => {
         return requestCount === 1 ? HttpResponse.error() : HttpResponse.json(PREFECTURES);
       }),
     );
-    const { result } = renderHook(() =>
-      useStationOptions({ selectedPrecNo: null, initialStationId: null, onInitialStationResolved: vi.fn() }),
-    );
+    const { result } = renderHook(() => useStationOptions({ selectedPrecNo: null }));
 
     await waitFor(() => expect(result.current.error?.phase).toBe('prefectures'));
     act(() => result.current.retry());
@@ -94,9 +87,7 @@ describe('useStationOptions', () => {
           : HttpResponse.json(STATIONS);
       }),
     );
-    const { result } = renderHook(() =>
-      useStationOptions({ selectedPrecNo: 44, initialStationId: null, onInitialStationResolved: vi.fn() }),
-    );
+    const { result } = renderHook(() => useStationOptions({ selectedPrecNo: 44 }));
 
     await waitFor(() => expect(result.current.error?.phase).toBe('stations'));
     act(() => result.current.retry());
@@ -107,11 +98,9 @@ describe('useStationOptions', () => {
 
   it('clears stations when the selected prefecture is removed', async () => {
     useSuccessfulStationHandlers();
-    const { result, rerender } = renderHook(
-      ({ selectedPrecNo }) =>
-        useStationOptions({ selectedPrecNo, initialStationId: null, onInitialStationResolved: vi.fn() }),
-      { initialProps: { selectedPrecNo: 44 as number | null } },
-    );
+    const { result, rerender } = renderHook(({ selectedPrecNo }) => useStationOptions({ selectedPrecNo }), {
+      initialProps: { selectedPrecNo: 44 as number | null },
+    });
     await waitFor(() => expect(result.current.stations).toEqual(STATIONS));
 
     rerender({ selectedPrecNo: null });
@@ -134,11 +123,9 @@ describe('useStationOptions', () => {
         return HttpResponse.json(STATIONS);
       }),
     );
-    const { result, rerender } = renderHook(
-      ({ selectedPrecNo }) =>
-        useStationOptions({ selectedPrecNo, initialStationId: null, onInitialStationResolved: vi.fn() }),
-      { initialProps: { selectedPrecNo: 44 } },
-    );
+    const { result, rerender } = renderHook(({ selectedPrecNo }) => useStationOptions({ selectedPrecNo }), {
+      initialProps: { selectedPrecNo: 44 },
+    });
     await waitFor(() => expect(result.current.loadingPhase).toBe('stations'));
 
     rerender({ selectedPrecNo: 13 });

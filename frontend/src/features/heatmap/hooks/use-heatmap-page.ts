@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useStationOptions, type StationOptionsLoadPhase } from './use-station-options';
 import { useTemperatureData } from './use-temperature-data';
 import { useUrlParams } from './use-url-params';
 
-import { isTempType } from '../libs/url-params';
+import { DEFAULT_PREFECTURE_NUMBER, DEFAULT_STATION_ID, isTempType } from '../libs/url-params';
 import type { ProgressEvent, Station, TemperatureRecord, TempType } from '../types/api';
 import type { TemperatureLoadError, TemperatureLoadOperation } from '../types/temperature-data';
 
@@ -32,55 +32,81 @@ interface UseHeatmapPageReturn {
 }
 
 export function useHeatmapPage(): UseHeatmapPageReturn {
-  const { initialParams, updateUrl } = useUrlParams();
-  const [selectedStationId, setSelectedStationId] = useState<number | null>(initialParams.station);
-  const [selectedPrecNo, setSelectedPrecNo] = useState<number | null>(initialParams.pref);
-  const [tempType, setTempType] = useState<TempType>(initialParams.type);
+  const { params, updateUrl } = useUrlParams();
   const currentYear = new Date().getFullYear();
   const temperature = useTemperatureData();
   const { fetchData, fetchMoreData, nextEndYear, reset } = temperature;
+  const stationOptions = useStationOptions({ selectedPrecNo: params.pref });
+
+  useEffect(() => {
+    reset();
+  }, [params.pref, params.station, reset]);
+
+  useEffect(() => {
+    if (params.pref === null || stationOptions.loadingPhase === 'prefectures') return;
+    if (stationOptions.error?.phase === 'prefectures') return;
+
+    const hasSelectedPrefecture = stationOptions.prefectures.some((prefecture) => prefecture.prec_no === params.pref);
+    if (!hasSelectedPrefecture && params.pref !== DEFAULT_PREFECTURE_NUMBER) {
+      updateUrl({ pref: DEFAULT_PREFECTURE_NUMBER, station: DEFAULT_STATION_ID }, 'replace');
+    }
+  }, [params.pref, stationOptions.error, stationOptions.loadingPhase, stationOptions.prefectures, updateUrl]);
+
+  useEffect(() => {
+    if (params.pref === null || params.station === null || stationOptions.loadingPhase !== null) return;
+    if (stationOptions.error !== null) return;
+
+    const station = stationOptions.stations.find(
+      (candidate) => candidate.id === params.station && candidate.prec_no === params.pref,
+    );
+    if (station) {
+      fetchData(station.id, currentYear);
+      return;
+    }
+
+    if (params.pref !== DEFAULT_PREFECTURE_NUMBER || params.station !== DEFAULT_STATION_ID) {
+      updateUrl({ pref: DEFAULT_PREFECTURE_NUMBER, station: DEFAULT_STATION_ID }, 'replace');
+    }
+  }, [
+    currentYear,
+    fetchData,
+    params.pref,
+    params.station,
+    stationOptions.error,
+    stationOptions.loadingPhase,
+    stationOptions.stations,
+    updateUrl,
+  ]);
 
   const handleStationSelect = useCallback(
     (station: Station): void => {
-      setSelectedStationId(station.id);
-      fetchData(station.id, currentYear);
-      updateUrl({ station: station.id, pref: selectedPrecNo });
+      updateUrl({ station: station.id, pref: station.prec_no }, params.station === null ? 'replace' : 'push');
     },
-    [currentYear, fetchData, selectedPrecNo, updateUrl],
+    [params.station, updateUrl],
   );
 
-  const stationOptions = useStationOptions({
-    selectedPrecNo,
-    initialStationId: initialParams.station,
-    onInitialStationResolved: handleStationSelect,
-  });
-
   const handleLoadMore = useCallback((): void => {
-    if (selectedStationId !== null && nextEndYear !== null) {
-      fetchMoreData(selectedStationId, nextEndYear);
+    if (params.station !== null && nextEndYear !== null) {
+      fetchMoreData(params.station, nextEndYear);
     }
-  }, [fetchMoreData, nextEndYear, selectedStationId]);
+  }, [fetchMoreData, nextEndYear, params.station]);
 
   const handlePrefectureChange = useCallback(
     (precNo: number): void => {
-      reset();
-      setSelectedStationId(null);
-      setSelectedPrecNo(precNo);
-      updateUrl({ pref: precNo, station: null });
+      updateUrl({ pref: precNo, station: null }, params.station === null ? 'replace' : 'push');
     },
-    [reset, updateUrl],
+    [params.station, updateUrl],
   );
 
   const handleTempTypeChange = (value: string): void => {
     if (!isTempType(value)) return;
-    setTempType(value);
     updateUrl({ type: value });
   };
 
   return {
-    selectedStationId,
-    selectedPrecNo,
-    tempType,
+    selectedStationId: params.station,
+    selectedPrecNo: params.pref,
+    tempType: params.type,
     currentYear,
     records: temperature.records,
     activeOperation: temperature.activeOperation,

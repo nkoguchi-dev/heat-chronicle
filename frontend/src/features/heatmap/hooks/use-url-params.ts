@@ -1,39 +1,56 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 
-import {
-  DEFAULT_PREFECTURE_NUMBER,
-  DEFAULT_STATION_ID,
-  applyUrlParams,
-  parseUrlParams,
-  type UrlParams,
-} from '@/features/heatmap/libs/url-params';
+import { applyUrlParams, parseUrlParams, type UrlParams } from '@/features/heatmap/libs/url-params';
 
 interface UseUrlParamsReturn {
-  initialParams: UrlParams;
-  updateUrl: (params: Partial<UrlParams>) => void;
+  params: UrlParams;
+  updateUrl: (params: Partial<UrlParams>, mode?: UrlUpdateMode) => void;
 }
 
-function parseParams(): UrlParams {
-  if (typeof window === 'undefined') {
-    return { station: DEFAULT_STATION_ID, pref: DEFAULT_PREFECTURE_NUMBER, type: 'max' };
-  }
+export type UrlUpdateMode = 'push' | 'replace';
 
-  const parsed = parseUrlParams(window.location.search);
-  if (parsed.usesDefaults) {
-    const defaultUrl = applyUrlParams(new URL(window.location.href), parsed.params);
-    window.history.replaceState(null, '', defaultUrl.toString());
-  }
+const URL_CHANGE_EVENT = 'heat-chronicle:url-change';
+const SERVER_SEARCH_SNAPSHOT = '';
 
-  return parsed.params;
+function subscribeToUrlChanges(onStoreChange: () => void): () => void {
+  window.addEventListener('popstate', onStoreChange);
+  window.addEventListener(URL_CHANGE_EVENT, onStoreChange);
+
+  return () => {
+    window.removeEventListener('popstate', onStoreChange);
+    window.removeEventListener(URL_CHANGE_EVENT, onStoreChange);
+  };
 }
 
-function updateUrl(params: Partial<UrlParams>): void {
+function getBrowserSearchSnapshot(): string {
+  return window.location.search;
+}
+
+function getServerSearchSnapshot(): string {
+  return SERVER_SEARCH_SNAPSHOT;
+}
+
+function writeUrl(params: Partial<UrlParams>, mode: UrlUpdateMode): void {
   const nextUrl = applyUrlParams(new URL(window.location.href), params);
-  window.history.replaceState(null, '', nextUrl.toString());
+  const nextPath = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+
+  if (mode === 'push') window.history.pushState(null, '', nextPath);
+  else window.history.replaceState(null, '', nextPath);
+
+  window.dispatchEvent(new Event(URL_CHANGE_EVENT));
 }
 
 export function useUrlParams(): UseUrlParamsReturn {
-  const initialParams = useMemo(() => parseParams(), []);
+  const search = useSyncExternalStore(subscribeToUrlChanges, getBrowserSearchSnapshot, getServerSearchSnapshot);
+  const parsed = useMemo(() => parseUrlParams(search), [search]);
+  const updateUrl = useCallback((params: Partial<UrlParams>, mode: UrlUpdateMode = 'push'): void => {
+    writeUrl(params, mode);
+  }, []);
 
-  return { initialParams, updateUrl };
+  useEffect(() => {
+    const browserParsed = parseUrlParams(window.location.search);
+    if (browserParsed.needsNormalization) updateUrl(browserParsed.params, 'replace');
+  }, [search, updateUrl]);
+
+  return { params: parsed.params, updateUrl };
 }
