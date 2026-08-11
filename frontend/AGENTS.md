@@ -14,6 +14,7 @@ npm run format:check    # Prettierの適用確認
 npm run lint            # ESLint
 npm run typecheck       # TypeScript型チェック
 npm run test            # Vitestを1回実行
+npm run test:e2e        # 起動済みproduction配信に対してPlaywrightを実行
 npm run test:watch      # Vitestをwatchモードで実行
 npm run test:coverage   # カバレッジ閾値を含めてテスト
 npm run build           # 本番ビルド（静的エクスポート）
@@ -99,7 +100,8 @@ npm run build           # 本番ビルド（静的エクスポート）
 - `src/components/ui/` のshadcn/ui生成コード、型定義、App Routerの薄い配線はカバレッジ対象外とする
 - 仕様または受け入れ条件を変更した場合は、Markdown仕様書、Gherkin、Unit、Integration、Component、Browser Smokeの更新要否を同じPull Requestで判断する
 - Gherkin全件をBrowser Smokeへ重複実装しない。テスト層の選択は `docs/TESTING_STRATEGY.md` を正本とする
-- Browser Smoke導入後は、production静的配信、直接アクセス、再読み込み、履歴、キーボード操作、主要導線をそこで確認し、境界値や詳細な異常系はUnit、Integration、Componentテストを優先する
+- Browser Smokeは、production静的配信、直接アクセス、再読み込み、履歴、キーボード操作、主要導線を確認し、境界値や詳細な異常系はUnit、Integration、Componentテストを優先する
+- Browser SmokeのAPIは固定応答とし、未定義のリクエスト、実AWS、実API、気象庁、本番データに依存させない
 
 ## 状態管理
 
@@ -198,3 +200,13 @@ npm run typecheck
 npm run test:coverage
 npm run build
 ```
+
+Browser Smokeを変更した場合は、Chromiumを導入したうえでリポジトリルートから実行してください。
+
+```bash
+npx playwright install chromium
+cd ..
+sh tools/run-browser-smoke.sh
+```
+
+失敗時は`test-results/`のtrace・screenshotと`playwright-report/`のHTML reportを確認します。
