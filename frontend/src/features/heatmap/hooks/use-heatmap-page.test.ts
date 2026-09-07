@@ -1,3 +1,4 @@
+import { createClockWrapper, FixedClock } from '@/test/fixed-clock';
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -50,6 +51,8 @@ const fetchData = vi.fn();
 const fetchMoreData = vi.fn();
 const reset = vi.fn();
 
+const wrapper = createClockWrapper(new FixedClock(new Date(2026, 7, 15, 12)));
+
 beforeEach(() => {
   params = { pref: 44, station: 4, type: 'max' };
   stations = STATIONS;
@@ -78,11 +81,12 @@ beforeEach(() => {
 
 describe('useHeatmapPage', () => {
   it('restores location changes from URL state without refetching for temperature-only changes', () => {
-    const { result, rerender } = renderHook(() => useHeatmapPage());
+    const { result, rerender } = renderHook(() => useHeatmapPage(), { wrapper });
 
+    expect(result.current.currentYear).toBe(2026);
     expect(reset).toHaveBeenCalledOnce();
     expect(fetchData).toHaveBeenCalledOnce();
-    expect(fetchData).toHaveBeenCalledWith(4, new Date().getFullYear());
+    expect(fetchData).toHaveBeenCalledWith(4);
 
     params = { ...params, type: 'min' };
     rerender();
@@ -96,11 +100,11 @@ describe('useHeatmapPage', () => {
 
     expect(result.current.selectedStationId).toBe(5);
     expect(reset).toHaveBeenCalledTimes(2);
-    expect(fetchData).toHaveBeenLastCalledWith(5, new Date().getFullYear());
+    expect(fetchData).toHaveBeenLastCalledWith(5);
   });
 
   it('creates one complete history entry for a prefecture and station change', () => {
-    const { result, rerender } = renderHook(() => useHeatmapPage());
+    const { result, rerender } = renderHook(() => useHeatmapPage(), { wrapper });
 
     act(() => result.current.handlePrefectureChange(13));
     expect(updateUrl).toHaveBeenLastCalledWith({ pref: 13, station: null }, 'push');
@@ -121,7 +125,7 @@ describe('useHeatmapPage', () => {
   });
 
   it('pushes same-prefecture station and temperature changes', () => {
-    const { result } = renderHook(() => useHeatmapPage());
+    const { result } = renderHook(() => useHeatmapPage(), { wrapper });
 
     act(() => result.current.handleStationSelect(STATIONS[1]));
     expect(updateUrl).toHaveBeenLastCalledWith({ pref: 44, station: 5 }, 'push');
@@ -134,7 +138,7 @@ describe('useHeatmapPage', () => {
     params = { pref: 13, station: 999, type: 'min' };
     stations = [{ ...STATIONS[0], id: 1, station_name: '東京', prec_no: 13, block_no: '47662' }];
 
-    renderHook(() => useHeatmapPage());
+    renderHook(() => useHeatmapPage(), { wrapper });
 
     expect(updateUrl).toHaveBeenCalledWith({ pref: 44, station: 4 }, 'replace');
     expect(fetchData).not.toHaveBeenCalled();
@@ -150,7 +154,7 @@ describe('useHeatmapPage', () => {
       retry: vi.fn(),
     });
 
-    renderHook(() => useHeatmapPage());
+    renderHook(() => useHeatmapPage(), { wrapper });
 
     expect(updateUrl).toHaveBeenCalledWith({ pref: 44, station: 4 }, 'replace');
     expect(fetchData).not.toHaveBeenCalled();

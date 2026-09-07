@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect } from 'react';
 
+import { useClock } from '@/features/shared/contexts/clock-context';
+
 import { useStationOptions, type StationOptionsLoadPhase } from './use-station-options';
 import { useTemperatureData } from './use-temperature-data';
 import { useUrlParams } from './use-url-params';
@@ -33,7 +35,8 @@ interface UseHeatmapPageReturn {
 
 export function useHeatmapPage(): UseHeatmapPageReturn {
   const { params, updateUrl } = useUrlParams();
-  const currentYear = new Date().getFullYear();
+  const clock = useClock();
+  const currentYear = clock.now().getFullYear();
   const temperature = useTemperatureData();
   const { fetchData, fetchMoreData, nextEndYear, reset } = temperature;
   const stationOptions = useStationOptions({ selectedPrecNo: params.pref });
@@ -60,7 +63,7 @@ export function useHeatmapPage(): UseHeatmapPageReturn {
       (candidate) => candidate.id === params.station && candidate.prec_no === params.pref,
     );
     if (station) {
-      fetchData(station.id, currentYear);
+      fetchData(station.id);
       return;
     }
 
@@ -68,7 +71,6 @@ export function useHeatmapPage(): UseHeatmapPageReturn {
       updateUrl({ pref: DEFAULT_PREFECTURE_NUMBER, station: DEFAULT_STATION_ID }, 'replace');
     }
   }, [
-    currentYear,
     fetchData,
     params.pref,
     params.station,
