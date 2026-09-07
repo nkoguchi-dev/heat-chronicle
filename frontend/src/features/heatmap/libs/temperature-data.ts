@@ -10,7 +10,7 @@ export function buildMonthsToFetch(
   startYear: number,
   endYear: number,
   fetchedMonths: string[],
-  currentDate: Date = new Date(),
+  currentDate: Date,
 ): TemperatureMonth[] {
   const fetchedMonthSet = new Set(fetchedMonths);
   const months: TemperatureMonth[] = [];
