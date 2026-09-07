@@ -90,6 +90,15 @@ npm run build           # 本番ビルド（静的エクスポート）
 - UIコンポーネント: shadcn/ui（new-yorkスタイル）は選択肢の一つとし、新規UIでの利用を必須にしない
 - Canvasのcomputed寸法やtooltip位置など、実行時の値をCSSへ渡すinline styleは、理由が明確な場合に使用できる
 
+## 現在時刻の取得
+
+- 現在時刻は `src/features/shared/domain/clock.ts` の `Clock` インターフェースを通して取得する
+- 引数なしの `new Date()` による現在時刻取得は Infrastructure の `SystemClock` に集約する。`Date.now()` / `Date()` などによる迂回も行わない。日時値の構築・変換に使う `new Date(value)` は許可する
+- `src/app/providers.tsx` で `SystemClock` を生成して `ClockProvider` に渡し、Hookは `useClock()` でインターフェースを取得する。Domain・Hookから具体的な時計実装を生成しない
+- 純粋な計算関数には基準日時を明示して渡す。取得操作ではHTTP通信前に基準日時を一度取得し、対象年と取得対象月の算出に使う
+- テストでは `ClockProvider` に `FixedClock` またはテスト用の `Clock` 実装を注入する。リクエスト間隔の検証に使うfake timersと、現在日時の制御を分ける
+- 年月の解釈は従来どおり実行環境のローカル時刻とする
+
 ## 依存関係管理
 
 - `package.json`の`overrides`へ指定を追加する場合は、同じPull Requestで`//overrides`へパッケージごとのメタデータを追加する
