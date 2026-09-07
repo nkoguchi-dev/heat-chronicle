@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useClock } from '@/features/shared/contexts/clock-context';
+
 import { apiClient } from '@/features/shared/libs/api-client';
 import {
   monthTemperatureResponseSchema,
@@ -33,7 +35,7 @@ interface UseTemperatureDataReturn {
   hasOlderData: boolean;
   nextEndYear: number | null;
   startYear: number | null;
-  fetchData: (stationId: number, endYear: number) => void;
+  fetchData: (stationId: number, endYear?: number) => void;
   fetchMoreData: (stationId: number, endYear: number) => void;
   retry: () => void;
   reset: () => void;
@@ -105,6 +107,7 @@ async function fetchMissingMonths(
 }
 
 export function useTemperatureData(): UseTemperatureDataReturn {
+  const clock = useClock();
   const [records, setRecords] = useState<TemperatureRecord[]>([]);
   const [activeOperation, setActiveOperation] = useState<TemperatureLoadOperation | null>(null);
   const [progress, setProgress] = useState<ProgressEvent | null>(null);
@@ -129,7 +132,13 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   }, []);
 
   const executeOperation = useCallback(
-    (operation: TemperatureLoadOperation): void => {
+    (request: Omit<TemperatureLoadOperation, 'endYear'> & { endYear?: number }): void => {
+      // Snapshot before HTTP I/O so month/year rollover cannot change this operation.
+      const referenceDate = clock.now();
+      const operation: TemperatureLoadOperation = {
+        ...request,
+        endYear: request.endYear ?? referenceDate.getFullYear(),
+      };
       abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -171,6 +180,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
               response.metadata.start_year,
               operation.endYear,
               response.metadata.fetched_months,
+              referenceDate,
             );
             failedCount = await fetchMissingMonths(
               operation.stationId,
@@ -210,11 +220,11 @@ export function useTemperatureData(): UseTemperatureDataReturn {
           }
         });
     },
-    [finishOperation],
+    [clock, finishOperation],
   );
 
   const fetchData = useCallback(
-    (stationId: number, endYear: number): void => {
+    (stationId: number, endYear?: number): void => {
       executeOperation({ mode: 'initial', stationId, endYear });
     },
     [executeOperation],
