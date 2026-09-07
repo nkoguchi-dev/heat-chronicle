@@ -1,3 +1,4 @@
+import { createClockWrapper, FixedClock } from '@/test/fixed-clock';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,6 +17,8 @@ vi.mock('@/features/shared/components/ThemeToggle', () => ({
 const useStationOptionsMock = vi.mocked(useStationOptions);
 const useTemperatureDataMock = vi.mocked(useTemperatureData);
 const useUrlParamsMock = vi.mocked(useUrlParams);
+
+const wrapper = createClockWrapper(new FixedClock(new Date(2026, 7, 15, 12)));
 
 beforeEach(() => {
   useUrlParamsMock.mockReturnValue({
@@ -46,7 +49,7 @@ beforeEach(() => {
 
 describe('HeatmapPage', () => {
   it('renders the page shell and current loading phase', () => {
-    render(<HeatmapPage />);
+    render(<HeatmapPage />, { wrapper });
 
     expect(screen.getByRole('heading', { name: 'Heat Chronicle' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: '気温種別' })).toBeInTheDocument();
@@ -63,7 +66,7 @@ describe('HeatmapPage', () => {
       retry: vi.fn(),
     });
 
-    render(<HeatmapPage />);
+    render(<HeatmapPage />, { wrapper });
 
     expect(screen.getByRole('alert')).toHaveTextContent('都道府県一覧を取得できませんでした');
   });
@@ -91,7 +94,7 @@ describe('HeatmapPage', () => {
     });
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 
-    render(<HeatmapPage />);
+    render(<HeatmapPage />, { wrapper });
 
     expect(screen.getByRole('region', { name: '気温ヒートマップ' })).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('〜2016年のデータを読み込んでいます');
