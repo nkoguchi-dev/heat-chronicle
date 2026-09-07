@@ -1,3 +1,4 @@
+import { createClockWrapper, FixedClock } from '@/test/fixed-clock';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -29,9 +30,10 @@ function createResponse(overrides: Partial<TemperatureResponse['metadata']> = {}
 
 const getMock = vi.mocked(apiClient.get);
 
+const wrapper = createClockWrapper(new FixedClock(new Date(2026, 6, 15, 12)));
+
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.setSystemTime(new Date('2026-07-15T00:00:00Z'));
 });
 
 afterEach(() => {
@@ -45,7 +47,7 @@ describe('useTemperatureData request pacing', () => {
       .mockResolvedValueOnce(createResponse({ fetching_required: true, fetched_months: fetchedMonths }))
       .mockResolvedValueOnce({ year: 2026, month: 7, records: [] })
       .mockResolvedValueOnce({ year: 2026, month: 6, records: [] });
-    const { result } = renderHook(() => useTemperatureData());
+    const { result } = renderHook(() => useTemperatureData(), { wrapper });
 
     act(() => result.current.fetchData(4, 2026));
     await act(async () => vi.advanceTimersByTimeAsync(0));
@@ -64,7 +66,7 @@ describe('useTemperatureData request pacing', () => {
     getMock
       .mockResolvedValueOnce(createResponse({ fetching_required: true, fetched_months: fetchedMonths }))
       .mockResolvedValueOnce({ year: 2026, month: 7, records: [] });
-    const { result } = renderHook(() => useTemperatureData());
+    const { result } = renderHook(() => useTemperatureData(), { wrapper });
 
     act(() => result.current.fetchData(4, 2026));
     await act(async () => vi.advanceTimersByTimeAsync(0));
