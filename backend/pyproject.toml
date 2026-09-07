@@ -25,7 +25,7 @@ pytest-asyncio = ">=0.24,<1.5"
 pytest-cov = ">=6,<8"
 httpx = "^0.28.0"
 black = ">=24.10,<27.0"
-isort = "^8.0.1"
+isort = ">=8.0.1,<10.0.0"
 flake8 = "^7.1.0"
 mypy = "^2.3.0"
 moto = {extras = ["dynamodb"], version = "^5.0.0"}
