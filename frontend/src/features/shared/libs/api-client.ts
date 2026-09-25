@@ -1,7 +1,10 @@
 import type { ZodType } from 'zod';
 
-// Vite replaces this expression at build time; Next.js keeps its existing value during the transition.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+// Vite defines its own base URL; Next.js keeps the empty-value fallback during the transition.
+const API_BASE_URL =
+  typeof __VITE_API_BASE_URL__ === 'string'
+    ? __VITE_API_BASE_URL__
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export type ApiErrorKind = 'http' | 'invalid-response';
 
