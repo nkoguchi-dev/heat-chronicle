@@ -19,7 +19,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],
-      include: ['src/features/**/*.{ts,tsx}', 'src/app/error.tsx', 'src/lib/utils.ts'],
+      include: [
+        'src/features/**/*.{ts,tsx}',
+        'src/App.tsx',
+        'src/main.tsx',
+        'src/app/{AppErrorFallback,ViteErrorBoundary,error}.tsx',
+        'src/lib/utils.ts',
+      ],
       exclude: ['src/**/*.test.{ts,tsx}', 'src/features/heatmap/types/**', 'src/test/**'],
       thresholds: {
         lines: 80,

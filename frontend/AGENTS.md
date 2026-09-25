@@ -9,6 +9,7 @@
 ```bash
 npm install             # 依存関係インストール
 npm run dev             # 開発サーバー起動（ポート 3000）
+npm run dev:vite        # 移行中のVite開発サーバー起動（ポート 3000）
 npm run format          # Prettierでフォーマット
 npm run format:check    # Prettierの適用確認
 npm run lint            # ESLint
@@ -18,6 +19,8 @@ npm run test:e2e        # 起動済みproduction配信に対してPlaywrightを�
 npm run test:watch      # Vitestをwatchモードで実行
 npm run test:coverage   # カバレッジ閾値を含めてテスト
 npm run build           # 本番ビルド（静的エクスポート）
+npm run build:vite      # 移行中のVite本番ビルド（dist/）
+npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 ```
 
 ## ディレクトリ構成
@@ -59,7 +62,8 @@ npm run build           # 本番ビルド（静的エクスポート）
 
 - Issue #135の移行契約は[`docs/frontend-vite-migration.md`](../docs/frontend-vite-migration.md)を正本とする
 - Heat Chronicleは`/`だけを持つ単一画面であり、地点と気温種別はクエリパラメータで管理するため、Vite移行ではクライアントルーターを導入しない
-- Viteのブラウザー入口はReact root、Provider、最上位error boundary、`HeatmapPage`の接続だけを担当し、画面固有の状態やAPI操作を持たせない
+- Viteのブラウザー入口は`index.html`、`src/main.tsx`、`src/App.tsx`とし、React root、Provider、最上位error boundary、`HeatmapPage`の接続だけを担当する。画面固有の状態やAPI操作を持たせない
+- #140以降は`dev:vite`、`build:vite`、`preview:vite`でVite経路を確認する。無印の`dev`と`build`は#144で旧経路を撤去するまでNext.jsを実行する
 - #140から#143の移行期間はVite経路とNext.js経路を段階的に併存させ、各Sub-Issueが定める既存経路を壊さない。Next.js固有規則は#144で依存と旧経路を撤去するまで有効とする
 - path単位の複数画面が必要になった場合は、ルーターを前提にせず、直接アクセス、再読み込み、履歴、静的配信fallbackを含む要件をIssueで再評価する
 
