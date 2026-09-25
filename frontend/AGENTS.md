@@ -55,6 +55,14 @@ npm run build           # 本番ビルド（静的エクスポート）
 - コンポーネントは1つの表示責務または利用者操作を担当する単位へ分割する。1コンポーネント50行以内を目安とし、大きく超える場合は責務分割を検討する。密接に関連するJSXを分けることで理解しにくくなる場合は維持してよいが、理由をPull Requestの自己レビューへ記録する
 - 状態、イベント、ブラウザAPIを利用する静的SPAであるため、`'use client'`の使用自体やClient Componentの数を制限しない。静的exportとS3・CloudFront配信を維持できる境界を優先する
 
+### Vite移行時の画面入口
+
+- Issue #135の移行契約は[`docs/frontend-vite-migration.md`](../docs/frontend-vite-migration.md)を正本とする
+- Heat Chronicleは`/`だけを持つ単一画面であり、地点と気温種別はクエリパラメータで管理するため、Vite移行ではクライアントルーターを導入しない
+- Viteのブラウザー入口はReact root、Provider、最上位error boundary、`HeatmapPage`の接続だけを担当し、画面固有の状態やAPI操作を持たせない
+- #140から#143の移行期間はVite経路とNext.js経路を段階的に併存させ、各Sub-Issueが定める既存経路を壊さない。Next.js固有規則は#144で依存と旧経路を撤去するまで有効とする
+- path単位の複数画面が必要になった場合は、ルーターを前提にせず、直接アクセス、再読み込み、履歴、静的配信fallbackを含む要件をIssueで再評価する
+
 ## 命名規則
 
 | 対象                   | 規則                         | 例                                |

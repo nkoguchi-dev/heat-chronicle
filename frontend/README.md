@@ -48,6 +48,9 @@ frontend/src/
 
 コーディング規約・開発コマンド・データフローの詳細は [AGENTS.md](./AGENTS.md) を参照してください。
 
+Next.jsからViteへの段階移行で維持する実行・URL・API・配信の契約は、
+[フロントエンドVite移行契約](../docs/frontend-vite-migration.md)を参照してください。
+
 ## ビルドと配信
 
 本番環境では `next build` で静的 HTML/JS/CSS にエクスポートし（`out/` ディレクトリ）、S3 + CloudFront で配信しています。
