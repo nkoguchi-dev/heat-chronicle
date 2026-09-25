@@ -204,11 +204,14 @@ npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 
 ## 環境変数
 
-| 変数名                | 説明                                                            |
-| --------------------- | --------------------------------------------------------------- |
-| `NEXT_PUBLIC_API_URL` | バックエンドAPIのURL（ローカル開発時: `http://localhost:8000`） |
+| 変数名                            | 説明                                                                                                                   |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_URL`                    | Vite production buildへ埋め込む公開API origin。`build:vite`では必須。dev/previewでは未設定なら同一originの`/api`を使用 |
+| `HEAT_CHRONICLE_API_PROXY_TARGET` | Vite dev/previewの`/api`転送先。未設定なら`http://127.0.0.1:8000`。ブラウザーへ公開しない                              |
+| `NEXT_PUBLIC_API_URL`             | #144まで併存するNext.js経路の公開API origin。従来どおりローカルでは`http://localhost:8000`                             |
 
-- `NEXT_PUBLIC_` が付く値はブラウザへ公開されるため、機密情報を含めない
+- Viteは`VITE_API_URL`をbuild時に固定し、`/api` pathを連結する。本番では実APIのHTTP(S) originを渡す。dev/previewでは`/api`をpathを書き換えずFastAPIへproxyする
+- API originとproxy先は資格情報、path、query、fragmentを含めない。`VITE_`、`NEXT_PUBLIC_`が付く値はブラウザーへ公開されるため、機密情報を含めない
 
 ## AI生成コード
 

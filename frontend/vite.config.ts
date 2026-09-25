@@ -1,26 +1,43 @@
 import { fileURLToPath, URL } from 'node:url';
 
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig({
-  build: {
-    outDir: 'dist',
-  },
-  plugins: [react()],
-  preview: {
-    host: 'localhost',
-    port: 4173,
-    strictPort: true,
-  },
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+import { resolveViteApiConfig } from './vite-api-config.ts';
+
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), ['VITE_API_URL', 'HEAT_CHRONICLE_API_PROXY_TARGET']);
+  const { apiBaseUrl, proxyTarget } = resolveViteApiConfig(
+    command,
+    env.VITE_API_URL,
+    env.HEAT_CHRONICLE_API_PROXY_TARGET,
+  );
+
+  return {
+    build: {
+      outDir: 'dist',
     },
-  },
-  server: {
-    host: 'localhost',
-    port: 3000,
-    strictPort: true,
-  },
+    // The Next.js entry still reads this expression until Issue #144 removes it.
+    define: {
+      'process.env.NEXT_PUBLIC_API_URL': JSON.stringify(apiBaseUrl),
+    },
+    plugins: [react()],
+    preview: {
+      host: 'localhost',
+      port: 4173,
+      proxy: { '/api': { target: proxyTarget, changeOrigin: true } },
+      strictPort: true,
+    },
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
+    },
+    server: {
+      host: 'localhost',
+      port: 3000,
+      proxy: { '/api': { target: proxyTarget, changeOrigin: true } },
+      strictPort: true,
+    },
+  };
 });

@@ -51,6 +51,22 @@ frontend/src/
 Next.jsからViteへの段階移行で維持する実行・URL・API・配信の契約は、
 [フロントエンドVite移行契約](../docs/frontend-vite-migration.md)を参照してください。
 
+## ViteでのAPI接続
+
+ホストでFastAPIを`http://127.0.0.1:8000`に起動し、`npm run dev:vite`で画面を起動します。
+ブラウザーは同じoriginの`/api`へ接続し、ViteがFastAPIへ転送します。別のAPI originを使う場合は
+`HEAT_CHRONICLE_API_PROXY_TARGET`を指定します。`npm run preview:vite`でも同じ転送設定を使います。
+
+本番向けVite buildには公開API originを渡します。例:
+
+```bash
+VITE_API_URL=https://api.example.com npm run build:vite
+```
+
+`VITE_API_URL`はbuild時に静的成果物へ埋め込まれ、ブラウザーから`https://api.example.com/api/...`へ
+接続します。設定できるのはHTTP(S) originのみで、認証情報やpathは含めません。
+Next.js経路の`NEXT_PUBLIC_API_URL`は移行完了まで維持します。
+
 ## ビルドと配信
 
 本番環境では `next build` で静的 HTML/JS/CSS にエクスポートし（`out/` ディレクトリ）、S3 + CloudFront で配信しています。
