@@ -1,6 +1,6 @@
 # フロントエンドVite移行契約
 
-> 確認日: 2026-09-26 / 対象: Issue #135、Next.js 16.3.5、Vite 6系
+> 確認日: 2026-09-26 / 対象: Issue #135、Next.js 16.3.5、Vite 8.3.1
 
 この文書は、Heat ChronicleのフロントエンドをNext.jsの静的exportからViteの静的SPAへ段階移行するための技術契約を定義する。利用者向けの仕様は変更せず、[`docs/specs/`](./specs/)を正本とする。
 
