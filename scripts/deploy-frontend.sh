@@ -14,13 +14,14 @@ if [[ ! -f "${DEPLOY_DIR}/index.html" || ! -d "${DEPLOY_DIR}/assets" ]] \
   exit 1
 fi
 
-# HTML 等と hashed assets を別々に同期し、それぞれの cache policy を指定する。
-# --delete は既存の公開ファイルと assets/ の範囲に限る。
+# 新HTMLの参照先を先に配置する。古いhashed assetsは既存HTML/開いたタブのため残す。
 echo "Deploying to s3://${S3_BUCKET_NAME} ..."
+aws s3 sync "${DEPLOY_DIR}/assets" "s3://${S3_BUCKET_NAME}/assets" \
+  --cache-control 'public,max-age=31536000,immutable'
+
+# 専用bucketのrootを同期し、旧Next.jsファイルを削除する。assets/は削除対象外。
 aws s3 sync "${DEPLOY_DIR}" "s3://${S3_BUCKET_NAME}" \
   --delete --exclude 'assets/*' --cache-control 'public,max-age=300'
-aws s3 sync "${DEPLOY_DIR}/assets" "s3://${S3_BUCKET_NAME}/assets" \
-  --delete --cache-control 'public,max-age=31536000,immutable'
 
 # CloudFront キャッシュ無効化
 echo "Invalidating CloudFront cache ..."

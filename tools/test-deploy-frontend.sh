@@ -16,13 +16,16 @@ aws() {
   if [[ "${AWS_FAIL_ASSETS:-}" == 1 && "$*" == *'s3://test-frontend-bucket/assets'* ]]; then
     return 1
   fi
+  if [[ "${AWS_FAIL_ROOT:-}" == 1 && "$*" == *'s3://test-frontend-bucket --delete'* ]]; then
+    return 1
+  fi
 }
 export -f aws
 
 bash scripts/deploy-frontend.sh "${test_dir}/dist"
 printf '%s\n' \
+  "s3 sync ${test_dir}/dist/assets s3://test-frontend-bucket/assets --cache-control public,max-age=31536000,immutable" \
   "s3 sync ${test_dir}/dist s3://test-frontend-bucket --delete --exclude assets/* --cache-control public,max-age=300" \
-  "s3 sync ${test_dir}/dist/assets s3://test-frontend-bucket/assets --delete --cache-control public,max-age=31536000,immutable" \
   'cloudfront create-invalidation --distribution-id TESTDISTRIBUTION --paths /*' \
   | diff -u - "${AWS_CALLS_LOG}"
 
@@ -45,7 +48,16 @@ printf 'asset\n' >"${test_dir}/dist/assets/app-hash.js"
 : >"${AWS_CALLS_LOG}"
 export AWS_FAIL_ASSETS=1
 if bash scripts/deploy-frontend.sh "${test_dir}/dist"; then
-  echo 'Failed asset sync must stop before CloudFront invalidation' >&2
+  echo 'Failed asset sync must stop before root sync and CloudFront invalidation' >&2
+  exit 1
+fi
+[[ "$(wc -l <"${AWS_CALLS_LOG}")" -eq 1 ]]
+
+unset AWS_FAIL_ASSETS
+: >"${AWS_CALLS_LOG}"
+export AWS_FAIL_ROOT=1
+if bash scripts/deploy-frontend.sh "${test_dir}/dist"; then
+  echo 'Failed root sync must stop before CloudFront invalidation' >&2
   exit 1
 fi
 [[ "$(wc -l <"${AWS_CALLS_LOG}")" -eq 2 ]]

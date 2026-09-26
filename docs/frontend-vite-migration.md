@@ -48,7 +48,7 @@ Vite serverだけが読む`HEAT_CHRONICLE_API_PROXY_TARGET`でproxy先を上書�
 
 - `frontend/Dockerfile.prod`は`frontend/dist`をNginxへコピーする。Nginxは`/assets/`を1年間immutable cacheとし、HTMLは長期cacheしない。
 - Nginxの未知pathから`index.html`へのfallbackは維持する。現時点の公開pathは`/`だけだが、直接アクセス時にも同じSPA入口を返すためである。
-- `scripts/deploy-frontend.sh`は既存S3 bucketへ`frontend/dist`を`--delete`付きで同期し、同期成功後に既存CloudFront distributionの`/*`をinvalidateする。
+- `scripts/deploy-frontend.sh`は既存S3 bucketへ`frontend/dist/assets`を先に同期して旧ハッシュ付きassetを残し、次に`frontend/dist`のrootを`assets/`除外・`--delete`付きで同期する。成功後に既存CloudFront distributionの`/*`をinvalidateする。
 - CloudFrontのS3 origin、OAC、証明書、DNS、`/index.html`への403/404 fallbackは維持する。長期cache対象だけを`/_next/static/*`から`/assets/*`へ変更し、1年間のimmutable cacheとする。HTMLとその他の公開ファイルは既存のdefault behaviorに残し、default TTL 5分とデプロイ時invalidationによって長期cacheさせない。
 - 切替前のrollback単位は直前の正常な`release/prod` commitとする。同じworkflowでそのcommitをbuild・同期し、CloudFrontをinvalidateする。S3内の旧Next.js assetは`--delete`で消えるため、S3上の残存物をrollback元にしない。
 
@@ -61,7 +61,7 @@ Vite serverだけが読む`HEAT_CHRONICLE_API_PROXY_TARGET`でproxy先を上書�
 3. 承認済みcommitを`release/prod`へ取り込み、`Deploy Frontend`のbuild、2段階のS3同期、CloudFrontの`/*` invalidation成功を確認する。公開URLの`/`とクエリ付きURL、`/assets/`配下のファイル、実APIへの接続は#145の本番手動確認で確認する。
 4. 失敗時は追加の本番操作について人に確認した上で、記録した正常commitの内容へ`release/prod`上でrevertする新しいcommitを作成してpushする。これによりそのcommitに含まれるworkflowと成果物を再build・同期・invalidateする。S3に残るファイルやforce pushを復旧元にしない。
 
-`--delete`は専用bucketのrootと`assets/`の同期範囲に作用する。デプロイスクリプトは`index.html`と`assets/`の欠落時に同期を止める。rootのHTML等には5分、ハッシュ付きassetには1年のimmutable cache-controlを指定する。CloudFrontのdefault behaviorは5分、`assets/*` behaviorは1年であり、S3 origin・OAC・証明書・DNS・403/404 fallbackは変更しない。
+`--delete`は専用bucketのrootにだけ作用し、`assets/`は除外する。新HTMLの参照先を先に配置し、旧Vite assetを残すことで開いたタブからの参照切れを避ける。古いVite assetの整理は利用状況を確認して別途行う。デプロイスクリプトは`index.html`とassetファイルの欠落時に同期を止める。rootのHTML等には5分、ハッシュ付きassetには1年のimmutable cache-controlを指定する。CloudFrontのdefault behaviorは5分、`assets/*` behaviorは1年であり、S3 origin・OAC・証明書・DNS・403/404 fallbackは変更しない。
 
 ## Sub-Issueの責務と中間状態
 
