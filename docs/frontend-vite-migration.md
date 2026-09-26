@@ -52,13 +52,13 @@ Vite serverだけが読む`HEAT_CHRONICLE_API_PROXY_TARGET`でproxy先を上書�
 - CloudFrontのS3 origin、OAC、証明書、DNS、`/index.html`への403/404 fallbackは維持する。長期cache対象だけを`/_next/static/*`から`/assets/*`へ変更し、1年間のimmutable cacheとする。HTMLとその他の公開ファイルは既存のdefault behaviorに残し、default TTL 5分とデプロイ時invalidationによって長期cacheさせない。
 - 切替前のrollback単位は直前の正常な`release/prod` commitとする。同じworkflowでそのcommitをbuild・同期し、CloudFrontをinvalidateする。S3内の旧Next.js assetは`--delete`で消えるため、S3上の残存物をrollback元にしない。
 
-### release/prodへの適用と復旧（#145で実施）
+### release/prodへの適用と復旧（#170で実施）
 
-このIssueでは本番へのpush、Terraform apply、S3同期を実行しない。#145で人による本番操作の確認を得てから、以下を実施する。
+#143〜#145では本番へのpush、Terraform apply、S3同期を実行していない。#170で人による本番操作の確認を得てから、以下を実施する。
 
 1. 現在正常に配信中の`release/prod` commit、公開URL、GitHub Actionsの`Deploy Frontend`実行結果を記録する。旧workflowのrollback経路を維持するため、まず#143のマージcommitのGitHub Terraform定義で`VITE_API_URL`の追加だけをplan・applyし、`NEXT_PUBLIC_API_URL`を残す。AWS TerraformはCloudFront cache pathの変更と付随するbucket policyの再評価をplanで確認してからapplyする。いずれも人の本番操作確認を得る。
 2. `release/prod`を更新する前に、`VITE_API_URL`を使う`npm run build`で`frontend/dist/index.html`と`frontend/dist/assets/`を生成し、`bash scripts/deploy-frontend.sh`の同期対象が既存のフロントエンド専用S3 bucketであることを確認する。
-3. 承認済みcommitを`release/prod`へ取り込み、`Deploy Frontend`のbuild、2段階のS3同期、CloudFrontの`/*` invalidation成功を確認する。公開URLの`/`とクエリ付きURL、`/assets/`配下のファイル、実APIへの接続は#145の本番手動確認で確認する。
+3. 承認済みcommitを`release/prod`へ取り込み、`Deploy Frontend`のbuild、2段階のS3同期、CloudFrontの`/*` invalidation成功を確認する。公開URLの`/`とクエリ付きURL、`/assets/`配下のファイル、実APIへの接続は#170の本番手動確認で確認する。
 4. 本番が正常でrollback判断が済んでから、最新mainのGitHub Terraformをplan・applyして旧`NEXT_PUBLIC_API_URL` variableを削除する。先に最新定義をapplyすると旧workflowのrollbackが動かなくなるため順序を入れ替えない。
 5. 失敗時は追加の本番操作について人に確認した上で、記録した正常commitの内容へ`release/prod`上でrevertする新しいcommitを作成してpushする。旧variableの削除後なら、先に#143のGitHub Terraform定義で旧variableを復旧してからrevertする。S3に残るファイルやforce pushを復旧元にしない。
 
@@ -73,10 +73,11 @@ Vite serverだけが読む`HEAT_CHRONICLE_API_PROXY_TARGET`でproxy先を上書�
 | #142  | production Docker/NginxとBrowser Smokeを`dist`へ切替                        | Vite成果物の決定的な主要導線をNginx上で確認できる                 |
 | #143  | Actions、deploy script、CloudFront asset cacheをViteへ切替                  | 既存S3・CloudFrontへ`dist`を配信でき、Next.js依存はまだ撤去しない |
 | #144  | Next.js依存、App Router、旧設定、開発用frontend Docker/Composeを撤去        | Viteだけが正規の開発・build・配信経路になる                       |
-| #145  | clean install、全品質検査、Browser Smoke、release/prod、本番手動確認        | 対象commitと環境に結び付けて親Issue #135の完了条件を確認する      |
+| #145  | Vite移行の事前品質検査とBrowser Smokeを確認                                 | 本番適用・最終確認は#170へ引き継ぐ                                |
+| #170  | 最新mainの再検査、release/prod、本番手動確認、移行文書の整理                | 対象commitと環境に結び付けて親Issue #135の完了条件を確認する      |
 
-順序は#140から#145まで直列とする。各Issueは直前のIssueがmainへマージされた後、その最新`origin/main`から開始する。利用者向け仕様を変えないため、この移行契約だけではMarkdown仕様書、Gherkin、Unit、Component、Browser Smokeの期待値を変更しない。
+実装は#140から#144まで順にmainへマージ済みである。事前検証#145の後に、本番適用と最終確認#170を行う。利用者向け仕様を変えないため、この移行契約だけではMarkdown仕様書、Gherkin、Unit、Component、Browser Smokeの期待値を変更しない。
 
 ## 完了確認
 
-最終状態では`npm ci`後にformat、lint、typecheck、test:coverage、build、Browser Smokeを実行する。#145ではさらにmainとrelease/prodのrequired checks、既存公開URL、本番APIとの疎通、ルート`AGENTS.md`に定義された手動スモークを確認する。本番適用は人の確認を得てから行う。
+最終状態では`npm ci`後にformat、lint、typecheck、test:coverage、build、Browser Smokeを実行する。#170ではさらにmainとrelease/prodのrequired checks、既存公開URL、本番APIとの疎通、ルート`AGENTS.md`に定義された手動スモークを確認する。本番適用は人の確認を得てから行う。
