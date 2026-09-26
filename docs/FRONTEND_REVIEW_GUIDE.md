@@ -1,10 +1,10 @@
 # フロントエンド PR レビューガイド
 
-この文書はNext.jsフロントエンド固有のレビュー観点を定義する。[全体共通のPRレビューガイド](./REVIEW_GUIDE.md)と併用し、実装規約の正本である[`frontend/AGENTS.md`](../frontend/AGENTS.md)への適合を確認する。
+この文書はVite / Reactフロントエンド固有のレビュー観点を定義する。[全体共通のPRレビューガイド](./REVIEW_GUIDE.md)と併用し、実装規約の正本である[`frontend/AGENTS.md`](../frontend/AGENTS.md)への適合を確認する。
 
-## 1. App Routerと責務境界
+## 1. SPA入口と責務境界
 
-- [ ] `src/app/**/page.tsx`がルーティングに集中し、画面実装を`src/features/[feature]/page.tsx`から読み込んでいる。
+- [ ] `index.html`、`src/main.tsx`、`src/App.tsx`がmetadata、React root、Provider、error boundary、画面の接続だけを担当し、画面固有の状態やAPI操作を持たない。
 - [ ] `src/features/[feature]/page.tsx`がcomposition rootとしてHookと主要コンポーネントの接続に集中している。
 - [ ] composition rootにAPI呼び出し、Effectの詳細、純粋な変換、型定義、汎用的な子コンポーネントが同居していない。
 - [ ] 表示、状態・副作用、純粋ロジック、型を、責務に応じて`components/`、`hooks/`、`libs/`、`types/`へ配置している。
@@ -21,10 +21,9 @@
 - [ ] APIから取得した観測地点と気温データを、意味の同じ別のstateへ複製していない。
 - [ ] ローディング、進捗、一時的な選択状態など、永続化しないUI状態だけをReact stateで管理している。
 - [ ] 実行時に決まるIDを動的ルートではなくクエリパラメータで扱っている。
-- [ ] `useSearchParams()`を使用するコンポーネントを`Suspense`でラップし、利用者が状態を理解できるfallbackを指定している。
-- [ ] `'use client'`の数やServer Component化を目的にせず、状態、イベント、ブラウザAPIに必要なclient boundaryを選んでいる。
-- [ ] 実行時のNode.jsサーバー、SSR、Server Actionsを必要とせず、`output: 'export'`とS3・CloudFrontからの配信を維持できる。
-- [ ] ルーティング、URLパラメータ、Client Component境界を変更した場合、production buildで`frontend/out`が生成されることを確認している。
+- [ ] 現在の単一画面に不要なクライアントルーターを追加せず、未知pathの配信fallbackを維持している。
+- [ ] 実行時のNode.jsサーバーやSSRを必要とせず、`frontend/dist`をS3・CloudFrontから配信できる。
+- [ ] URLや画面入口を変更した場合、production buildで`frontend/dist`が生成され、Browser Smokeで直接アクセスを確認している。
 
 ## 3. APIアクセスと非同期処理
 
@@ -36,7 +35,7 @@
 - [ ] 気象庁データの月別取得を2秒間隔で逐次実行し、間隔を短縮したり無制御に並列化したりしていない。
 - [ ] 入力不正、ネットワーク障害、一時的なサーバー障害、リソース未検出、中断を可能な範囲で区別している。
 - [ ] 中断を利用者向けエラーとして表示せず、その他のエラーには再試行など次に取れる行動を示している。
-- [ ] 想定外のページ全体のエラーを`error.tsx`で扱える。
+- [ ] 想定外のページ全体のエラーを最上位の`ErrorBoundary`と`AppErrorFallback`で扱える。
 
 ## 4. 型とコード品質
 
@@ -56,7 +55,7 @@
 - [ ] shadcn/uiを選択肢の一つとして扱い、新規UIへの利用を目的化していない。
 - [ ] `src/components/ui/`のshadcn/ui生成コードを変更する場合、生成元との差分を必要最小限にしている。
 - [ ] レスポンシブ表示で内容が欠落せず、主要な操作を完了できる。
-- [ ] `NEXT_PUBLIC_`の値を公開情報として扱い、APIキー、アクセストークン、パスワードなどの機密情報を含めていない。
+- [ ] `VITE_`の値を公開情報として扱い、APIキー、アクセストークン、パスワードなどの機密情報を含めていない。
 - [ ] `dangerouslySetInnerHTML`を使用していない。避けられない場合は、理由、入力元、サニタイズ方法をPRへ記録している。
 - [ ] 外部リンク、外部画像、外部から取得したURLについて、許可するスキームと用途を確認している。
 - [ ] 見出し、ランドマーク、フォーム、ボタン、リンク、エラー表示に意味に合ったHTML要素とアクセシブルな名前がある。
@@ -77,7 +76,7 @@
 - [ ] 変更に関係するローディング、エラー、再試行、中断、古いレスポンスの無視を適切なテスト層で検証している。
 - [ ] API、ブラウザAPI、タイマー、モックをテストごとにリセットし、テスト間の依存を作っていない。
 - [ ] アプリ固有コードのカバレッジ閾値（lines / statements / functions 80%、branches 75%）を維持している。
-- [ ] `src/components/ui/`のshadcn/ui生成コード、型定義、App Routerの薄い配線に価値の低いテストを追加していない。
+- [ ] `src/components/ui/`のshadcn/ui生成コードと型定義に価値の低いテストを追加していない。
 - [ ] 仕様または受け入れ条件を変更した場合、Markdown仕様書、Gherkin、Unit、Integration、Component、Browser Smokeの更新要否を判断している。
 - [ ] Browser Smokeはproduction配信、実ブラウザの履歴・再読み込み・キーボード操作に限定し、API固定応答とsemantic locatorで外部状態や画面構造へ依存していない。
 - [ ] AI生成コードにも同じ基準を適用し、未使用の抽象化、既存規約との不整合、存在しないAPI、誤った型、根拠のない依存追加がない。
@@ -95,5 +94,5 @@ npm run build
 Browser Smokeを変更した場合は、リポジトリルートで`sh tools/run-browser-smoke.sh`も実行する。
 
 - [ ] 自動確認を実行し、警告、失敗、未実施項目をPRへ記録している。
-- [ ] `npm run build`が成功し、静的成果物として`frontend/out`を生成している。
+- [ ] `npm run build`が成功し、静的成果物として`frontend/dist`を生成している。
 - [ ] 自動テストで確認できない主要操作を確認し、確認環境と結果をPRへ記録している。

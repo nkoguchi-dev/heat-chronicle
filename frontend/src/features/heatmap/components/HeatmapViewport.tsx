@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y-x/no-noninteractive-tabindex -- The horizontal scroll region must be focusable for keyboard scrolling. */
 import { Heatmap } from './Heatmap';
 
 import type { TemperatureRecord, TempType } from '../types/api';

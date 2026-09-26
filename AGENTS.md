@@ -11,7 +11,7 @@ heat-chronicle は気象庁が公開している過去の気象観測データ�
 各サブディレクトリに専用のガイドがあります。
 
 - [backend/AGENTS.md](./backend/AGENTS.md) — バックエンド（Python / FastAPI）の開発コマンド・アーキテクチャ・コーディング規約
-- [frontend/AGENTS.md](./frontend/AGENTS.md) — フロントエンド（Next.js / TypeScript）の開発コマンド・命名規則・コーディング規約
+- [frontend/AGENTS.md](./frontend/AGENTS.md) — フロントエンド（Vite / React / TypeScript）の開発コマンド・命名規則・コーディング規約
 
 ## 作業フロー
 
@@ -42,12 +42,15 @@ heat-chronicle は気象庁が公開している過去の気象観測データ�
 - 仕様関連文書を変更したPRでは、[`docs/REVIEW_GUIDE_SPECS.md`](./docs/REVIEW_GUIDE_SPECS.md)に沿って自己レビューする
 - テスト層の選択は[`docs/TESTING_STRATEGY.md`](./docs/TESTING_STRATEGY.md)を正本とする
 
-## フルスタック起動
+## ローカル起動
 
 ```bash
-docker compose up                   # 全サービス起動（DynamoDB Local + Backend + Frontend）
+docker compose up                   # DynamoDB Local + Backend起動
 docker compose up dynamodb-local    # DynamoDB Local のみ起動
+
 ```
+
+別のターミナルで`frontend/`から`npm ci`、`npm run dev`を実行する。
 
 ## データベース（DynamoDB）
 

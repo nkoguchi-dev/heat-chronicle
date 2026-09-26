@@ -33,8 +33,8 @@ variable "lambda_function_name" {
   type        = string
 }
 
-variable "next_public_api_url" {
-  description = "Public API URL for frontend (existing encrypted input; published as VITE_API_URL)"
+variable "vite_api_url" {
+  description = "Public API origin for Vite frontend builds"
   type        = string
 }
 

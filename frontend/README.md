@@ -1,82 +1,49 @@
 # frontend
 
-Next.js による SPA（シングルページアプリケーション）です。バックエンド API から取得した気温データを Canvas 2D でヒートマップとして描画します。
+Vite + Reactによる静的SPAです。バックエンドAPIから取得した気温データをCanvas 2Dでヒートマップとして描画します。
 
-## 技術構成
+## 構成
 
-- **Next.js 16** / **React 19** / **TypeScript**
-- **Tailwind CSS v4** — スタイリング
-- **shadcn/ui (Radix UI)** — UI コンポーネント
-- **Canvas 2D API** — ヒートマップ描画
+- Vite / React 19 / TypeScript / Tailwind CSS v4
+- shadcn/ui (Radix UI) / Canvas 2D API
+- `index.html`、`src/main.tsx`、`src/App.tsx`: metadata、React root、Provider、error boundary、画面の接続
+- `src/features/heatmap/`: ヒートマップの画面、Hook、表示、データ変換
+- `src/features/shared/`: 複数機能で共有するContext、API client、時計
+- `src/components/ui/`: UIプリミティブ
 
-## ディレクトリ構成
+コード規約と品質検査は[AGENTS.md](./AGENTS.md)を参照してください。
 
-```
-frontend/src/
-├── app/                              … Next.js App Router
-│   ├── layout.tsx                    … ルートレイアウト
-│   ├── page.tsx                      … メインページ
-│   ├── providers.tsx                 … コンテキストプロバイダー
-│   └── globals.css                   … グローバルスタイル
-├── features/
-│   ├── heatmap/                      … ヒートマップ機能
-│   │   ├── components/
-│   │   │   ├── Heatmap.tsx           … ヒートマップ本体（Canvas 描画）
-│   │   │   ├── ColorLegend.tsx       … 凡例
-│   │   │   ├── LoadingStatus.tsx     … 読み込み・進捗・エラー表示
-│   │   │   └── StationSelector.tsx   … 地点選択 UI
-│   │   └── lib/
-│   │       ├── color-scale.ts        … 気温→色のマッピング
-│   │       └── data-grid.ts          … データグリッド構築
-│   └── shared/
-│       ├── components/
-│       │   └── theme-toggle.tsx      … ダーク/ライトテーマ切り替え
-│       ├── contexts/
-│       │   └── theme-context.tsx     … テーマ状態管理
-│       └── libs/
-│           └── api-client.ts         … API クライアント（fetch ラッパー）
-├── components/ui/                    … shadcn/ui プリミティブ
-├── hooks/
-│   ├── use-temperature-data.ts       … 気温データ取得カスタムフック
-│   ├── use-station-options.ts        … 都道府県・観測地点一覧取得カスタムフック
-│   └── use-url-params.ts            … URL パラメータ管理
-├── types/
-│   └── api.ts                        … TypeScript 型定義（バックエンド API 対応）
-└── lib/
-    └── utils.ts                      … 汎用ユーティリティ
-```
+## ホストでの開発
 
-コーディング規約・開発コマンド・データフローの詳細は [AGENTS.md](./AGENTS.md) を参照してください。
-
-Next.jsからViteへの段階移行で維持する実行・URL・API・配信の契約は、
-[フロントエンドVite移行契約](../docs/frontend-vite-migration.md)を参照してください。
-
-## ViteでのAPI接続
-
-ホストでFastAPIを`http://127.0.0.1:8000`に起動し、`npm run dev:vite`で画面を起動します。
-ブラウザーは同じoriginの`/api`へ接続し、ViteがFastAPIへ転送します。別のAPI originを使う場合は
-`HEAT_CHRONICLE_API_PROXY_TARGET`を指定します。`npm run preview:vite`でも同じ転送設定を使います。
-
-本番向けVite buildには公開API originを渡します。例:
+ComposeはDynamoDB LocalとFastAPIを起動します。frontendはホストで実行してください。
 
 ```bash
-VITE_API_URL=https://api.example.com npm run build:vite
+docker compose up
 ```
 
-`VITE_API_URL`はbuild時に静的成果物へ埋め込まれ、ブラウザーから`https://api.example.com/api/...`へ
-接続します。設定できるのはHTTP(S) originのみで、認証情報やpathは含めません。
-Next.js経路の`NEXT_PUBLIC_API_URL`は移行完了まで維持します。
+別のターミナルで:
 
-## ビルドと配信
+```bash
+cd frontend
+npm ci
+npm run dev
+```
 
-本番環境では `next build` で静的 HTML/JS/CSS にエクスポートし（`out/` ディレクトリ）、S3 + CloudFront で配信しています。
-移行期間のBrowser Smokeは、`VITE_API_URL=http://localhost:8000`をbuild時に渡したVite成果物（`dist/`）を
-production用Docker/Nginxから配信します。このAPI originへの通信はPlaywrightの固定応答で置き換え、
-実APIやAWSに接続しません。リポジトリルートで次を実行してください。
+画面は`http://localhost:3000`です。ブラウザーは同じoriginの`/api`へ接続し、Viteが`http://127.0.0.1:8000`のFastAPIへ転送します。別のAPI originへ転送するときは`HEAT_CHRONICLE_API_PROXY_TARGET`を指定します。`npm run preview`でも同じproxyを使います。
+
+## 本番buildと配信
+
+`VITE_API_URL`には公開APIのHTTP(S) originを指定します。path、認証情報、query、fragmentは含めません。値はbuild時にブラウザー向けbundleへ埋め込まれるため、機密情報を渡さないでください。
+
+```bash
+VITE_API_URL=https://api.example.com npm run build
+npm run preview
+```
+
+静的成果物は`dist/`です。`release/prod`のデプロイワークフローは既存S3 bucketへ同期し、CloudFrontを無効化します。production用Docker/Nginxは同じ成果物のBrowser Smokeに使用します。
 
 ```bash
 sh tools/run-browser-smoke.sh
 ```
 
-失敗時は`frontend/test-results/`のtrace・screenshotと`frontend/playwright-report/`を確認します。
-GitHub Actionsでは失敗時に同じファイルを`browser-smoke-artifacts`として保存します。
+Browser SmokeはPlaywrightの固定API応答を使い、実API・AWSには接続しません。失敗時は`frontend/test-results/`と`frontend/playwright-report/`を確認してください。

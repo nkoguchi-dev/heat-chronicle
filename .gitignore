@@ -46,13 +46,10 @@ htmlcov/
 # Node
 node_modules/
 .npm
-.next/
-out/
 coverage/
 playwright-report/
 test-results/
 tsconfig.tsbuildinfo
-next-env.d.ts
 
 # Database
 *.db

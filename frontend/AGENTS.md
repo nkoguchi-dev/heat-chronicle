@@ -1,15 +1,14 @@
 # Frontend AGENTS.md
 
-フロントエンド（Next.js / TypeScript）の開発ガイドです。
+フロントエンド（Vite / React / TypeScript）の開発ガイドです。
 
 ## 開発コマンド
 
 `frontend/` ディレクトリで実行してください。
 
 ```bash
-npm install             # 依存関係インストール
+npm ci                  # lockfileどおりに依存関係をインストール
 npm run dev             # 開発サーバー起動（ポート 3000）
-npm run dev:vite        # 移行中のVite開発サーバー起動（ポート 3000）
 npm run format          # Prettierでフォーマット
 npm run format:check    # Prettierの適用確認
 npm run lint            # ESLint
@@ -18,22 +17,21 @@ npm run test            # Vitestを1回実行
 npm run test:e2e        # 起動済みproduction配信に対してPlaywrightを実行
 npm run test:watch      # Vitestをwatchモードで実行
 npm run test:coverage   # カバレッジ閾値を含めてテスト
-npm run build           # 本番ビルド（静的エクスポート）
-npm run build:vite      # 移行中のVite本番ビルド（dist/）
-npm run preview:vite    # Vite成果物のpreview（ポート 4173）
+npm run build           # Vite本番ビルド（dist/）
+npm run preview         # Vite成果物のpreview（ポート 4173）
 ```
 
 ## ディレクトリ構成
 
 フィーチャーベースの構成を採用します。
 
-| ディレクトリ              | 役割                                                                           |
-| ------------------------- | ------------------------------------------------------------------------------ |
-| `src/app/`                | Next.js App Routerのルーティング、レイアウト、プロバイダー、エラーハンドリング |
-| `src/features/[feature]/` | 機能単位の自己完結したモジュール（page, components, hooks, libs, types）       |
-| `src/features/shared/`    | 複数機能で共有するコンポーネント、Hooks、Context、ユーティリティ               |
-| `src/components/ui/`      | shadcn/uiプリミティブ（Radix UI）                                              |
-| `src/lib/`                | shadcn/uiなどフレームワーク・UI基盤が利用する汎用ユーティリティ                |
+| ディレクトリ              | 役割                                                                     |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `src/app/`                | Provider、最上位error boundary、グローバルスタイル、icon assets          |
+| `src/features/[feature]/` | 機能単位の自己完結したモジュール（page, components, hooks, libs, types） |
+| `src/features/shared/`    | 複数機能で共有するコンポーネント、Hooks、Context、ユーティリティ         |
+| `src/components/ui/`      | shadcn/uiプリミティブ（Radix UI）                                        |
+| `src/lib/`                | shadcn/uiなどフレームワーク・UI基盤が利用する汎用ユーティリティ          |
 
 フィーチャー内では、実装対象が存在するディレクトリだけを作成します。空のディレクトリや、将来利用するためだけのレイヤーは作りません。
 
@@ -47,7 +45,7 @@ npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 
 ## アーキテクチャ原則
 
-- `src/app/**/page.tsx` はルーティングの責務に限定し、画面実装を `src/features/[feature]/page.tsx` から読み込む
+- `index.html`、`src/main.tsx`、`src/App.tsx` はHTML metadata、React root、Provider、error boundary、画面の接続に限定する
 - `src/features/[feature]/page.tsx` はcomposition rootとし、Hookの呼び出し、イベントの接続、主要コンポーネントの配置に集中させる。API呼び出し、Effectの詳細、純粋な変換、型定義、汎用的な子コンポーネントを同じファイルへ実装しない
 - フィーチャー固有のコンポーネント、Hooks、ユーティリティ、型定義は、そのフィーチャーの `components/`、`hooks/`、`libs/`、`types/` に配置する
 - 各フィーチャーは自己完結させ、別フィーチャーの内部コードを直接importしない
@@ -56,15 +54,12 @@ npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 - `src/components/ui/` のshadcn/ui生成コードは、生成元との差分を避けるため、アプリ固有のファイル命名・Props宣言・カバレッジ規約の対象外とする。ただしlintと型チェックは必須とする
 - 現在の要件と責務の境界に基づいて分割し、単なる行数削減、1か所からしか呼ばない自明な処理、将来の再利用予測だけを理由に抽象化しない
 - コンポーネントは1つの表示責務または利用者操作を担当する単位へ分割する。1コンポーネント50行以内を目安とし、大きく超える場合は責務分割を検討する。密接に関連するJSXを分けることで理解しにくくなる場合は維持してよいが、理由をPull Requestの自己レビューへ記録する
-- 状態、イベント、ブラウザAPIを利用する静的SPAであるため、`'use client'`の使用自体やClient Componentの数を制限しない。静的exportとS3・CloudFront配信を維持できる境界を優先する
+- 実行時Node.jsサーバーやSSRを必要としない静的SPAとし、S3・CloudFrontから配信する
 
-### Vite移行時の画面入口
+### 画面入口
 
-- Issue #135の移行契約は[`docs/frontend-vite-migration.md`](../docs/frontend-vite-migration.md)を正本とする
-- Heat Chronicleは`/`だけを持つ単一画面であり、地点と気温種別はクエリパラメータで管理するため、Vite移行ではクライアントルーターを導入しない
-- Viteのブラウザー入口は`index.html`、`src/main.tsx`、`src/App.tsx`とし、React root、Provider、最上位error boundary、`HeatmapPage`の接続だけを担当する。画面固有の状態やAPI操作を持たせない
-- #140以降は`dev:vite`、`build:vite`、`preview:vite`でVite経路を確認する。無印の`dev`と`build`は#144で旧経路を撤去するまでNext.jsを実行する
-- #140から#143の移行期間はVite経路とNext.js経路を段階的に併存させ、各Sub-Issueが定める既存経路を壊さない。Next.js固有規則は#144で依存と旧経路を撤去するまで有効とする
+- Heat Chronicleは`/`だけを持つ単一画面であり、地点と気温種別はクエリパラメータで管理するため、現時点ではクライアントルーターを導入しない
+- ブラウザー入口は`index.html`、`src/main.tsx`、`src/App.tsx`とし、React root、Provider、最上位error boundary、`HeatmapPage`の接続だけを担当する。画面固有の状態やAPI操作を持たせない
 - path単位の複数画面が必要になった場合は、ルーターを前提にせず、直接アクセス、再読み込み、履歴、静的配信fallbackを含む要件をIssueで再評価する
 
 ## 命名規則
@@ -89,7 +84,7 @@ npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 - 1行の最大幅: 120文字
 - フォーマット: Prettier
 - パスエイリアス: `@/*` → `./src/*`
-- ESLint: next/core-web-vitals + typescript + Prettier
+- ESLint: JavaScript、TypeScript、React Hooks、JSXアクセシビリティの推奨設定 + Prettier
 - TypeScript: strictモードを維持し、`any`による型回避を行わない
 - Propsは`interface`で定義する
 - コンポーネント、Hook、公開関数と重要なコールバックは、引数と戻り値の型を明示する
@@ -124,7 +119,7 @@ npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 - コンポーネントは実装詳細ではなく、表示、アクセシブルな名前、ユーザー操作を検証する
 - APIやブラウザAPI、タイマーはテストごとにリセットし、テスト間の依存を作らない
 - アプリ固有コードのカバレッジ閾値はlines / statements / functions 80%、branches 75%を維持する
-- `src/components/ui/` のshadcn/ui生成コード、型定義、App Routerの薄い配線はカバレッジ対象外とする
+- `src/components/ui/` のshadcn/ui生成コードと型定義はカバレッジ対象外とする
 - 仕様または受け入れ条件を変更した場合は、Markdown仕様書、Gherkin、Unit、Integration、Component、Browser Smokeの更新要否を同じPull Requestで判断する
 - Gherkin全件をBrowser Smokeへ重複実装しない。テスト層の選択は `docs/TESTING_STRATEGY.md` を正本とする
 - Browser Smokeは、production静的配信、直接アクセス、再読み込み、履歴、キーボード操作、主要導線を確認し、境界値や詳細な異常系はUnit、Integration、Componentテストを優先する
@@ -157,20 +152,19 @@ npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 - API通信中はローディング状態を表示する
 - 処理中の重複操作が問題になるコントロールは無効化する
 - エラーメッセージには、再試行などユーザーが次に取れる行動を含める
-- ページ全体の致命的なエラーはNext.jsの `error.tsx` で扱う
+- ページ全体の致命的なエラーは最上位の`ErrorBoundary`と`AppErrorFallback`で扱う
 
-## 静的エクスポート
+## 静的配信
 
-- `next.config.ts`の`output: 'export'`を維持し、production buildで`frontend/out`を生成する
+- `npm run build`で`frontend/dist`を生成する
 - S3とCloudFrontから静的成果物を配信し、実行時のNode.jsサーバー、SSR、Server Actionsを必要とする機能を導入しない
 - 実行時に決まるIDは動的ルートではなくクエリパラメータで受け渡す
-- `useSearchParams()` を使用するコンポーネントは `Suspense` でラップし、ユーザーが状態を理解できるfallbackを指定する
-- ルーティング、URLパラメータ、Client Component境界を変更した場合は `npm run build` で静的エクスポートを確認する
+- URL状態や画面入口を変更した場合は`npm run build`とBrowser Smokeで静的成果物を確認する
 
 ## セキュリティ
 
 - APIキー、アクセストークン、パスワードなどの機密情報をリポジトリやクライアントコードへ含めない
-- `NEXT_PUBLIC_`が付く環境変数はブラウザへ公開される前提で扱い、機密情報を設定しない
+- `VITE_`が付く環境変数はブラウザへ公開される前提で扱い、機密情報を設定しない
 - `dangerouslySetInnerHTML`は使用しない。避けられない場合は、理由、入力元、サニタイズ方法をPull Requestへ記録する
 - 外部リンクを新しいタブで開く場合は`noopener noreferrer`相当の対策を行う
 - 外部から取得したURLをリンクや画像に使う場合は、許可するスキームと用途を確認する
@@ -199,20 +193,19 @@ npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 
 1. `src/features/[feature]/` を作成し、Hookと主要コンポーネントを接続するcomposition rootを `page.tsx` に置く
 2. 実装対象がある場合だけ `components/`、`hooks/`、`libs/`、`types/` を作成し、責務に応じてコードを分ける
-3. `src/app/` にルートを追加し、フィーチャーのページコンポーネントを読み込む
+3. 新しい画面pathが必要なら、ルーター、直接アクセス、履歴、配信fallbackの要件をIssueで決める
 4. 共有が必要になったコードだけを `src/features/shared/` に移す
 5. 品質チェックをすべて実行する
 
 ## 環境変数
 
-| 変数名                            | 説明                                                                                                                   |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `VITE_API_URL`                    | Vite production buildへ埋め込む公開API origin。`build:vite`では必須。dev/previewでは未設定なら同一originの`/api`を使用 |
-| `HEAT_CHRONICLE_API_PROXY_TARGET` | Vite dev/previewの`/api`転送先。未設定なら`http://127.0.0.1:8000`。ブラウザーへ公開しない                              |
-| `NEXT_PUBLIC_API_URL`             | #144まで併存するNext.js経路の公開API origin。従来どおりローカルでは`http://localhost:8000`                             |
+| 変数名                            | 説明                                                                                                         |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `VITE_API_URL`                    | production buildへ埋め込む公開API origin。`build`では必須。dev/previewでは未設定なら同一originの`/api`を使用 |
+| `HEAT_CHRONICLE_API_PROXY_TARGET` | Vite dev/previewの`/api`転送先。未設定なら`http://127.0.0.1:8000`。ブラウザーへ公開しない                    |
 
 - Viteは`VITE_API_URL`をbuild時に固定し、`/api` pathを連結する。本番では実APIのHTTP(S) originを渡す。dev/previewでは`/api`をpathを書き換えずFastAPIへproxyする
-- API originとproxy先は資格情報、path、query、fragmentを含めない。`VITE_`、`NEXT_PUBLIC_`が付く値はブラウザーへ公開されるため、機密情報を含めない
+- API originとproxy先は資格情報、path、query、fragmentを含めない。`VITE_`が付く値はブラウザーへ公開されるため、機密情報を含めない
 
 ## AI生成コード
 

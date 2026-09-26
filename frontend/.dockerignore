@@ -1,6 +1,4 @@
 node_modules/
-.next/
-out/
 dist/
 coverage/
 playwright-report/
@@ -10,5 +8,4 @@ test-results/
 *.md
 .git
 .gitignore
-Dockerfile
 Dockerfile.prod

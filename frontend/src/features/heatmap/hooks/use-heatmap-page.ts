@@ -1,5 +1,3 @@
-'use client';
-
 import { useCallback, useEffect } from 'react';
 
 import { useClock } from '@/features/shared/contexts/clock-context';

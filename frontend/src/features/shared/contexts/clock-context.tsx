@@ -1,5 +1,3 @@
-'use client';
-
 import { createContext, useContext, type ReactNode } from 'react';
 
 import type { Clock } from '@/features/shared/domain/clock';
