@@ -129,6 +129,7 @@ npm run preview:vite    # Vite成果物のpreview（ポート 4173）
 - Gherkin全件をBrowser Smokeへ重複実装しない。テスト層の選択は `docs/TESTING_STRATEGY.md` を正本とする
 - Browser Smokeは、production静的配信、直接アクセス、再読み込み、履歴、キーボード操作、主要導線を確認し、境界値や詳細な異常系はUnit、Integration、Componentテストを優先する
 - Browser SmokeのAPIは固定応答とし、未定義のリクエスト、実AWS、実API、気象庁、本番データに依存させない
+- Browser Smokeは`Dockerfile.prod`でViteの`dist/`をNginx配信し、固定の`VITE_API_URL`へ向かう通信をPlaywrightで差し替える。失敗時のtrace・screenshot・HTML reportは`test-results/`と`playwright-report/`を確認する
 
 ## 状態管理
 
