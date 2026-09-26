@@ -30,6 +30,11 @@ output "next_public_api_url" {
   value       = github_actions_variable.next_public_api_url.value
 }
 
+output "vite_api_url" {
+  description = "VITE_API_URL variable value"
+  value       = github_actions_variable.vite_api_url.value
+}
+
 output "s3_bucket_name" {
   description = "S3_BUCKET_NAME variable value"
   value       = github_actions_variable.s3_bucket_name.value

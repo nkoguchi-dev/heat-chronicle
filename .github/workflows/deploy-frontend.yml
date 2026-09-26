@@ -32,8 +32,8 @@ jobs:
       - name: Build
         working-directory: frontend
         env:
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-        run: npm run build
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: npm run build:vite
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
