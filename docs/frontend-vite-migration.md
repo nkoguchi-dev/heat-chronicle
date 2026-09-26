@@ -52,6 +52,17 @@ Vite serverだけが読む`HEAT_CHRONICLE_API_PROXY_TARGET`でproxy先を上書�
 - CloudFrontのS3 origin、OAC、証明書、DNS、`/index.html`への403/404 fallbackは維持する。長期cache対象だけを`/_next/static/*`から`/assets/*`へ変更し、1年間のimmutable cacheとする。HTMLとその他の公開ファイルは既存のdefault behaviorに残し、default TTL 5分とデプロイ時invalidationによって長期cacheさせない。
 - 切替前のrollback単位は直前の正常な`release/prod` commitとする。同じworkflowでそのcommitをbuild・同期し、CloudFrontをinvalidateする。S3内の旧Next.js assetは`--delete`で消えるため、S3上の残存物をrollback元にしない。
 
+### release/prodへの適用と復旧（#145で実施）
+
+このIssueでは本番へのpush、Terraform apply、S3同期を実行しない。#145で人による本番操作の確認を得てから、以下を実施する。
+
+1. 現在正常に配信中の`release/prod` commit、公開URL、GitHub Actionsの`Deploy Frontend`実行結果を記録する。Terraform管理のActions variable `VITE_API_URL`を、既存の`NEXT_PUBLIC_API_URL`と同じAPI originで追加するplanを確認し、承認後にapplyする。切替前のworkflowを壊さないよう旧variableは維持する。
+2. `release/prod`を更新する前に、`VITE_API_URL`を使う`npm run build:vite`で`frontend/dist/index.html`と`frontend/dist/assets/`を生成し、`bash scripts/deploy-frontend.sh`の同期対象が既存のフロントエンド専用S3 bucketであることを確認する。
+3. 承認済みcommitを`release/prod`へ取り込み、`Deploy Frontend`のbuild、2段階のS3同期、CloudFrontの`/*` invalidation成功を確認する。公開URLの`/`とクエリ付きURL、`/assets/`配下のファイル、実APIへの接続は#145の本番手動確認で確認する。
+4. 失敗時は追加の本番操作について人に確認した上で、記録した正常commitの内容へ`release/prod`上でrevertする新しいcommitを作成してpushする。これによりそのcommitに含まれるworkflowと成果物を再build・同期・invalidateする。S3に残るファイルやforce pushを復旧元にしない。
+
+`--delete`は専用bucketのrootと`assets/`の同期範囲に作用する。デプロイスクリプトは`index.html`と`assets/`の欠落時に同期を止める。rootのHTML等には5分、ハッシュ付きassetには1年のimmutable cache-controlを指定する。CloudFrontのdefault behaviorは5分、`assets/*` behaviorは1年であり、S3 origin・OAC・証明書・DNS・403/404 fallbackは変更しない。
+
 ## Sub-Issueの責務と中間状態
 
 | Issue | 責務                                                                        | マージ時に維持する中間状態                                        |

@@ -34,7 +34,7 @@ variable "lambda_function_name" {
 }
 
 variable "next_public_api_url" {
-  description = "Public API URL for frontend"
+  description = "Public API URL for frontend (existing encrypted input; published as VITE_API_URL)"
   type        = string
 }
 

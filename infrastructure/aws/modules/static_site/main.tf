@@ -138,7 +138,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   # Immutable hashed assets — cache for 1 year
   ordered_cache_behavior {
-    path_pattern           = "_next/static/*"
+    path_pattern           = "assets/*"
     target_origin_id       = aws_s3_bucket.frontend.id
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]

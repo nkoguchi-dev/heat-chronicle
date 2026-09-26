@@ -64,7 +64,7 @@ infrastructure/docs/
 - **Actions Variable** — `CLOUDFRONT_DISTRIBUTION_ID`（CloudFront キャッシュ無効化用）
 - **Actions Variable** — `ECR_REPOSITORY_URL`（バックエンド Docker イメージ）
 - **Actions Variable** — `LAMBDA_FUNCTION_NAME`（バックエンド Lambda 関数名）
-- **Actions Variable** — `NEXT_PUBLIC_API_URL`（フロントエンド API エンドポイント）
+- **Actions Variable** — `NEXT_PUBLIC_API_URL`（切替前のNext.js配信用API URL）と`VITE_API_URL`（Vite配信用API URL）。切替中は同じ暗号化済みTerraform入力`next_public_api_url`を再利用する
 - **Actions Variable** — `S3_BUCKET_NAME`（フロントエンドデプロイ先 S3 バケット）
 - **Dependabot alerts** — 脆弱性を含む依存関係の検出
 - **Dependabot security updates** — 脆弱な依存関係を更新する Pull Request の自動作成
