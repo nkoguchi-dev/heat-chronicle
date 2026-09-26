@@ -19,7 +19,7 @@ echo "Deploying to s3://${S3_BUCKET_NAME} ..."
 aws s3 sync "${DEPLOY_DIR}/assets" "s3://${S3_BUCKET_NAME}/assets" \
   --cache-control 'public,max-age=31536000,immutable'
 
-# 専用bucketのrootを同期し、旧Next.jsファイルを削除する。assets/は削除対象外。
+# 専用bucketのrootを同期し、成果物から消えたファイルを削除する。assets/は削除対象外。
 aws s3 sync "${DEPLOY_DIR}" "s3://${S3_BUCKET_NAME}" \
   --delete --exclude 'assets/*' --cache-control 'public,max-age=300'
 
