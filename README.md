@@ -164,6 +164,11 @@ main向けのすべてのPRでfrontend、backendの静的解析・テストとBr
 - フロントエンド: `npm ci` → ESLint → 静的ビルド → S3同期 → CloudFrontキャッシュ無効化
 - バックエンド: 静的解析・ユニットテスト・統合テスト → Docker build → ECR push → Lambda更新
 
+フロントエンドの本番buildはGitHub Actions variable `VITE_API_URL`をAPI originとして埋め込み、
+`frontend/dist`を生成します。[デプロイスクリプト](./scripts/deploy-frontend.sh)はハッシュ付きの
+`assets/`を先にS3へ同期し、次にHTMLなどを同期してからCloudFrontの`/*`を無効化します。
+切り戻し時は直前の正常なcommitを再build・再デプロイします。S3上の残存ファイルを復旧元にしません。
+
 ## データ出典
 
 気象データは、気象庁ホームページで公開されている
