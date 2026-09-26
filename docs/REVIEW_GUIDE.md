@@ -100,6 +100,6 @@
 | 対象 | ガイド |
 |---|---|
 | バックエンド（FastAPI / DynamoDB / Python） | [バックエンド PR レビューガイド](./BACKEND_REVIEW_GUIDE.md) |
-| フロントエンド（Next.js / TypeScript） | [フロントエンド PR レビューガイド](./FRONTEND_REVIEW_GUIDE.md) |
+| フロントエンド（Vite / React / TypeScript） | [フロントエンド PR レビューガイド](./FRONTEND_REVIEW_GUIDE.md) |
 | インフラ（Terraform / AWS / GitHub Actions） | [インフラ PR レビューガイド](./INFRA_REVIEW_GUIDE.md) |
 | 仕様書・Gherkin・技術資料 | [仕様書レビューガイド](./REVIEW_GUIDE_SPECS.md) |

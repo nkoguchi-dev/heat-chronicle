@@ -6,7 +6,7 @@ aws_role_arn               = "arn:aws:iam::123456789012:role/heat-chronicle-prod
 cloudfront_distribution_id = "E1B4J9IKBVNL7X"
 ecr_repository_url         = "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/heat-chronicle-prod-backend"
 lambda_function_name       = "heat-chronicle-prod-backend"
-next_public_api_url        = "https://api.heat-chronicle.koppepan.org"
+vite_api_url               = "https://api.heat-chronicle.koppepan.org"
 s3_bucket_name             = "heat-chronicle-prod-frontend"
 
 # Optional: override AWS region default

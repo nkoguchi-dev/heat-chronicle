@@ -1,31 +1,28 @@
-import { fixupConfigRules } from '@eslint/compat';
+import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript';
+import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-const eslintConfig = defineConfig([
-  ...fixupConfigRules(nextVitals),
-  ...fixupConfigRules(nextTs),
+export default defineConfig([
+  globalIgnores(['dist/**', 'coverage/**', 'playwright-report/**', 'test-results/**']),
   {
-    plugins: {
-      prettier: prettierPlugin,
-    },
-    rules: {
-      'prettier/prettier': 'error',
+    files: ['**/*.{js,mjs,ts,tsx}'],
+    extends: [js.configs.recommended, tseslint.configs.recommended],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
     },
   },
+  {
+    files: ['**/*.{jsx,tsx}'],
+    extends: [reactHooks.configs.flat.recommended, jsxA11y.configs.recommended],
+  },
+  {
+    plugins: { prettier: prettierPlugin },
+    rules: { 'prettier/prettier': 'error' },
+  },
   prettierConfig,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    '.next/**',
-    'out/**',
-    'dist/**',
-    'build/**',
-    'next-env.d.ts',
-  ]),
 ]);
-
-export default eslintConfig;

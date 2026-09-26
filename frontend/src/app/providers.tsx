@@ -1,5 +1,3 @@
-'use client';
-
 import type { ReactNode } from 'react';
 import { ClockProvider } from '@/features/shared/contexts/clock-context';
 import { SystemClock } from '@/features/shared/infrastructure/system-clock';

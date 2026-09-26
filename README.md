@@ -24,7 +24,7 @@
 
 ### AWS上のサーバーレス構成とIaC
 
-- フロントエンドはNext.jsの静的エクスポートをS3 + CloudFrontで配信
+- フロントエンドはViteの静的成果物をS3 + CloudFrontで配信
 - FastAPIをコンテナ化し、Mangum経由でAWS Lambda + API Gateway上に配置
 - AWSとGitHub ActionsのリソースをTerraformで管理し、SOPS + ageでtfvarsを暗号化
 - GitHub ActionsからAWSへはOIDCで認証し、長期アクセスキーを使用しない
@@ -56,7 +56,7 @@
 個人開発として、以下の工程を一貫して担当しています。
 
 - 要件整理、画面・API・データモデルの設計
-- Next.js / Reactによるフロントエンド実装
+- Vite / Reactによるフロントエンド実装
 - FastAPIによるAPIとレイヤードアーキテクチャの実装
 - 気象庁データの取得、解析、キャッシュ鮮度管理
 - DynamoDBのテーブル・アクセスパターン設計
@@ -78,7 +78,7 @@
 
 ```text
 ┌─────────────────────┐      ┌────────────────────────┐
-│ Next.js / Canvas    │─────▶│ API Gateway            │
+│ Vite / React / Canvas│─────▶│ API Gateway            │
 │ S3 + CloudFront     │ HTTPS│ FastAPI on AWS Lambda  │
 └─────────────────────┘      └───────────┬────────────┘
                                          │
@@ -97,7 +97,7 @@
 
 | レイヤー | 技術 |
 |---|---|
-| フロントエンド | Next.js 16 / React 19 / TypeScript / Tailwind CSS v4 / Canvas 2D API |
+| フロントエンド | Vite / React 19 / TypeScript / Tailwind CSS v4 / Canvas 2D API |
 | バックエンド | Python 3.14 / FastAPI / Pydantic / httpx / BeautifulSoup4 / Mangum |
 | データストア | Amazon DynamoDB / DynamoDB Local |
 | インフラ | AWS Lambda / API Gateway / ECR / S3 / CloudFront / Route 53 / Terraform |
@@ -109,7 +109,7 @@
 ```text
 heat-chronicle/
 ├── backend/           # FastAPI、ドメインロジック、DynamoDB、気象庁データ取得・解析
-├── frontend/          # Next.js、Canvasヒートマップ、UI
+├── frontend/          # Vite / React、Canvasヒートマップ、UI
 ├── infrastructure/    # AWS / GitHub Terraform
 ├── database/          # DynamoDB Localのデータ
 ├── docs/              # PRレビューガイド、運用・改善ドキュメント
@@ -121,11 +121,16 @@ heat-chronicle/
 
 ## ローカル開発
 
-前提: Docker / Docker Compose、Python 3.14 + Poetry、Node.js 22 + npm
+前提: Docker / Docker Compose、Python 3.14 + Poetry、Node.js 24 + npm
 
 ```bash
-# DynamoDB Local、バックエンド、フロントエンドをまとめて起動
+# DynamoDB Localとバックエンドを起動
 docker compose up
+
+# 別ターミナルでフロントエンドをホスト上で起動
+cd frontend
+npm ci
+npm run dev
 ```
 
 個別の開発コマンドと設計ルールは、[`backend/AGENTS.md`](./backend/AGENTS.md) と

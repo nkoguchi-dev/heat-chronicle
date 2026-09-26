@@ -10,7 +10,7 @@ COPY . .
 
 ARG VITE_API_URL
 
-RUN npm run build:vite
+RUN npm run build
 
 # ---- Stage 2: Serve ----
 FROM nginx:alpine AS runner

@@ -1,5 +1,3 @@
-'use client';
-
 import { memo } from 'react';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

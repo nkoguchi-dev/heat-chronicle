@@ -1,5 +1,3 @@
-'use client';
-
 import { ColorLegend } from './components/ColorLegend';
 import { HeatmapControls } from './components/HeatmapControls';
 import { HeatmapFooter } from './components/HeatmapFooter';

@@ -2,18 +2,18 @@ import { Component, type ReactNode } from 'react';
 
 import { AppErrorFallback } from '@/app/AppErrorFallback';
 
-interface ViteErrorBoundaryProps {
+interface ErrorBoundaryProps {
   children: ReactNode;
 }
 
-interface ViteErrorBoundaryState {
+interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ViteErrorBoundary extends Component<ViteErrorBoundaryProps, ViteErrorBoundaryState> {
-  state: ViteErrorBoundaryState = { error: null };
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { error: null };
 
-  static getDerivedStateFromError(error: Error): ViteErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { error };
   }
 

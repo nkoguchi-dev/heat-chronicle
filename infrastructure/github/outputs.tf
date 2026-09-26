@@ -25,11 +25,6 @@ output "lambda_function_name" {
   value       = github_actions_variable.lambda_function_name.value
 }
 
-output "next_public_api_url" {
-  description = "NEXT_PUBLIC_API_URL variable value"
-  value       = github_actions_variable.next_public_api_url.value
-}
-
 output "vite_api_url" {
   description = "VITE_API_URL variable value"
   value       = github_actions_variable.vite_api_url.value

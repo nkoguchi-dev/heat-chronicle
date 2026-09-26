@@ -30,17 +30,10 @@ resource "github_actions_variable" "lambda_function_name" {
   value         = var.lambda_function_name
 }
 
-resource "github_actions_variable" "next_public_api_url" {
-  repository    = var.github_repository
-  variable_name = "NEXT_PUBLIC_API_URL"
-  value         = var.next_public_api_url
-}
-
-# Keep the legacy variable while release/prod still runs the Next.js workflow.
 resource "github_actions_variable" "vite_api_url" {
   repository    = var.github_repository
   variable_name = "VITE_API_URL"
-  value         = var.next_public_api_url
+  value         = var.vite_api_url
 }
 
 resource "github_actions_variable" "s3_bucket_name" {

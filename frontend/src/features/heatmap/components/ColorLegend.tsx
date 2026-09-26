@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useRef } from 'react';
 
 import { MAX_TEMPERATURE, MIN_TEMPERATURE, tempToColor } from '../libs/color-scale';

@@ -1,15 +1,15 @@
-import { ViteErrorBoundary } from '@/app/ViteErrorBoundary';
+import { ErrorBoundary } from '@/app/ErrorBoundary';
 import { Providers } from '@/app/providers';
 import { HeatmapPage } from '@/features/heatmap/page';
 
 export function App(): React.JSX.Element {
   return (
-    <ViteErrorBoundary>
+    <ErrorBoundary>
       <Providers>
         <main className="min-h-screen bg-background">
           <HeatmapPage />
         </main>
       </Providers>
-    </ViteErrorBoundary>
+    </ErrorBoundary>
   );
 }

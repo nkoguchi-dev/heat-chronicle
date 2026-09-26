@@ -17,7 +17,6 @@ export default defineConfig(({ command, mode }) => {
     build: {
       outDir: 'dist',
     },
-    // The Next.js entry keeps its own environment variable and empty-value fallback until Issue #144.
     define: {
       __VITE_API_BASE_URL__: JSON.stringify(apiBaseUrl),
     },
