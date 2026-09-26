@@ -24,7 +24,7 @@ Browser Smokeでは、production用の静的成果物を実ブラウザで配信
 4. 過去50年分の追加と既存データの維持
 5. 戻る・進む操作による地点と気温種別の復元
 
-PlaywrightとChromiumを使い、`frontend/Dockerfile.prod`で構築したproduction静的成果物をNginxから配信して確認する。
+PlaywrightとChromiumを使い、`frontend/Dockerfile.prod`で構築したViteのproduction静的成果物（`dist/`）をNginxから配信して確認する。
 API通信はブラウザコンテキストで固定応答へ置き換え、未定義リクエストはテスト失敗とする。
 
 境界値、APIエラー分類、再試行、リクエスト中断、古いレスポンスの無視、月別取得間隔は、Unit、Integration、Componentテストを優先する。

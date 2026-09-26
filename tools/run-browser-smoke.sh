@@ -10,9 +10,16 @@ container_name=heat-chronicle-browser-smoke-$$
 cleanup() {
   docker rm -f "$container_name" >/dev/null 2>&1 || true
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
-docker build -f "$repository_root/frontend/Dockerfile.prod" -t "$image_name" "$repository_root/frontend"
+# Playwright intercepts this fixed API origin; no real API is contacted.
+docker build \
+  --build-arg VITE_API_URL=http://localhost:8000 \
+  -f "$repository_root/frontend/Dockerfile.prod" \
+  -t "$image_name" \
+  "$repository_root/frontend"
 docker run --rm -d --name "$container_name" -p "127.0.0.1:$port:80" "$image_name" >/dev/null
 
 attempt=0

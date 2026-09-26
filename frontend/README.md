@@ -70,3 +70,13 @@ Next.js経路の`NEXT_PUBLIC_API_URL`は移行完了まで維持します。
 ## ビルドと配信
 
 本番環境では `next build` で静的 HTML/JS/CSS にエクスポートし（`out/` ディレクトリ）、S3 + CloudFront で配信しています。
+移行期間のBrowser Smokeは、`VITE_API_URL=http://localhost:8000`をbuild時に渡したVite成果物（`dist/`）を
+production用Docker/Nginxから配信します。このAPI originへの通信はPlaywrightの固定応答で置き換え、
+実APIやAWSに接続しません。リポジトリルートで次を実行してください。
+
+```bash
+sh tools/run-browser-smoke.sh
+```
+
+失敗時は`frontend/test-results/`のtrace・screenshotと`frontend/playwright-report/`を確認します。
+GitHub Actionsでは失敗時に同じファイルを`browser-smoke-artifacts`として保存します。

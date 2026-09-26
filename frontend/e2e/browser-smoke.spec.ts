@@ -13,6 +13,10 @@ test.beforeEach(async ({ context }) => {
 
 test('選択付きURLへ直接アクセスして再読み込みできる', async ({ page }) => {
   await page.goto('/?pref=44&station=4&type=min');
+  await expect(page.locator('script[type="module"][src^="/assets/"]').first()).toHaveAttribute(
+    'src',
+    /^\/assets\/.+\.js$/,
+  );
   await expectHeatmap(page, '大分県', '大分', '最低気温');
 
   await page.reload();
