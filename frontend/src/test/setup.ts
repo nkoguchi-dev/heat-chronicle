@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 
 import { server } from '@/test/server';
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 
 afterAll(() => server.close());
 
