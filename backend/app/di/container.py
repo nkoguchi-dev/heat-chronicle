@@ -8,8 +8,10 @@ from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
 from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.data_source import TemperatureDataSource
+from app.domain.temperature.fetch_guard import FetchGuard
 from app.domain.temperature.repository import TemperatureRepository
 from app.infrastructure.database import get_dynamodb_resource
+from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from app.infrastructure.repositories.station_repository import DynamoDBStationRepository
 from app.infrastructure.repositories.temperature_repository import (
     DynamoDBTemperatureRepository,
@@ -27,8 +29,15 @@ def get_temperature_repository() -> TemperatureRepository:
     return DynamoDBTemperatureRepository(get_dynamodb_resource())
 
 
-def get_temperature_data_source() -> TemperatureDataSource:
-    return JmaTemperatureDataSource()
+def get_fetch_guard() -> FetchGuard:
+    return DynamoDBFetchGuard(get_dynamodb_resource())
+
+
+FetchGuardDep = Annotated[FetchGuard, Depends(get_fetch_guard)]
+
+
+def get_temperature_data_source(guard: FetchGuardDep) -> TemperatureDataSource:
+    return JmaTemperatureDataSource(guard)
 
 
 StationRepoDep = Annotated[StationRepository, Depends(get_station_repository)]
@@ -57,8 +66,9 @@ def get_fetch_month_use_case(
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
     temperature_data_source: TemperatureDataSourceDep,
+    guard: FetchGuardDep,
 ) -> FetchMonthUseCase:
-    return FetchMonthUseCase(station_repo, temp_repo, temperature_data_source)
+    return FetchMonthUseCase(station_repo, temp_repo, temperature_data_source, guard)
 
 
 ListPrefectureUseCaseDep = Annotated[

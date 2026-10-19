@@ -3,10 +3,11 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useTemperatureData } from '@/features/heatmap/hooks/use-temperature-data';
-import { apiClient } from '@/features/shared/libs/api-client';
+import { ApiError, apiClient } from '@/features/shared/libs/api-client';
 import type { TemperatureResponse } from '@/features/heatmap/types/api';
 
-vi.mock('@/features/shared/libs/api-client', () => ({
+vi.mock('@/features/shared/libs/api-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/shared/libs/api-client')>()),
   apiClient: { get: vi.fn() },
 }));
 
@@ -77,5 +78,47 @@ describe('useTemperatureData request pacing', () => {
 
     expect(getMock).toHaveBeenCalledTimes(2);
     expect(result.current.activeOperation).toBeNull();
+  });
+});
+
+describe('temporary capacity failures', () => {
+  it.each([
+    new ApiError(429, 'busy', 'http', 2),
+    new ApiError(503, 'busy', 'http', 2),
+    new ApiError(502, 'Bad gateway', 'http', 2),
+    new TypeError('network failure'),
+  ])('stops monthly requests and waits for manual retry: %s', async (failure) => {
+    const record = { date: '2026-07-01', max_temp: 30, min_temp: 20, avg_temp: 25 };
+    getMock.mockResolvedValueOnce({ ...createResponse({ fetching_required: true }), data: [record] });
+    getMock.mockRejectedValueOnce(failure);
+    const { result } = renderHook(() => useTemperatureData(), { wrapper });
+    act(() => result.current.fetchData(4, 2026));
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(result.current.records).toEqual([record]);
+    expect(result.current.error?.retryDisabled).toBe(true);
+    act(() => result.current.retry());
+    expect(getMock).toHaveBeenCalledTimes(2);
+    await act(async () => vi.advanceTimersByTimeAsync(failure instanceof ApiError ? 2000 : 5000));
+    expect(getMock).toHaveBeenCalledTimes(2);
+    expect(result.current.error?.retryDisabled).toBe(false);
+    getMock.mockResolvedValueOnce(createResponse());
+    act(() => result.current.retry());
+    // Keep existing data while a manual retry starts and after cached response merges.
+    expect(result.current.records).toEqual([record]);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(result.current.records).toEqual([record]);
+    expect(getMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('allows station changes during cooldown and ignores the previous timer', async () => {
+    getMock.mockRejectedValueOnce(new ApiError(503, 'busy'));
+    const { result } = renderHook(() => useTemperatureData(), { wrapper });
+    act(() => result.current.fetchData(4, 2026));
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    getMock.mockResolvedValueOnce(createResponse());
+    act(() => result.current.fetchData(5, 2026));
+    await act(async () => vi.advanceTimersByTimeAsync(5000));
+    expect(result.current.error).toBeNull();
+    expect(getMock).toHaveBeenCalledTimes(2);
   });
 });

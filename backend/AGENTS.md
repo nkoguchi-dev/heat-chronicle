@@ -121,7 +121,7 @@ presentation/api/temperature/
 
 - **リポジトリパターン**: Domain 層の `StationRepository` / `TemperatureRepository` Port を Infrastructure 層の DynamoDB Repository が実装する
 - **依存性注入**: FastAPI の `Depends` を使用し、Presentation 層には UseCase を注入する
-- **負荷を抑えたデータ取得**: フロントエンドが2秒以上の間隔で順次取得し、`JmaClient` は3回リトライ + 指数バックオフ
+- **負荷を抑えたデータ取得**: フロントエンドが2秒以上の間隔で順次取得し、サーバーは共有leaseで上流を直列化する。`JmaClient`は最大3試行、試行間隔2秒以上、1試行8秒。詳細は`docs/API_PROTECTION.md`を参照
 
 ## API エンドポイント
 
@@ -130,7 +130,7 @@ presentation/api/temperature/
 | GET | `/health` | ヘルスチェック |
 | GET | `/api/prefectures` | 都道府県一覧 |
 | GET | `/api/stations` | 観測地点一覧（`?prec_no=` でフィルタ可） |
-| GET | `/api/temperature/{station_id}` | キャッシュ済み気温データ（`?start_year=&end_year=`） |
+| GET | `/api/temperature/{station_id}` | キャッシュ済み気温データ（`?end_year=`、最大50年） |
 | GET | `/api/temperature/{station_id}/fetch-month` | 月別データ取得（`?year=&month=`） |
 
 ## コーディングスタイル

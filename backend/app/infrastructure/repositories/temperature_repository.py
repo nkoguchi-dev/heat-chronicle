@@ -46,6 +46,7 @@ class DynamoDBTemperatureRepository:
         items: list[dict[str, Any]] = []
         kwargs: dict[str, Any] = {
             "KeyConditionExpression": Key("station_id").eq(station_id),
+            "ConsistentRead": True,
         }
         while True:
             response = self.log_table.query(**kwargs)

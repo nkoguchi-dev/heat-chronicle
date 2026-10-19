@@ -3,10 +3,14 @@ from datetime import date, datetime, timezone
 
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
+from app.domain.temperature.input_policy import (
+    earliest_year,
+    observation_now,
+    validate_year,
+)
 from app.domain.temperature.repository import TemperatureRepository
 
 CHUNK_SIZE = 50
-FALLBACK_START_YEAR = 1975
 
 
 @dataclass(frozen=True)
@@ -69,13 +73,16 @@ class GetTemperatureUseCase:
         self.temp_repo = temp_repo
 
     def get_temperature_data(
-        self, station_id: int, end_year: int
+        self, station_id: int, end_year: int | None
     ) -> GetTemperatureDataOutput:
+        now_jst = observation_now()
         station = self.station_repo.get_by_id(station_id)
         if station is None:
             raise ValueError(f"Station {station_id} not found")
 
-        effective_earliest = station.earliest_year or FALLBACK_START_YEAR
+        end_year = now_jst.year if end_year is None else end_year
+        validate_year(station, end_year, now_jst)
+        effective_earliest = earliest_year(station)
         start_year = max(effective_earliest, end_year - CHUNK_SIZE + 1)
 
         has_older_data = start_year > effective_earliest

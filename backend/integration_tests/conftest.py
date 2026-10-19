@@ -131,6 +131,7 @@ def patch_settings(test_settings: Settings) -> Generator[None, None, None]:
     DI ファクトリ実行前にパッチしておく必要がある。
     """
     with (
+        patch("app.infrastructure.repositories.fetch_guard.settings", test_settings),
         patch(
             "app.infrastructure.repositories.station_repository.settings", test_settings
         ),

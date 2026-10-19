@@ -6,10 +6,12 @@ from httpx import ASGITransport, AsyncClient
 
 from app.config import Settings
 from app.di.container import (
+    get_fetch_guard,
     get_station_repository,
     get_temperature_data_source,
     get_temperature_repository,
 )
+from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from app.infrastructure.repositories.station_repository import (
     DynamoDBStationRepository,
 )
@@ -45,6 +47,10 @@ async def client(
     )
     app.dependency_overrides[get_temperature_data_source] = (
         lambda: mock_temperature_data_source
+    )
+
+    app.dependency_overrides[get_fetch_guard] = lambda: DynamoDBFetchGuard(
+        dynamodb_resource
     )
 
     async with AsyncClient(

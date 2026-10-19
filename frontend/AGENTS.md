@@ -104,7 +104,7 @@ npm run preview         # Vite成果物のpreview（ポート 4173）
 - `src/app/providers.tsx` で `SystemClock` を生成して `ClockProvider` に渡し、Hookは `useClock()` でインターフェースを取得する。Domain・Hookから具体的な時計実装を生成しない
 - 純粋な計算関数には基準日時を明示して渡す。取得操作ではHTTP通信前に基準日時を一度取得し、対象年と取得対象月の算出に使う
 - テストでは `ClockProvider` に `FixedClock` またはテスト用の `Clock` 実装を注入する。リクエスト間隔の検証に使うfake timersと、現在日時の制御を分ける
-- 年月の解釈は従来どおり実行環境のローカル時刻とする
+- 取得対象の年月は、公開APIとの境界を揃えるため日本時間で解釈する（#197・#198）
 
 ## 依存関係管理
 

@@ -1,5 +1,5 @@
 from datetime import date
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -40,7 +40,7 @@ async def test_fetch_daily_temperatures() -> None:
             return_value=expected,
         ) as parser,
     ):
-        result = await JmaTemperatureDataSource().fetch_daily_temperatures(
+        result = await JmaTemperatureDataSource(Mock()).fetch_daily_temperatures(
             station,
             2024,
             8,

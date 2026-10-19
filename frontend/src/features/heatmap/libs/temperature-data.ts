@@ -1,3 +1,5 @@
+import { observationCalendar } from './calendar-date';
+
 import type { TemperatureRecord } from '@/features/heatmap/types/api';
 import type { TemperatureLoadOperation } from '@/features/heatmap/types/temperature-data';
 
@@ -14,8 +16,7 @@ export function buildMonthsToFetch(
 ): TemperatureMonth[] {
   const fetchedMonthSet = new Set(fetchedMonths);
   const months: TemperatureMonth[] = [];
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1;
+  const { year: currentYear, month: currentMonth } = observationCalendar(currentDate);
 
   for (let year = endYear; year >= startYear; year--) {
     for (let month = 12; month >= 1; month--) {
