@@ -91,3 +91,7 @@ API Gatewayの制限はbest effortで、厳密な天井ではない。Lambda con
 
 上流枠の解放時にも完了時点から2秒の待ち時間を保存し、SDK応答の遅延が次の所有者との間隔を縮めないようにする。
 条件付き更新と非同期の時間制限の根拠は[DynamoDBの条件式](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html)と[Python 3.14のtimeout](https://docs.python.org/3.14/library/asyncio-task.html#timeouts)を参照する。
+
+## 時刻依存の境界（#198）
+
+Domainの`Clock` PortがUTC現在時刻と単調増加の経過時間を提供し、Infrastructureの`SystemClock`だけが`datetime.now()`と`time.monotonic()`を呼ぶ。UseCase、共有lease、取得ログ保存にはDIで同じ時計を注入する。日本時間の観測年月への変換は純粋な業務ルールとして保持する。固定時計によって年境界・lease失効・壁時計補正と取得予算の独立性を検証する。日時の値型と日付計算はPython標準の`datetime`を継続使用する。

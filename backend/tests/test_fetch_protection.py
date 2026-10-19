@@ -15,8 +15,10 @@ from app.di.container import get_fetch_month_use_case
 from app.domain.station.model import Station
 from app.domain.temperature.fetch_guard import FetchUnavailable
 from app.domain.temperature.input_policy import InvalidTemperatureInput, validate_month
+from app.domain.time.clock import Clock
 from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from app.main import app
+from tests.fixed_clock import FixedClock
 
 STATION = Station(1, "Tokyo", 44, "47662", "s", earliest_year=1872)
 NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
@@ -48,60 +50,53 @@ def dynamodb() -> Generator[Any, None, None]:
 
 
 def test_shared_lease_expiry_and_stale_owner(dynamodb: Any) -> None:
-    a, b = DynamoDBFetchGuard(dynamodb), DynamoDBFetchGuard(dynamodb)
-    with patch(
-        "app.infrastructure.repositories.fetch_guard.time.time", return_value=100
-    ):
-        a.acquire()
-        with pytest.raises(FetchUnavailable):
-            b.acquire()
-    with patch(
-        "app.infrastructure.repositories.fetch_guard.time.time", return_value=131
-    ):
+    clock = FixedClock(datetime.fromtimestamp(100, timezone.utc))
+    a, b = DynamoDBFetchGuard(dynamodb, clock), DynamoDBFetchGuard(dynamodb, clock)
+    a.acquire()
+    with pytest.raises(FetchUnavailable):
         b.acquire()
-        a.release()
-        b.check_owner()
-        with pytest.raises(FetchUnavailable):
-            a.check_owner()
-        b.release()
-        a.acquire()
+    clock.advance(31)
+    b.acquire()
+    a.release()
+    b.check_owner()
+    with pytest.raises(FetchUnavailable):
+        a.check_owner()
+    b.release()
+    a.acquire()
 
 
 async def test_interval_survives_owner_handoff(dynamodb: Any) -> None:
-    a, b = DynamoDBFetchGuard(dynamodb), DynamoDBFetchGuard(dynamodb)
-    clock = [100.0]
+    clock = FixedClock(datetime.fromtimestamp(100, timezone.utc))
+    a, b = DynamoDBFetchGuard(dynamodb, clock), DynamoDBFetchGuard(dynamodb, clock)
 
     async def sleep(seconds: float) -> None:
-        clock[0] += seconds
+        clock.advance(seconds)
 
-    with (
-        patch(
-            "app.infrastructure.repositories.fetch_guard.time.time",
-            side_effect=lambda: clock[0],
-        ),
-        patch(
-            "app.infrastructure.repositories.fetch_guard.asyncio.sleep",
-            side_effect=sleep,
-        ),
+    with patch(
+        "app.infrastructure.repositories.fetch_guard.asyncio.sleep", side_effect=sleep
     ):
         a.acquire()
         await a.before_attempt()
         a.release()
         b.acquire()
         await b.before_attempt()
-        assert clock[0] == 102
+        assert clock.now().timestamp() == 102
         await b.before_attempt()
-        assert clock[0] == 104
+        assert clock.now().timestamp() == 104
 
 
-def make_use_case(guard: Any = None) -> tuple[FetchMonthUseCase, Mock, Mock, AsyncMock]:
+def make_use_case(
+    guard: Any = None, clock: Clock | None = None
+) -> tuple[FetchMonthUseCase, Mock, Mock, AsyncMock]:
     station_repo, repo, source = Mock(), Mock(), AsyncMock()
     station_repo.get_by_id.return_value = STATION
     repo.get_fetched_months.return_value = {}
     repo.get_by_station_and_range.return_value = []
     source.fetch_daily_temperatures.return_value = []
     return (
-        FetchMonthUseCase(station_repo, repo, source, guard or Mock()),
+        FetchMonthUseCase(
+            station_repo, repo, source, guard or Mock(), clock or FixedClock()
+        ),
         station_repo,
         repo,
         source,
@@ -113,12 +108,8 @@ def make_use_case(guard: Any = None) -> tuple[FetchMonthUseCase, Mock, Mock, Asy
 )
 async def test_reject_before_temperature_io(year: int, month: int) -> None:
     use_case, _, repo, source = make_use_case()
-    with patch(
-        "app.application.temperature.fetch_month_use_case.observation_now",
-        return_value=NOW,
-    ):
-        with pytest.raises(InvalidTemperatureInput):
-            await use_case.fetch_month(1, year, month)
+    with pytest.raises(InvalidTemperatureInput):
+        await use_case.fetch_month(1, year, month)
     repo.get_fetched_months.assert_not_called()
     repo.bulk_insert_temperatures.assert_not_called()
     repo.insert_fetch_log.assert_not_called()
@@ -177,7 +168,9 @@ async def test_lost_owner_cannot_write() -> None:
 async def test_other_execution_rejected_for_same_or_different_station(
     dynamodb: Any, station_id: int
 ) -> None:
-    first, second = DynamoDBFetchGuard(dynamodb), DynamoDBFetchGuard(dynamodb)
+    first, second = DynamoDBFetchGuard(dynamodb, FixedClock()), DynamoDBFetchGuard(
+        dynamodb, FixedClock()
+    )
     use_case, _, repo, source = make_use_case(second)
     first.acquire()
     with pytest.raises(FetchUnavailable):
@@ -191,7 +184,9 @@ def test_history_rejects_before_temperature_io(end_year: int) -> None:
     stations, repo = Mock(), Mock()
     stations.get_by_id.return_value = STATION
     with pytest.raises(InvalidTemperatureInput):
-        GetTemperatureUseCase(stations, repo).get_temperature_data(1, end_year)
+        GetTemperatureUseCase(stations, repo, FixedClock()).get_temperature_data(
+            1, end_year
+        )
     repo.get_by_station_and_range.assert_not_called()
     repo.get_fetched_months.assert_not_called()
 
@@ -257,8 +252,10 @@ async def test_budget_timeout_releases_lease_without_success_log() -> None:
 
 
 async def test_two_overlapping_requests_share_one_upstream(dynamodb: Any) -> None:
-    first, _, _, source = make_use_case(DynamoDBFetchGuard(dynamodb))
-    second, _, repo, other_source = make_use_case(DynamoDBFetchGuard(dynamodb))
+    first, _, _, source = make_use_case(DynamoDBFetchGuard(dynamodb, FixedClock()))
+    second, _, repo, other_source = make_use_case(
+        DynamoDBFetchGuard(dynamodb, FixedClock())
+    )
     started, finish = asyncio.Event(), asyncio.Event()
 
     async def fetch(*args: object) -> list[Any]:
@@ -277,3 +274,44 @@ async def test_two_overlapping_requests_share_one_upstream(dynamodb: Any) -> Non
     finally:
         finish.set()
         await task
+
+
+@pytest.mark.parametrize("elapsed,expect_failure", [(0, False), (26, True)])
+async def test_budget_uses_elapsed_clock_not_wall_time(
+    elapsed: float, expect_failure: bool
+) -> None:
+    clock = FixedClock()
+    use_case, _, repo, source = make_use_case(clock=clock)
+
+    async def fetch(*args: object) -> list[Any]:
+        # Simulate an NTP/wall-clock adjustment independently of elapsed time.
+        clock.wall_time = datetime(2030, 1, 1, tzinfo=timezone.utc)
+        clock.elapsed_seconds += elapsed
+        return []
+
+    source.fetch_daily_temperatures.side_effect = fetch
+    if expect_failure:
+        with pytest.raises(FetchUnavailable):
+            await use_case.fetch_month(1, 2024, 1)
+        repo.insert_fetch_log.assert_not_called()
+    else:
+        await use_case.fetch_month(1, 2024, 1)
+        repo.insert_fetch_log.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "instant,year",
+    [
+        ("2025-12-31T14:59:59+00:00", 2025),
+        ("2025-12-31T15:00:00+00:00", 2026),
+    ],
+)
+def test_history_uses_japan_year_from_injected_clock(instant: str, year: int) -> None:
+    clock = FixedClock(datetime.fromisoformat(instant))
+    stations, repo = Mock(), Mock()
+    stations.get_by_id.return_value = STATION
+    repo.get_fetched_months.return_value = {}
+    repo.get_by_station_and_range.return_value = []
+    result = GetTemperatureUseCase(stations, repo, clock).get_temperature_data(1, None)
+    assert result.metadata.end_year == year
+    assert result.metadata.start_year == year - 49

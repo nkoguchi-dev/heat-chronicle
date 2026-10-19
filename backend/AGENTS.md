@@ -154,3 +154,10 @@ presentation/api/temperature/
 | `DYNAMODB_REGION` | AWS リージョン（デフォルト: `ap-northeast-1`） |
 | `DYNAMODB_TABLE_PREFIX` | テーブル名のプレフィックス |
 | `CORS_ALLOW_ORIGINS` | CORS 許可オリジン（デフォルト: `http://localhost:3000`） |
+
+## 時刻の取得
+
+- 現在時刻と経過時間はDomainの`time/clock.py`の`Clock` Portを通して取得し、DIから注入する。
+- `datetime.now()`・`date.today()`・`time.time()`・`time.monotonic()`の実時計参照はInfrastructureの`SystemClock`へ集約する。日時値の構築・変換・比較は各層で行ってよい。
+- `Clock.now()`はtimezone-awareなUTC日時を返す。観測年月はDomainの純粋な変換で日本時間へ揃える。共有lease期限には壁時計、実行中の取得予算には単調増加時計を使い、混同しない。
+- テストでは固定時計を注入し、時刻取得関数のpatchで時計依存を隠さない。

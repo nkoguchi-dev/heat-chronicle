@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import time
 from decimal import Decimal
 from typing import TYPE_CHECKING
 from uuid import uuid4
@@ -11,6 +10,7 @@ from pydantic import ValidationError
 
 from app.config import settings
 from app.domain.temperature.fetch_guard import FetchUnavailable
+from app.domain.time.clock import Clock
 from app.infrastructure.dto.fetch_lease import FetchLeaseItemDTO
 
 if TYPE_CHECKING:
@@ -23,12 +23,13 @@ LEASE_KEY = {"station_id": 0, "year_month": "__upstream_lease__"}
 
 
 class DynamoDBFetchGuard:
-    def __init__(self, dynamodb: DynamoDBServiceResource) -> None:
+    def __init__(self, dynamodb: DynamoDBServiceResource, clock: Clock) -> None:
+        self.clock = clock
         self.table = dynamodb.Table(settings.table_name("fetch-log"))
         self.token = str(uuid4())
 
     def acquire(self) -> None:
-        now = Decimal(str(time.time()))
+        now = Decimal(str(self.clock.now().timestamp()))
         try:
             self.table.update_item(
                 Key=LEASE_KEY,
@@ -50,14 +51,14 @@ class DynamoDBFetchGuard:
     def check_owner(self) -> None:
         item = self._read_lease()
         if item.owner_token != self.token or item.expires_at <= Decimal(
-            str(time.time())
+            str(self.clock.now().timestamp())
         ):
             raise FetchUnavailable()
 
     async def before_attempt(self) -> None:
         while True:
             self.check_owner()
-            now = Decimal(str(time.time()))
+            now = Decimal(str(self.clock.now().timestamp()))
             try:
                 self.table.update_item(
                     Key=LEASE_KEY,
@@ -94,7 +95,8 @@ class DynamoDBFetchGuard:
                 ExpressionAttributeValues={
                     ":token": self.token,
                     ":zero": 0,
-                    ":next": Decimal(str(time.time())) + ATTEMPT_INTERVAL_SECONDS,
+                    ":next": Decimal(str(self.clock.now().timestamp()))
+                    + ATTEMPT_INTERVAL_SECONDS,
                 },
             )
         except ClientError as exc:

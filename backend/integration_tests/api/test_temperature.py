@@ -12,6 +12,7 @@ from integration_tests.fixtures.test_data import (
     insert_fetch_log_entry,
     insert_test_temperatures,
 )
+from tests.fixed_clock import FixedClock
 
 # ─────────────────────────────────────────────────────────────
 # GET /api/temperature/{station_id}
@@ -210,11 +211,11 @@ async def test_fetch_month_invalid_month_zero(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_fetch_month_future_month(client: AsyncClient) -> None:
+async def test_fetch_month_future_month(client: AsyncClient, clock: FixedClock) -> None:
     """未来の年月を指定すると 422 になる。"""
     response = await client.get(
         "/api/temperature/47662/fetch-month",
-        params={"year": datetime.now(timezone.utc).year + 1, "month": 1},
+        params={"year": clock.now().year + 1, "month": 1},
     )
 
     assert response.status_code == 422
@@ -223,6 +224,7 @@ async def test_fetch_month_future_month(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_fetch_month_db_side_effects(
     client: AsyncClient,
+    clock: FixedClock,
     dynamodb_resource: Any,
     test_settings: Settings,
     mock_temperature_data_source: MockTemperatureDataSource,
@@ -252,7 +254,7 @@ async def test_fetch_month_db_side_effects(
     log_table = dynamodb_resource.Table(test_settings.table_name("fetch-log"))
     log_result = log_table.get_item(Key={"station_id": 47662, "year_month": "2024-08"})
     assert "Item" in log_result
-    assert "fetched_at" in log_result["Item"]
+    assert log_result["Item"]["fetched_at"] == clock.now().isoformat()
 
 
 @pytest.mark.asyncio

@@ -1,14 +1,15 @@
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime
 
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.input_policy import (
     earliest_year,
-    observation_now,
+    observation_time,
     validate_year,
 )
 from app.domain.temperature.repository import TemperatureRepository
+from app.domain.time.clock import Clock
 
 CHUNK_SIZE = 50
 
@@ -68,14 +69,17 @@ class GetTemperatureUseCase:
         self,
         station_repo: StationRepository,
         temp_repo: TemperatureRepository,
+        clock: Clock,
     ):
         self.station_repo = station_repo
         self.temp_repo = temp_repo
+        self.clock = clock
 
     def get_temperature_data(
         self, station_id: int, end_year: int | None
     ) -> GetTemperatureDataOutput:
-        now_jst = observation_now()
+        now = self.clock.now()
+        now_jst = observation_time(now)
         station = self.station_repo.get_by_id(station_id)
         if station is None:
             raise ValueError(f"Station {station_id} not found")
@@ -95,7 +99,6 @@ class GetTemperatureUseCase:
         fetched_months = self.temp_repo.get_fetched_months(station_id)
 
         policy = FetchFreshnessPolicy()
-        now = datetime.now(timezone.utc)
         required_months = _find_missing_months(
             policy, start_year, end_year, fetched_months, now
         )

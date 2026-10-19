@@ -10,6 +10,7 @@ from app.domain.station.repository import StationRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.fetch_guard import FetchGuard
 from app.domain.temperature.repository import TemperatureRepository
+from app.domain.time.clock import Clock
 from app.infrastructure.database import get_dynamodb_resource
 from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from app.infrastructure.repositories.station_repository import DynamoDBStationRepository
@@ -19,18 +20,26 @@ from app.infrastructure.repositories.temperature_repository import (
 from app.infrastructure.scraper.jma_temperature_data_source import (
     JmaTemperatureDataSource,
 )
+from app.infrastructure.time.system_clock import SystemClock
+
+
+def get_clock() -> Clock:
+    return SystemClock()
+
+
+ClockDep = Annotated[Clock, Depends(get_clock)]
 
 
 def get_station_repository() -> StationRepository:
     return DynamoDBStationRepository(get_dynamodb_resource())
 
 
-def get_temperature_repository() -> TemperatureRepository:
-    return DynamoDBTemperatureRepository(get_dynamodb_resource())
+def get_temperature_repository(clock: ClockDep) -> TemperatureRepository:
+    return DynamoDBTemperatureRepository(get_dynamodb_resource(), clock)
 
 
-def get_fetch_guard() -> FetchGuard:
-    return DynamoDBFetchGuard(get_dynamodb_resource())
+def get_fetch_guard(clock: ClockDep) -> FetchGuard:
+    return DynamoDBFetchGuard(get_dynamodb_resource(), clock)
 
 
 FetchGuardDep = Annotated[FetchGuard, Depends(get_fetch_guard)]
@@ -54,8 +63,9 @@ def get_prefecture_use_case() -> ListPrefectureUseCase:
 def get_temperature_use_case(
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
+    clock: ClockDep,
 ) -> GetTemperatureUseCase:
-    return GetTemperatureUseCase(station_repo, temp_repo)
+    return GetTemperatureUseCase(station_repo, temp_repo, clock)
 
 
 def get_station_use_case(station_repo: StationRepoDep) -> ListStationUseCase:
@@ -67,8 +77,11 @@ def get_fetch_month_use_case(
     temp_repo: TempRepoDep,
     temperature_data_source: TemperatureDataSourceDep,
     guard: FetchGuardDep,
+    clock: ClockDep,
 ) -> FetchMonthUseCase:
-    return FetchMonthUseCase(station_repo, temp_repo, temperature_data_source, guard)
+    return FetchMonthUseCase(
+        station_repo, temp_repo, temperature_data_source, guard, clock
+    )
 
 
 ListPrefectureUseCaseDep = Annotated[

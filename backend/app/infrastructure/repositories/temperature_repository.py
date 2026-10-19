@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
@@ -8,6 +8,7 @@ from boto3.dynamodb.conditions import Key
 
 from app.config import settings
 from app.domain.temperature.model import DailyTemperature
+from app.domain.time.clock import Clock
 from app.infrastructure.dto.dynamodb import (
     DailyTemperatureItemDTO,
     DailyTemperatureWriteDTO,
@@ -20,7 +21,8 @@ if TYPE_CHECKING:
 
 
 class DynamoDBTemperatureRepository:
-    def __init__(self, dynamodb: DynamoDBServiceResource):
+    def __init__(self, dynamodb: DynamoDBServiceResource, clock: Clock):
+        self.clock = clock
         self.temp_table = dynamodb.Table(settings.table_name("daily-temperature"))
         self.log_table = dynamodb.Table(settings.table_name("fetch-log"))
 
@@ -94,7 +96,7 @@ class DynamoDBTemperatureRepository:
         dto = FetchLogWriteDTO(
             station_id=station_id,
             year_month=f"{year:04d}-{month:02d}",
-            fetched_at=datetime.now(timezone.utc).isoformat(),
+            fetched_at=self.clock.now().isoformat(),
         )
         self.log_table.put_item(Item=dto.model_dump())
 

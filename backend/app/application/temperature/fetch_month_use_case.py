@@ -1,15 +1,15 @@
 import asyncio
 import calendar
-import time
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date
 
 from app.domain.station.repository import StationRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.fetch_guard import FetchGuard, FetchUnavailable
-from app.domain.temperature.input_policy import observation_now, validate_month
+from app.domain.temperature.input_policy import observation_time, validate_month
 from app.domain.temperature.repository import TemperatureRepository
+from app.domain.time.clock import Clock
 
 FETCH_BUDGET_SECONDS = 25
 
@@ -29,11 +29,13 @@ class FetchMonthUseCase:
         temp_repo: TemperatureRepository,
         temperature_data_source: TemperatureDataSource,
         fetch_guard: FetchGuard,
+        clock: Clock,
     ):
         self.station_repo = station_repo
         self.temp_repo = temp_repo
         self.temperature_data_source = temperature_data_source
         self.fetch_guard = fetch_guard
+        self.clock = clock
 
     async def fetch_month(
         self,
@@ -42,7 +44,7 @@ class FetchMonthUseCase:
         month: int,
     ) -> list[FetchMonthTemperatureOutput]:
         """1ヶ月分のデータを取得して返す。キャッシュ済みならDBから返す。"""
-        now = observation_now()
+        now = observation_time(self.clock.now())
         station = self.station_repo.get_by_id(station_id)
         if station is None:
             raise ValueError(f"Station {station_id} not found")
@@ -54,11 +56,11 @@ class FetchMonthUseCase:
         fetched_at = fetched_months.get((year, month))
 
         policy = FetchFreshnessPolicy()
-        status = policy.evaluate(year, month, fetched_at, datetime.now(timezone.utc))
+        status = policy.evaluate(year, month, fetched_at, self.clock.now())
 
         if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
             self.fetch_guard.acquire()
-            deadline = time.monotonic() + FETCH_BUDGET_SECONDS
+            deadline = self.clock.monotonic() + FETCH_BUDGET_SECONDS
             try:
                 async with asyncio.timeout(FETCH_BUDGET_SECONDS):
                     # Another owner may have populated the cache since the first read.
@@ -67,7 +69,7 @@ class FetchMonthUseCase:
                         year,
                         month,
                         refreshed.get((year, month)),
-                        datetime.now(timezone.utc),
+                        self.clock.now(),
                     )
                     if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
                         records = (
@@ -75,7 +77,7 @@ class FetchMonthUseCase:
                                 station, year, month
                             )
                         )
-                        if time.monotonic() >= deadline:
+                        if self.clock.monotonic() >= deadline:
                             raise FetchUnavailable()
                         self.fetch_guard.check_owner()
                         if records:

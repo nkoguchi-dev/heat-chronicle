@@ -10,8 +10,8 @@ class InvalidTemperatureInput(ValueError):
     pass
 
 
-def observation_now() -> datetime:
-    return datetime.now(ZoneInfo("Asia/Tokyo"))
+def observation_time(now: datetime) -> datetime:
+    return now.astimezone(ZoneInfo("Asia/Tokyo"))
 
 
 def earliest_year(station: Station) -> int:
