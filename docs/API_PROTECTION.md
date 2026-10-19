@@ -95,3 +95,7 @@ API Gatewayの制限はbest effortで、厳密な天井ではない。Lambda con
 ## 時刻依存の境界（#198）
 
 Domainの`Clock` PortがUTC現在時刻と単調増加の経過時間を提供し、Infrastructureの`SystemClock`だけが`datetime.now()`と`time.monotonic()`を呼ぶ。UseCase、共有lease、取得ログ保存にはDIで同じ時計を注入する。日本時間の観測年月への変換は純粋な業務ルールとして保持する。固定時計によって年境界・lease失効・壁時計補正と取得予算の独立性を検証する。日時の値型と日付計算はPython標準の`datetime`を継続使用する。
+
+## 容量設定の適用手順（#199）
+
+Terraformへの設定、実stateとの差分、共有上限、非本番検証と承認後の適用・切り戻しは[容量設定と適用確認](../infrastructure/docs/api-capacity.md)を参照する。コードとmock planの検証は、AWSでの反映・負荷制限・回復の確認を代替しない。

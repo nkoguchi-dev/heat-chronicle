@@ -246,6 +246,8 @@ resource "aws_lambda_function" "backend" {
   memory_size   = 512
   timeout       = 900
 
+  reserved_concurrent_executions = var.api_capacity.lambda_reserved_concurrency
+
   environment {
     variables = {
       DYNAMODB_REGION       = var.aws_region
@@ -277,10 +279,11 @@ resource "aws_apigatewayv2_api" "backend" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins = ["https://${var.domain_name}"]
-    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allow_headers = ["Content-Type", "Authorization"]
-    max_age       = 86400
+    allow_origins  = ["https://${var.domain_name}"]
+    allow_methods  = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_headers  = ["Content-Type", "Authorization"]
+    expose_headers = ["Retry-After"]
+    max_age        = 86400
   }
 
   tags = merge(var.tags, {
@@ -302,10 +305,28 @@ resource "aws_apigatewayv2_route" "default" {
   target    = "integrations/${aws_apigatewayv2_integration.backend.id}"
 }
 
+# The explicit route receives a tighter limit than the stage fallback.
+resource "aws_apigatewayv2_route" "fetch_month" {
+  api_id    = aws_apigatewayv2_api.backend.id
+  route_key = "GET /api/temperature/{station_id}/fetch-month"
+  target    = "integrations/${aws_apigatewayv2_integration.backend.id}"
+}
+
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.backend.id
   name        = "$default"
   auto_deploy = true
+
+  default_route_settings {
+    throttling_rate_limit  = var.api_capacity.stage_rate
+    throttling_burst_limit = var.api_capacity.stage_burst
+  }
+
+  route_settings {
+    route_key              = aws_apigatewayv2_route.fetch_month.route_key
+    throttling_rate_limit  = var.api_capacity.fetch_month_rate
+    throttling_burst_limit = var.api_capacity.fetch_month_burst
+  }
 
   tags = merge(var.tags, {
     Name = "${local.prefix}-api-default"

@@ -33,3 +33,29 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "api_capacity" {
+  description = "Public API capacity agreed in docs/API_PROTECTION.md; account headroom must be checked before applying"
+  type = object({
+    stage_rate                  = number
+    stage_burst                 = number
+    fetch_month_rate            = number
+    fetch_month_burst           = number
+    lambda_reserved_concurrency = number
+  })
+  validation {
+    condition = (
+      var.api_capacity.stage_rate > 0 &&
+      var.api_capacity.fetch_month_rate > 0 &&
+      var.api_capacity.fetch_month_rate <= var.api_capacity.stage_rate &&
+      var.api_capacity.stage_burst >= 1 &&
+      floor(var.api_capacity.stage_burst) == var.api_capacity.stage_burst &&
+      var.api_capacity.fetch_month_burst >= 1 &&
+      floor(var.api_capacity.fetch_month_burst) == var.api_capacity.fetch_month_burst &&
+      var.api_capacity.fetch_month_burst <= var.api_capacity.stage_burst &&
+      var.api_capacity.lambda_reserved_concurrency >= 1 &&
+      floor(var.api_capacity.lambda_reserved_concurrency) == var.api_capacity.lambda_reserved_concurrency
+    )
+    error_message = "Rates must be positive; bursts and reserved concurrency must be positive integers. Monthly limits must not exceed stage limits."
+  }
+}

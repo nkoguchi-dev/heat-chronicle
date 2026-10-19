@@ -39,3 +39,21 @@ variable "api_domain_name" {
   type        = string
   default     = "api.heat-chronicle.koppepan.org"
 }
+
+variable "api_capacity" {
+  description = "Public API capacity agreed in docs/API_PROTECTION.md; account headroom must be checked before applying"
+  type = object({
+    stage_rate                  = number
+    stage_burst                 = number
+    fetch_month_rate            = number
+    fetch_month_burst           = number
+    lambda_reserved_concurrency = number
+  })
+  default = {
+    stage_rate                  = 5
+    stage_burst                 = 10
+    fetch_month_rate            = 1
+    fetch_month_burst           = 2
+    lambda_reserved_concurrency = 5
+  }
+}

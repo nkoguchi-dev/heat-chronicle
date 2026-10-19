@@ -38,6 +38,7 @@ module "backend_api" {
   api_domain_name  = var.api_domain_name
   hosted_zone_name = var.hosted_zone_name
   tags             = local.tags
+  api_capacity     = var.api_capacity
 }
 
 # -----------------------------------------------------------------------------

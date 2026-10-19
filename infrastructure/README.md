@@ -158,3 +158,7 @@ required checkの改名・削除やworkflowの不具合により、修正PRもma
 - GitHub Actions のデプロイは OIDC 認証を使用しており、長期的なアクセスキーは不要です
 - `infrastructure/github/` の実行には `GITHUB_TOKEN` 環境変数（repo スコープ）が必要です
 - GitHub Terraform の変数（`aws_role_arn` 等）は AWS Terraform の output から取得した値です。AWS リソースを再作成した場合は `terraform.tfvars.enc` の値も更新してください
+
+## 公開APIの容量制限
+
+[容量設定と適用確認](./docs/api-capacity.md)に、#199の採用値、ローカルmock検証、共有上限と実stateの照合、非本番検証、承認後の本番適用と切り戻しを記載しています。コードのマージと実環境への反映は別に確認します。
