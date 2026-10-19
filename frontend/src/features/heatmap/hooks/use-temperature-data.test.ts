@@ -31,7 +31,7 @@ function createResponse(overrides: Partial<TemperatureResponse['metadata']> = {}
 
 const getMock = vi.mocked(apiClient.get);
 
-const wrapper = createClockWrapper(new FixedClock(new Date(2026, 6, 15, 12)));
+const wrapper = createClockWrapper(new FixedClock(new Date('2026-07-15T12:00:00+09:00')));
 
 beforeEach(() => {
   vi.useFakeTimers();

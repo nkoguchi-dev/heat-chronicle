@@ -33,7 +33,7 @@ function createResponse(overrides: Partial<TemperatureResponse['metadata']> = {}
   };
 }
 
-const wrapper = createClockWrapper(new FixedClock(new Date(2026, 7, 15, 12)));
+const wrapper = createClockWrapper(new FixedClock(new Date('2026-08-15T12:00:00+09:00')));
 
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -104,7 +104,7 @@ describe('useTemperatureData HTTP integration', () => {
     [2026, 9],
     [2030, 1],
   ])('uses the injected year and month (%i-%i) for initial loading', async (year, month) => {
-    const clock = new FixedClock(new Date(year, month - 1, 15, 12));
+    const clock = new FixedClock(new Date(`${year}-${String(month).padStart(2, '0')}-15T12:00:00+09:00`));
     const fetchedMonths = Array.from(
       { length: month - 1 },
       (_, index) => `${year}-${String(index + 1).padStart(2, '0')}`,
@@ -131,12 +131,12 @@ describe('useTemperatureData HTTP integration', () => {
   });
 
   it.each([8, 12])('keeps the operation date across the end of month %i', async (month) => {
-    const clock = { now: vi.fn(() => new Date(2026, month - 1, 31, 23, 59)) };
+    const clock = { now: vi.fn(() => new Date(`2026-${String(month).padStart(2, '0')}-31T23:59:00+09:00`)) };
     const monthlyRequests: string[] = [];
     server.use(
       http.get(`${API_URL}/api/temperature/4`, ({ request }) => {
         expect(new URL(request.url).searchParams.get('end_year')).toBe('2026');
-        clock.now.mockReturnValue(new Date(2026, month, 1, 0, 1));
+        clock.now.mockReturnValue(new Date(Date.UTC(2026, month, 1, 0, 1) - 9 * 60 * 60 * 1000));
         return HttpResponse.json(
           createResponse({
             fetching_required: true,
