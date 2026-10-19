@@ -9,6 +9,7 @@ class ApiError extends Error {
     public status: number,
     message: string,
     public kind: ApiErrorKind = 'http',
+    public retryAfterSeconds: number = 5,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -35,7 +36,14 @@ function getErrorDetail(payload: unknown): string | null {
 async function handleResponse<T>(response: Response, schema?: ZodType<T>): Promise<T | undefined> {
   if (!response.ok) {
     const payload: unknown = await response.json().catch(() => null);
-    throw new ApiError(response.status, (getErrorDetail(payload) ?? response.statusText) || 'An error occurred');
+    const retryAfter = response.headers.get('Retry-After');
+    const seconds = retryAfter !== null && /^\d+$/.test(retryAfter) ? Number(retryAfter) : 0;
+    throw new ApiError(
+      response.status,
+      (getErrorDetail(payload) ?? response.statusText) || 'An error occurred',
+      'http',
+      seconds >= 1 && seconds <= 60 ? seconds : 5,
+    );
   }
 
   if (response.status === 204) return undefined;

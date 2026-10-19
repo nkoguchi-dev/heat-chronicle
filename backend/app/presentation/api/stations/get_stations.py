@@ -1,6 +1,6 @@
 from typing import Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict
 
 from app.di.container import ListStationUseCaseDep
@@ -26,7 +26,10 @@ def get_stations(
     use_case: ListStationUseCaseDep,
     prec_no: int | None = None,
 ) -> list[StationResponse]:
-    stations = use_case.list_stations(prec_no)
+    try:
+        stations = use_case.list_stations(prec_no)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
     return [
         StationResponse(
             id=station.id,

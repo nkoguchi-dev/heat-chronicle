@@ -23,6 +23,8 @@ class ListStationUseCase:
     def list_stations(self, prec_no: int | None = None) -> list[StationOutput]:
         if prec_no is not None:
             stations = self.station_repo.get_by_prec_no(prec_no)
+            if not stations:
+                raise ValueError("Prefecture not found")
         else:
             stations = self.station_repo.get_all()
 

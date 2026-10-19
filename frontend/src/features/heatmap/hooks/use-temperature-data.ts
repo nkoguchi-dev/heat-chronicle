@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { observationCalendar } from '@/features/heatmap/libs/calendar-date';
+
 import { useClock } from '@/features/shared/contexts/clock-context';
 
-import { apiClient } from '@/features/shared/libs/api-client';
+import { ApiError, apiClient } from '@/features/shared/libs/api-client';
 import {
   monthTemperatureResponseSchema,
   temperatureResponseSchema,
@@ -87,6 +89,10 @@ async function fetchMissingMonths(
       setProgress({ year, month, completed: monthIndex + 1, total });
     } catch (requestError) {
       if (isAbortError(requestError)) break;
+      // Stop the sequence on temporary capacity/transport failures.
+      if (!(requestError instanceof ApiError) || requestError.status === 429 || requestError.status >= 500) {
+        throw requestError;
+      }
       failedCount += 1;
       console.error(`Failed to fetch ${year}-${month}:`, requestError);
     }
@@ -118,6 +124,8 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   const abortControllerRef = useRef<AbortController | null>(null);
   const activeOperationRef = useRef<TemperatureLoadOperation | null>(null);
   const failedOperationRef = useRef<TemperatureLoadOperation | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryDisabledRef = useRef(false);
 
   const finishOperation = useCallback((operation: TemperatureLoadOperation, fetchId: number): void => {
     if (fetchIdRef.current !== fetchId) return;
@@ -135,20 +143,23 @@ export function useTemperatureData(): UseTemperatureDataReturn {
       const referenceDate = clock.now();
       const operation: TemperatureLoadOperation = {
         ...request,
-        endYear: request.endYear ?? referenceDate.getFullYear(),
+        endYear: request.endYear ?? observationCalendar(referenceDate).year,
       };
       abortControllerRef.current?.abort();
+      if (retryTimerRef.current !== null) clearTimeout(retryTimerRef.current);
+      retryDisabledRef.current = false;
       const controller = new AbortController();
       abortControllerRef.current = controller;
       const fetchId = ++fetchIdRef.current;
 
+      const isRetry = failedOperationRef.current?.stationId === operation.stationId;
       activeOperationRef.current = operation;
       failedOperationRef.current = null;
       setActiveOperation(operation);
       setProgress(null);
       setError(null);
 
-      if (operation.mode === 'initial') {
+      if (operation.mode === 'initial' && !isRetry) {
         setRecords([]);
         setHasOlderData(false);
         setNextEndYear(null);
@@ -163,7 +174,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
         .then(async (response) => {
           if (fetchIdRef.current !== fetchId) return;
 
-          if (operation.mode === 'initial') {
+          if (operation.mode === 'initial' && !isRetry) {
             setRecords(response.data);
           } else {
             setRecords((current) => mergeTemperatureRecords(current, response.data));
@@ -210,10 +221,24 @@ export function useTemperatureData(): UseTemperatureDataReturn {
           console.error('Failed to fetch temperature data:', requestError);
           if (fetchIdRef.current === fetchId) {
             failedOperationRef.current = operation;
+            const isTemporary =
+              !(requestError instanceof ApiError) || requestError.status === 429 || requestError.status >= 500;
+            retryDisabledRef.current = isTemporary;
             setError({
               operation,
-              message: getTemperatureLoadErrorMessage(operation, false),
+              message: isTemporary
+                ? '混雑または一時的な問題で取得できません。しばらく待って再試行してください。'
+                : getTemperatureLoadErrorMessage(operation, false),
+              retryDisabled: isTemporary,
             });
+            if (isTemporary) {
+              const seconds = requestError instanceof ApiError ? requestError.retryAfterSeconds : 5;
+              retryTimerRef.current = setTimeout(() => {
+                if (fetchIdRef.current !== fetchId) return;
+                retryDisabledRef.current = false;
+                setError((current) => (current ? { ...current, retryDisabled: false } : current));
+              }, seconds * 1000);
+            }
             finishOperation(operation, fetchId);
           }
         });
@@ -240,7 +265,7 @@ export function useTemperatureData(): UseTemperatureDataReturn {
 
   const retry = useCallback((): void => {
     const operation = failedOperationRef.current;
-    if (operation) {
+    if (operation && !retryDisabledRef.current) {
       executeOperation(operation);
     }
   }, [executeOperation]);
@@ -248,6 +273,8 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   const reset = useCallback((): void => {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
+    if (retryTimerRef.current !== null) clearTimeout(retryTimerRef.current);
+    retryDisabledRef.current = false;
     ++fetchIdRef.current;
     activeOperationRef.current = null;
     failedOperationRef.current = null;
@@ -263,6 +290,8 @@ export function useTemperatureData(): UseTemperatureDataReturn {
   useEffect(
     () => () => {
       abortControllerRef.current?.abort();
+      if (retryTimerRef.current !== null) clearTimeout(retryTimerRef.current);
+      retryDisabledRef.current = false;
     },
     [],
   );
