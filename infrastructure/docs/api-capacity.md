@@ -98,40 +98,14 @@ prodを検証先に読み替えない。mock providerの成功を、この段の
 
 コードとmock planテスト4件を追加し、fmt・validate・4件すべての成功をローカルで確認済み。
 PRとmainで同じオフライン検証を実行するCIも追加し、追加CIを含む5チェックの成功を確認した。
-AWS providerのバージョン6.67.0は維持し、Linux検証用の公式署名済みハッシュをlockfileへ追加した。
+AWS providerのバージョンは維持し、Linux検証用の公式署名済みハッシュをlockfileへ追加した。
 
-SSO再認証後、実AWSの読み取りとS3 backend初期化、暗号化tfvarsを用いた実state planに成功した。
-アカウント識別子・ARN・state・生のplanは公開文書へ保存しない。
+SSO再認証後、実AWSの読み取り、S3 backend初期化、暗号化tfvarsを用いた実state planに成功した。
+planの変更対象は想定した容量設定と月別route・CORSに限られ、削除・再作成は含まない。
+実環境の設定・利用実績・配備状況とplan原本は、アクセスを制限した非公開の検証証跡へ分離する。
 
-| 対象 | 読み取り結果 | この変更での計画 |
-| --- | --- | --- |
-| Lambda共有枠 | リージョン上限1,000、未予約1,000、対象予約なし | 対象へ5枠を予約し、未予約995を残す |
-| 同リージョンのLambda | 一覧で1関数。過去14日のaccount concurrency最大12、得られた時間別データ53点 | 5枠による既存利用への影響は未検証 |
-| HTTP API | `$default` routeのみ、stageのrate/burstとroute設定なし | 月別route追加、stage 5/10、月別1/2 |
-| API Gateway共有上限 | rate 10,000 / burst 5,000 | アカウント上限は変更しない |
-| HTTP API CORS | expose headerなし | Retry-Afterを公開 |
-| API integration | AWS_PROXY、payload 2.0、待ち時間30,000ms | integrationの変更なし |
-| Lambda呼び出し設定 | event source mappings 0、event invoke configs 0、resource policyはAPI Gatewayのservice principalのみ | 呼び出し許可は変更しない |
-
-CloudWatchのデータは欠測を含む観測値であり、最大12が通常利用か異常アクセスかは未判別。
-他のLambda関数が同リージョンにないことは確認したが、5枠への制限が既存利用へ影響しないとは判断しない。
-event sourceやresource policyだけではIAM権限による直接Invokeの有無を証明できず、呼び出し元の完全な追跡は未実施。
-
-実state planは以下の4リソースだけを変更する。**追加1・更新3・削除0・再作成0**で、
-IAM、データテーブル、DNS、image変更は含まない。
-
-- `module.backend_api.aws_apigatewayv2_route.fetch_month`: 追加、既存integrationへ転送
-- `module.backend_api.aws_apigatewayv2_stage.default`: defaultと月別routeの容量設定を更新
-- `module.backend_api.aws_apigatewayv2_api.backend`: CORS expose_headersを更新
-- `module.backend_api.aws_lambda_function.backend`: reserved_concurrent_executionsを5へ更新
-
-refreshで検出したLambdaのimage_uri・code_sha256・last_modified差分は、既存のActions配備と整合する。
-image_uriは既存ignore_changesにより、このplanでは変更しない。
-実稼働Lambdaのresolved digestはECRの`5e32a6bc69e7723cd67d15a293a2b0304c5a34d0`タグと一致し、Active / Successfulを確認した。
-release/prodも同commitで、#198を含むmain `2b3db59`は本番未反映。
-
-非本番での2利用者・上限超過・回復と30秒以内の応答、本番へのアプリ先行反映、
-容量設定の承認・適用・適用後確認は未実施。これらが残るためDraft PRと#199のopenを維持する。
+通常利用への影響はまだ確定していない。非本番での正常利用・上限超過・回復・応答時間、
+本番アプリの先行反映、容量設定の承認・適用・適用後確認が残るため、Draft PRと#199のopenを維持する。
 本番へのapply・負荷試験は行っていない。
 
 ## 一次資料
