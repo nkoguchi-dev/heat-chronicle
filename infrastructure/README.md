@@ -76,7 +76,7 @@ Dependabot の更新対象と実行スケジュールは `.github/dependabot.yml
 
 ### 前提: SOPS + age のセットアップ
 
-`terraform.tfvars` は SOPS + age で暗号化し、`terraform.tfvars.enc` として Git 管理しています。初回セットアップの詳細は [docs/sops-encryption-guide.md](./docs/sops-encryption-guide.md) を参照してください。
+`terraform.tfvars` は SOPS + age で暗号化します。AWS本番の入力は非公開領域で管理し、公開ツリーへ追加しません。GitHub rootの暗号化設定は既存の所有元で管理します。初回セットアップの詳細は [docs/sops-encryption-guide.md](./docs/sops-encryption-guide.md) を参照してください。
 
 ```bash
 # sops と age のインストール
@@ -93,15 +93,10 @@ export SOPS_AGE_KEY_FILE="$HOME/.config/sops/age/keys.txt"
 
 ### AWS リソース（infrastructure/aws/environments/prod/）
 
-```bash
-cd infrastructure/aws/environments/prod
-
-terraform init
-
-# プロセス置換で復号しながら実行（ディスクに平文が残らない）
-terraform plan -var-file=<(sops -d terraform.tfvars.enc)
-terraform apply -var-file=<(sops -d terraform.tfvars.enc)
-```
+本番入力は所有者の非公開領域で管理します。公開リポジトリへ暗号文を追加しません。
+[SOPS入力と保存planの手順](./docs/sops-encryption-guide.md)に従い、最新の所有者入力を
+`HEAT_PROD_TFVARS`で指定してください。init時は既存backend bucket/keyを維持し、同じstateを複数rootで管理しません。
+本番applyやrelease/prodへの反映は通常PRの統合と分けて承認します。
 
 ### GitHub リソース（infrastructure/github/）
 
@@ -158,3 +153,27 @@ required checkの改名・削除やworkflowの不具合により、修正PRもma
 - GitHub Actions のデプロイは OIDC 認証を使用しており、長期的なアクセスキーは不要です
 - `infrastructure/github/` の実行には `GITHUB_TOKEN` 環境変数（repo スコープ）が必要です
 - GitHub Terraform の変数（`aws_role_arn` 等）は AWS Terraform の output から取得した値です。AWS リソースを再作成した場合は `terraform.tfvars.enc` の値も更新してください
+
+## 公開APIの容量制限
+
+[容量設定と適用確認](./docs/api-capacity.md)に、容量設定の採用値、ローカルmock検証、共有上限と実stateの照合、非本番検証、承認後の本番適用と切り戻しを記載しています。コードのマージと実環境への反映は別に確認します。
+
+## APIの異常検出と通知
+
+API監視のアクセスログ、5種類のAPI/Lambda alarm、Discord通知用LambdaとSSM Standard SecureString、失敗通知の保管、適用・到達確認・対応手順は[APIのログ・異常検出・通知](./docs/api-observability.md)を参照してください。本番反映と通知到達の確認はコードのマージと区別します。
+
+共有費用通知の既存Budgetの所有範囲、費用通知の遅延、通知後の調査・停止判断への導線は[費用通知の対象範囲と対応](./docs/cost-notifications.md)を参照してください。
+
+## AWSの公開境界・実行権限
+
+[公開境界と実行権限の点検](./docs/aws-security-boundary-review.md)に、境界点検で照合した実設定・所有者・未確認範囲と、独立した修正Issueを記録しています。点検の完了と各指摘の修正・本番適用を区別します。
+
+OIDC境界の配備元・許可ref、OIDC subject形式の確認、検証と本番反映手順は[GitHub Actions配備ロールのOIDC境界](./docs/github-oidc-deployment.md)を参照してください。
+
+ECR取得権限のECR policyの所有・既存policyの取り込み・取得権限の縮小と適用確認は[ECRイメージ取得ポリシー](./docs/ecr-image-retrieval.md)を参照してください。
+
+実行権限のテーブル操作と実行IAMの対応、ログ権限移行、適用と確認は[backend Lambdaの実行権限](./docs/lambda-execution-permissions.md)を参照してください。
+
+静的配信のヘッダー方針・互換性確認・適用と切り戻しは[静的配信のセキュリティヘッダー](./docs/static-security-headers.md)を参照してください。
+
+公開APIのCORS契約とGateway/backendの適用・検証は[CORS整合手順](./docs/api-cors.md)を参照してください。

@@ -1,18 +1,30 @@
-FROM public.ecr.aws/lambda/python:3.14 AS builder
+# Digest updates are reviewed by the existing weekly Docker Dependabot job.
+FROM public.ecr.aws/lambda/python:3.14@sha256:252cbb0879717b1c049b9f909d86d06d88e129f3208386d7ba1189d535f5f981 AS base
+
+# AL2023 base images can lag published security fixes. Refresh packages at build
+# time; record the resulting immutable application digest after every rebuild.
+RUN dnf upgrade --refresh --releasever=latest -y && dnf clean all
+
+FROM base AS builder
 
 WORKDIR /app
 
 # Poetry install and dependency export
 RUN pip install poetry poetry-plugin-export
-COPY pyproject.toml poetry.lock* ./
+COPY pyproject.toml poetry.lock ./
 RUN poetry export -f requirements.txt --without dev -o requirements.txt
 RUN pip install -r requirements.txt -t /opt/python
 
 # ---- Runtime ----
-FROM public.ecr.aws/lambda/python:3.14
+FROM base
 
 # Copy dependencies
 COPY --from=builder /opt/python ${LAMBDA_TASK_ROOT}
+
+# pip is a build tool, not an application runtime dependency. Remove its vendored
+# libraries and ensurepip's bundled installer from the final filesystem.
+RUN python -m pip uninstall -y pip \
+    && python -c 'import ensurepip, pathlib, shutil; shutil.rmtree(pathlib.Path(ensurepip.__file__).parent)'
 
 # Copy application code
 COPY app/ ${LAMBDA_TASK_ROOT}/app/

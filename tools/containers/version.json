@@ -1,0 +1,7 @@
+{
+  "version": "0.76.0",
+  "archives": {
+    "Linux-64bit": "e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7",
+    "macOS-ARM64": "e7ec0d21fe842553f59af99aba2efbcc822369fbaed27019c575408b6d135fce"
+  }
+}

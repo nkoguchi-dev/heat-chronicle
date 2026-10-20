@@ -20,6 +20,7 @@ module "static_site" {
   system_name         = var.system_name
   environment         = var.environment
   default_root_object = "index.html"
+  api_domain_name     = var.api_domain_name
   domain_name         = var.domain_name
   hosted_zone_name    = var.hosted_zone_name
   tags                = local.tags
@@ -31,13 +32,16 @@ module "static_site" {
 module "backend_api" {
   source = "../../modules/backend_api"
 
-  system_name      = var.system_name
-  environment      = var.environment
-  aws_region       = var.aws_region
-  domain_name      = var.domain_name
-  api_domain_name  = var.api_domain_name
-  hosted_zone_name = var.hosted_zone_name
-  tags             = local.tags
+  system_name             = var.system_name
+  environment             = var.environment
+  aws_region              = var.aws_region
+  domain_name             = var.domain_name
+  api_domain_name         = var.api_domain_name
+  hosted_zone_name        = var.hosted_zone_name
+  tags                    = local.tags
+  api_capacity            = var.api_capacity
+  discord_webhook_url     = var.discord_webhook_url
+  discord_webhook_version = var.discord_webhook_version
 }
 
 # -----------------------------------------------------------------------------
@@ -75,9 +79,9 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     }
 
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repository}:*"]
+      values   = ["repo:${var.github_repository}:ref:refs/heads/release/prod"]
     }
   }
 }

@@ -1,0 +1,58 @@
+[
+  {
+    "rule_id": "javascript.lang.security.audit.unsafe-formatstring.unsafe-formatstring",
+    "path": "frontend/src/features/heatmap/hooks/use-temperature-data.ts",
+    "match_sha256": "cad1e9490e161e53583421c431d6e68406a70de5196a4b8810db1d53b8215364",
+    "reason": "書式文字列へ入るyear/monthは年月生成処理の数値で、攻撃者が%等の書式指定子を挿入できない。例外オブジェクトは別引数。本番コードへの初回指摘1件を確認し、誤検出と判断した。",
+    "owner": "repository maintainer",
+    "review_by": "2027-01-20"
+  },
+  {
+    "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit.dangerous-subprocess-use-audit",
+    "path": "tools/security/scan.py",
+    "match_sha256": "61065fb1b7c1a83b8a1907926745487d0a9c2670b46adaf23485dd9f6c39b2ae",
+    "reason": "検査専用CLIで固定実行ファイルへ引数リストを渡す。shell=Falseが既定でシェルを介さず、アプリのHTTP入力から呼び出されない。引数は固定オプション・所有者が与えるローカルパス。コマンド実行文字列の展開経路はない。",
+    "owner": "repository maintainer",
+    "review_by": "2027-01-20"
+  },
+  {
+    "rule_id": "python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected",
+    "path": "tools/secrets/install.py",
+    "match_sha256": "ae22f56f3f200597ad2cb22cb1c8a47d1608921fb7b7150d982d2f0d45f09bcf",
+    "reason": "検査CLIの配布元はコード内で固定したhttps://github.com/gitleaks/gitleaks/releases/download/。版は所有するJSON、platformは有限の対応表から組み立てるため、外部HTTP入力やfile schemeへ置き換わる経路はない。実行前に固定SHA-256を照合する。",
+    "owner": "repository maintainer",
+    "review_by": "2027-01-20"
+  },
+  {
+    "rule_id": "python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected",
+    "path": "tools/containers/install.py",
+    "match_sha256": "ae22f56f3f200597ad2cb22cb1c8a47d1608921fb7b7150d982d2f0d45f09bcf",
+    "reason": "検査CLIの配布元はコード固定のHTTPS GitHub release URL。版は所有JSON、platformは有限表から構成し、HTTP入力やfile schemeを渡す経路はない。実行前に固定SHA-256照合を行う。",
+    "owner": "repository maintainer",
+    "review_by": "2027-01-20"
+  },
+  {
+    "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit.dangerous-subprocess-use-audit",
+    "path": "tools/containers/scan.py",
+    "match_sha256": "12153e7763d08e67d3103f0d9e7c89b9c0289496aed278131cfe9befcfeaa989",
+    "reason": "検査専用CLIが所有者指定のローカルTrivyへ固定オプションと引数リストを渡す監査項目。shell=False既定でシェル展開せず、HTTPから到達しない。CIのbinaryは固定SHA-256で導入し、imageは固定候補名、出力と設定は一時ローカルパス。",
+    "owner": "repository maintainer",
+    "review_by": "2027-01-20"
+  },
+  {
+    "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit.dangerous-subprocess-use-audit",
+    "path": "tools/containers/scan.py",
+    "match_sha256": "80fca7f6c372c36ce723656875ad4f0ecc497ddc063f92f96befc636480a1655",
+    "reason": "検査専用CLIが所有者指定のローカルTrivyへ固定オプションと引数リストを渡す監査項目。shell=False既定でシェル展開せず、HTTPから到達しない。CIのbinaryは固定SHA-256で導入し、imageは固定候補名、出力と設定は一時ローカルパス。",
+    "owner": "repository maintainer",
+    "review_by": "2027-01-20"
+  },
+  {
+    "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit.dangerous-subprocess-use-audit",
+    "path": "tools/containers/scan.py",
+    "match_sha256": "3ba2c9a66b26f8afd819dcc81fd15591e3dd9227a5a4791b8b6c708189fd5e2e",
+    "reason": "検査専用CLIが所有者指定のローカルTrivyへ固定オプションと引数リストを渡す監査項目。shell=False既定でシェル展開せず、HTTPから到達しない。CIのbinaryは固定SHA-256で導入し、imageは固定候補名、出力と設定は一時ローカルパス。",
+    "owner": "repository maintainer",
+    "review_by": "2027-01-20"
+  }
+]

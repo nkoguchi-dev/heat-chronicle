@@ -146,3 +146,10 @@ Feature: 長期気温をヒートマップで探索する
     When 別の観測地点を選択する
     Then 新しい地点のデータ取得を開始する
     And 前の地点の遅い応答で表示が上書きされない
+
+  @regression
+  Scenario: 他のページ内では画面を埋め込み表示しない
+    Given 利用者が別のページを開いている
+    When そのページ内でHeat Chronicleの画面を埋め込み表示しようとする
+    Then ページ内にHeat Chronicleの画面は表示されない
+    And Heat Chronicleを直接開くとヒートマップを利用できる

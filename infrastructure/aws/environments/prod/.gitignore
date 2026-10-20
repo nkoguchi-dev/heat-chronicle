@@ -17,3 +17,6 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# Production inputs are retained outside the public repository.
+terraform.tfvars.enc

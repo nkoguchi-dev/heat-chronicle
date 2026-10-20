@@ -4,3 +4,6 @@ coverage/
 playwright-report/
 test-results/
 tsconfig.tsbuildinfo
+
+# Preserve the verified upstream stylesheet verbatim after its MIT notice.
+vendor/shadcn/tailwind.css

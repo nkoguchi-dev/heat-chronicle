@@ -42,3 +42,8 @@ output "api_domain_url" {
   description = "API custom domain URL"
   value       = module.backend_api.api_domain_url
 }
+
+output "api_observability" {
+  description = "Application monitoring resources; webhook value is not exposed"
+  value       = module.backend_api.api_observability
+}
