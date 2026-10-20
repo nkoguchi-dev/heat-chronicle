@@ -11,3 +11,8 @@ htmlcov/
 *.md
 Dockerfile
 Dockerfile.prod
+
+# Host environments must never replace the image environment.
+.venv/
+.poetry/
+poetry.lock

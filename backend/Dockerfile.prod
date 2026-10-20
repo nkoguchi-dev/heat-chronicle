@@ -1,3 +1,5 @@
+FROM ghcr.io/astral-sh/uv:0.12.0@sha256:606e70c71c852d03f611b1e56a195d08648507018a7057fab82c4974c4eae105 AS uv
+
 # Digest updates are reviewed by the existing weekly Docker Dependabot job.
 FROM public.ecr.aws/lambda/python:3.14@sha256:252cbb0879717b1c049b9f909d86d06d88e129f3208386d7ba1189d535f5f981 AS base
 
@@ -9,11 +11,13 @@ FROM base AS builder
 
 WORKDIR /app
 
-# Poetry install and dependency export
-RUN pip install poetry poetry-plugin-export
-COPY pyproject.toml poetry.lock ./
-RUN poetry export -f requirements.txt --without dev -o requirements.txt
-RUN pip install -r requirements.txt -t /opt/python
+COPY --from=uv /uv /usr/local/bin/uv
+ENV UV_PYTHON_DOWNLOADS=never UV_LINK_MODE=copy
+COPY pyproject.toml uv.lock .python-version ./
+# Export only locked runtime dependencies; uv and dev tools stay in the builder.
+RUN uv export --locked --no-dev --no-emit-project -o requirements.txt \
+    && uv pip install --python /var/lang/bin/python --require-hashes --no-deps \
+       -r requirements.txt --target /opt/python
 
 # ---- Runtime ----
 FROM base

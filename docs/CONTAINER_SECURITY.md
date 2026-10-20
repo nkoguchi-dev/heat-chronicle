@@ -21,7 +21,8 @@ LOW/MEDIUM/UNKNOWNもローカルreportへ残し、到達条件と修正版を�
 
 base digestを固定し、AL2023のOS packageを更新します。
 `--no-cache-filter base`で古い更新RUN cacheを再利用しません。
-Poetryはbuilderだけで使い、最終imageからpipとensurepip同梱installerを除きます。
+固定digestのuvをbuilderだけで使い、uv.lockからruntime依存だけをtask rootへ導入します。
+最終imageからuv・開発依存・pip・ensurepip同梱installerを除きます。
 専用dockerignoreで環境ファイル・鍵・不要ファイルをcontextから除きます。
 OS repoの変化もあるため、base固定だけで完成imageの同一byteは保証しません。
 
