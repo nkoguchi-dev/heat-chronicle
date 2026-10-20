@@ -1,5 +1,6 @@
 import os
-from typing import Generator
+import socket
+from typing import Generator, NoReturn
 
 import pytest
 
@@ -31,3 +32,14 @@ def _aws_credentials() -> Generator[None, None, None]:
     ):
         os.environ.pop(key, None)
     os.environ.update(env_backup)
+
+
+@pytest.fixture(autouse=True)
+def _deny_unit_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Unit tests use mocks; even configured local endpoints must not be contacted."""
+
+    def deny_connection(*args: object, **kwargs: object) -> NoReturn:
+        raise AssertionError("Unit tests must not open network connections")
+
+    monkeypatch.setattr(socket.socket, "connect", deny_connection)
+    monkeypatch.setattr(socket.socket, "connect_ex", deny_connection)

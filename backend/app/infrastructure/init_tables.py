@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from mypy_boto3_dynamodb.client import DynamoDBClient
     from mypy_boto3_dynamodb.type_defs import (
         AttributeDefinitionTypeDef,
+        CreateTableInputTypeDef,
         GlobalSecondaryIndexTypeDef,
         KeySchemaElementTypeDef,
         ProvisionedThroughputTypeDef,
@@ -62,13 +63,15 @@ def _create_table_if_not_exists(
         "ReadCapacityUnits": DEFAULT_READ_CAPACITY_UNITS,
         "WriteCapacityUnits": DEFAULT_WRITE_CAPACITY_UNITS,
     }
-    client.create_table(
-        TableName=name,
-        KeySchema=key_schema,
-        AttributeDefinitions=attr_defs,
-        GlobalSecondaryIndexes=gsi,
-        ProvisionedThroughput=throughput,
-    )
+    parameters: CreateTableInputTypeDef = {
+        "TableName": name,
+        "KeySchema": key_schema,
+        "AttributeDefinitions": attr_defs,
+        "ProvisionedThroughput": throughput,
+    }
+    if gsi is not None:
+        parameters["GlobalSecondaryIndexes"] = gsi
+    client.create_table(**parameters)
     logger.info("Created table: %s", name)
 
 

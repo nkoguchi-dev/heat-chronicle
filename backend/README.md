@@ -98,3 +98,33 @@ uv run --locked pytest tests/
 .python-versionは3.14を選択し、パッチ版は固定しません。runtime依存とdev groupは標準pyproject、解決版はuv.lockが正本です。
 既存CI/Dockerを順に切り替える間だけ最小Poetry互換設定とlockを維持し、#150で撤去します。
 ホスト接続と初期化の検証は#148、imageのuv化は#149で行います。既存ローカルDBのデータは変更しません。
+
+## ホストFastAPIとDynamoDB Local
+
+リポジトリrootで`docker compose up -d --wait dynamodb-local`を実行します。
+既存database/dataを維持するため、volumeやデータを削除する停止コマンドは使いません。
+backendをカレントに、初回だけ`.env.example`を`.env.local`へコピーします。既存ファイルは上書きせず差分を確認してください。
+
+```sh
+uv sync --locked
+uv run --locked uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+# 別ターミナルからhealth、都道府県、地点APIを確認する。
+curl --fail http://127.0.0.1:8000/health
+curl --fail http://127.0.0.1:8000/api/prefectures
+curl --fail 'http://127.0.0.1:8000/api/stations?prec_no=44'
+```
+
+起動時lifespanがtableを初期化し、既存のstation seed/migrationを実行します。
+ホストは127.0.0.1:8001、Compose backendはdynamodb-local:8000を明示します。
+本番はendpointを設定せずSDKの通常解決を維持します。
+
+integrationは専用のtestまたはtest-で始まるprefixを環境変数で明示します。
+loopback HTTP endpointとportがない場合は、client生成・データcleanupより前に失敗させます。
+通常のlocal prefixを使わないでください。unitはsocket接続自体を禁止し、moto/HTTP mockだけを使います。
+
+```sh
+DYNAMODB_ENDPOINT_URL=http://127.0.0.1:8001 DYNAMODB_TABLE_PREFIX=test-host uv run --locked pytest integration_tests/
+```
+
+終了時はFastAPIをCtrl-Cで止め、rootで`docker compose stop dynamodb-local`を実行します。
+ローカルデータはそのまま保持されます。外部気象庁の取得は通常の接続確認には不要です。
