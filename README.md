@@ -127,7 +127,7 @@ heat-chronicle/
 
 ## ローカル開発
 
-前提: Docker / Docker Compose、Python 3.14 + Poetry、Node.js 24 + npm
+前提: Docker / Docker Compose、Python 3.14 + uv 0.12.0、Node.js 24 + npm
 
 ```bash
 # DynamoDB Localとバックエンドを起動
