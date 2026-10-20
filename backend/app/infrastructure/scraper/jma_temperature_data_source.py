@@ -1,17 +1,21 @@
 from app.domain.station.model import Station
+from app.domain.temperature.fetch_guard import FetchGuard
 from app.domain.temperature.model import DailyTemperature
 from app.infrastructure.scraper.jma_client import JmaClient
 from app.infrastructure.scraper.jma_parser import parse_daily_page
 
 
 class JmaTemperatureDataSource:
+    def __init__(self, guard: FetchGuard) -> None:
+        self.guard = guard
+
     async def fetch_daily_temperatures(
         self,
         station: Station,
         year: int,
         month: int,
     ) -> list[DailyTemperature]:
-        client = JmaClient()
+        client = JmaClient(before_attempt=self.guard.before_attempt)
         try:
             html = await client.fetch_daily_page(
                 prec_no=station.prec_no,

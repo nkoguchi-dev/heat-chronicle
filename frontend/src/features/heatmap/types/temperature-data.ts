@@ -9,4 +9,5 @@ export interface TemperatureLoadOperation {
 export interface TemperatureLoadError {
   operation: TemperatureLoadOperation;
   message: string;
+  retryDisabled?: boolean;
 }

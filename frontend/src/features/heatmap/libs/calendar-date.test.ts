@@ -1,3 +1,4 @@
+import { observationCalendar } from './calendar-date';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { formatJapaneseCalendarDate, parseCalendarDate } from '@/features/heatmap/libs/calendar-date';
@@ -39,4 +40,9 @@ describe('formatJapaneseCalendarDate', () => {
   it('preserves an invalid value for a safe fallback', () => {
     expect(formatJapaneseCalendarDate('unknown')).toBe('unknown');
   });
+});
+
+it('uses Japan time at the year and month boundary', () => {
+  expect(observationCalendar(new Date('2025-12-31T15:00:00Z'))).toEqual({ year: 2026, month: 1 });
+  expect(observationCalendar(new Date('2026-01-31T15:00:00Z'))).toEqual({ year: 2026, month: 2 });
 });
