@@ -1,39 +1,42 @@
-[tool.poetry]
+[project]
 name = "heat-chronicle-backend"
 version = "0.1.0"
 description = "Heat Chronicle Backend"
-authors = ["nkoguchi"]
 readme = "README.md"
-packages = [{include = "app"}]
+authors = [{name = "nkoguchi"}]
+requires-python = ">=3.14,<3.15"
+dependencies = [
+  "fastapi>=0.115,<0.144",
+  "uvicorn[standard]>=0.32,<0.55",
+  "boto3>=1.35.0,<2.0.0",
+  "pydantic>=2.10.0,<3.0.0",
+  "pydantic-settings>=2.6.0,<3.0.0",
+  "httpx>=0.28.0,<0.29.0",
+  "beautifulsoup4>=4.12.0,<5.0.0",
+  "lxml>=5,<7",
+  "mangum>=0.21,<0.23"
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=9.1.1,<10.0.0",
+  "pytest-asyncio>=0.24,<1.5",
+  "pytest-cov>=6,<8",
+  "httpx>=0.28.0,<0.29.0",
+  "black>=24.10,<27.0",
+  "isort>=8.0.1,<10.0.0",
+  "flake8>=7.1.0,<8.0.0",
+  "mypy>=2.3.0,<3.0.0",
+  "moto[dynamodb]>=5.0.0,<6.0.0",
+  "types-boto3[dynamodb]>=1.35.0,<2.0.0"
+]
+
+[tool.uv]
+package = false
+
+# Transitional compatibility for CI until #150; dependency definitions are PEP 621/735.
+[tool.poetry]
 package-mode = false
-
-[tool.poetry.dependencies]
-python = "^3.14"
-fastapi = ">=0.115,<0.144"
-uvicorn = {extras = ["standard"], version = ">=0.32,<0.55"}
-boto3 = "^1.35.0"
-pydantic = "^2.10.0"
-pydantic-settings = "^2.6.0"
-httpx = "^0.28.0"
-beautifulsoup4 = "^4.12.0"
-lxml = ">=5,<7"
-mangum = ">=0.21,<0.23"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^9.1.1"
-pytest-asyncio = ">=0.24,<1.5"
-pytest-cov = ">=6,<8"
-httpx = "^0.28.0"
-black = ">=24.10,<27.0"
-isort = ">=8.0.1,<10.0.0"
-flake8 = "^7.1.0"
-mypy = "^2.3.0"
-moto = {extras = ["dynamodb"], version = "^5.0.0"}
-types-boto3 = {extras = ["dynamodb"], version = "^1.35.0"}
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88

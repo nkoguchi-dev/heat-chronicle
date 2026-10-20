@@ -7,20 +7,20 @@
 `backend/` ディレクトリで実行してください。
 
 ```bash
-poetry install                                            # 依存関係インストール
-poetry run uvicorn app.main:app --reload --port 8000      # 開発サーバー起動
-poetry run pytest tests/ -v                               # テスト実行
-poetry run pytest tests/test_jma_parser.py::test_name -v  # 単体テスト実行
+uv sync --locked                                            # 依存関係インストール
+uv run --locked uvicorn app.main:app --reload --port 8000      # 開発サーバー起動
+uv run --locked pytest tests/ -v                               # テスト実行
+uv run --locked pytest tests/test_jma_parser.py::test_name -v  # 単体テスト実行
 ```
 
 ### コード品質チェック（この順序で実行）
 
 ```bash
-poetry run black .      # 1. フォーマット
-poetry run isort .      # 2. import ソート
-poetry run flake8 .     # 3. Lint
-poetry run mypy .       # 4. 型チェック
-poetry run pytest tests/ -v  # 5. テスト
+uv run --locked black .      # 1. フォーマット
+uv run --locked isort .      # 2. import ソート
+uv run --locked flake8 .     # 3. Lint
+uv run --locked mypy .       # 4. 型チェック
+uv run --locked pytest tests/ -v  # 5. テスト
 ```
 
 ## レイヤードアーキテクチャ

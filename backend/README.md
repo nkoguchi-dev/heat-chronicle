@@ -8,7 +8,7 @@ Python / FastAPI によるバックエンド API サーバーです。気象庁�
 - **boto3** — DynamoDB アクセス
 - **httpx + BeautifulSoup4 (lxml)** — 気象庁 HTML ページからの観測データ取得・解析
 - **Mangum** — AWS Lambda 上での FastAPI 実行アダプタ
-- **Poetry** — 依存関係管理
+- **uv** — Python・仮想環境・locked依存の管理
 
 ## ディレクトリ構成
 
@@ -61,7 +61,7 @@ backend/
 │           └── jma_temperature_data_source.py … 気象データ取得Port実装
 ├── data/                            … シードデータ（地点マスタ CSV 等）
 ├── tests/                           … ユニットテスト
-├── pyproject.toml                   … Poetry 設定
+├── pyproject.toml                   … PEP 621/735と品質ツールの設定
 ├── Dockerfile                       … ローカル開発用
 └── Dockerfile.prod                  … 本番用（Lambda コンテナ）
 ```
@@ -80,3 +80,21 @@ backend/
 ## 開発環境の移行契約
 
 Python・ホスト・DB・Docker・CIの責務と段階的な移行順は[バックエンド開発環境の契約](../docs/BACKEND_DEVELOPMENT.md)を参照してください。
+
+## ホストの依存環境
+
+uv 0.12.0を導入し、backendをカレントとして実行します。
+
+```sh
+uv sync --locked
+uv run --locked python --version
+uv run --locked black --check .
+uv run --locked isort --check-only .
+uv run --locked flake8 .
+uv run --locked mypy .
+uv run --locked pytest tests/
+```
+
+.python-versionは3.14を選択し、パッチ版は固定しません。runtime依存とdev groupは標準pyproject、解決版はuv.lockが正本です。
+既存CI/Dockerを順に切り替える間だけ最小Poetry互換設定とlockを維持し、#150で撤去します。
+ホスト接続と初期化の検証は#148、imageのuv化は#149で行います。既存ローカルDBのデータは変更しません。
