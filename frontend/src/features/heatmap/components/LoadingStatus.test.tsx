@@ -36,3 +36,16 @@ describe('LoadingStatus', () => {
     expect(retry).toHaveBeenCalledOnce();
   });
 });
+
+it('disables retry while the service asks the user to wait', async () => {
+  const retry = vi.fn();
+  const user = userEvent.setup();
+  const { rerender } = render(<LoadingStatus state="error" message="混雑しています" onRetry={retry} retryDisabled />);
+  const button = screen.getByRole('button', { name: '再試行' });
+  expect(button).toBeDisabled();
+  await user.click(button);
+  expect(retry).not.toHaveBeenCalled();
+  rerender(<LoadingStatus state="error" message="混雑しています" onRetry={retry} retryDisabled={false} />);
+  await user.click(button);
+  expect(retry).toHaveBeenCalledOnce();
+});

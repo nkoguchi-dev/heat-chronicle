@@ -1,4 +1,5 @@
 const CALENDAR_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const JAPAN_TIME_OFFSET_MS = 9 * 60 * 60 * 1000;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export interface CalendarDate {
@@ -32,4 +33,9 @@ export function parseCalendarDate(value: string): CalendarDate | null {
 export function formatJapaneseCalendarDate(value: string): string {
   const date = parseCalendarDate(value);
   return date ? `${date.year}年${date.month}月${date.day}日` : value;
+}
+
+export function observationCalendar(date: Date): { year: number; month: number } {
+  const japanDate = new Date(date.getTime() + JAPAN_TIME_OFFSET_MS);
+  return { year: japanDate.getUTCFullYear(), month: japanDate.getUTCMonth() + 1 };
 }

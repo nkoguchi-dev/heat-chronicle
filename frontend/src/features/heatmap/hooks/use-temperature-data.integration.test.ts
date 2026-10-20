@@ -33,7 +33,7 @@ function createResponse(overrides: Partial<TemperatureResponse['metadata']> = {}
   };
 }
 
-const wrapper = createClockWrapper(new FixedClock(new Date(2026, 7, 15, 12)));
+const wrapper = createClockWrapper(new FixedClock(new Date('2026-08-15T12:00:00+09:00')));
 
 beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -62,7 +62,7 @@ describe('useTemperatureData HTTP integration', () => {
       http.get(`${API_URL}/api/temperature/4`, () => {
         requestCount += 1;
         return requestCount === 1
-          ? HttpResponse.json({ detail: 'temporarily unavailable' }, { status: 503 })
+          ? HttpResponse.json({ detail: 'temporarily unavailable' }, { status: 503, headers: { 'Retry-After': '1' } })
           : HttpResponse.json(createResponse());
       }),
     );
@@ -70,6 +70,7 @@ describe('useTemperatureData HTTP integration', () => {
     act(() => result.current.fetchData(4, 2026));
     await waitFor(() => expect(result.current.error?.operation.mode).toBe('initial'));
 
+    await waitFor(() => expect(result.current.error?.retryDisabled).toBe(false), { timeout: 2000 });
     act(() => result.current.retry());
 
     await waitFor(() => expect(result.current.records).toEqual([RECORD]));
@@ -87,14 +88,14 @@ describe('useTemperatureData HTTP integration', () => {
         const url = new URL(request.url);
         expect(url.searchParams.get('year')).toBe('2026');
         expect(url.searchParams.get('month')).toBe('8');
-        return HttpResponse.json({ detail: 'month failed' }, { status: 503 });
+        return HttpResponse.json({ detail: 'month failed' }, { status: 503, headers: { 'Retry-After': '1' } });
       }),
     );
     const { result } = renderHook(() => useTemperatureData(), { wrapper });
 
     act(() => result.current.fetchData(4, 2026));
 
-    await waitFor(() => expect(result.current.error?.message).toContain('一部の月'));
+    await waitFor(() => expect(result.current.error?.message).toContain('混雑または一時的な問題'));
     expect(result.current.activeOperation).toBeNull();
   });
 
@@ -103,7 +104,7 @@ describe('useTemperatureData HTTP integration', () => {
     [2026, 9],
     [2030, 1],
   ])('uses the injected year and month (%i-%i) for initial loading', async (year, month) => {
-    const clock = new FixedClock(new Date(year, month - 1, 15, 12));
+    const clock = new FixedClock(new Date(`${year}-${String(month).padStart(2, '0')}-15T12:00:00+09:00`));
     const fetchedMonths = Array.from(
       { length: month - 1 },
       (_, index) => `${year}-${String(index + 1).padStart(2, '0')}`,
@@ -118,24 +119,24 @@ describe('useTemperatureData HTTP integration', () => {
       }),
       http.get(`${API_URL}/api/temperature/4/fetch-month`, ({ request }) => {
         monthlyRequests.push(new URL(request.url).search);
-        return HttpResponse.json({ detail: 'month failed' }, { status: 503 });
+        return HttpResponse.json({ detail: 'month failed' }, { status: 503, headers: { 'Retry-After': '1' } });
       }),
     );
     const { result } = renderHook(() => useTemperatureData(), { wrapper: createClockWrapper(clock) });
 
     act(() => result.current.fetchData(4));
 
-    await waitFor(() => expect(result.current.error?.message).toContain('一部の月'));
+    await waitFor(() => expect(result.current.error?.message).toContain('混雑または一時的な問題'));
     expect(monthlyRequests).toEqual([`?year=${year}&month=${month}`]);
   });
 
   it.each([8, 12])('keeps the operation date across the end of month %i', async (month) => {
-    const clock = { now: vi.fn(() => new Date(2026, month - 1, 31, 23, 59)) };
+    const clock = { now: vi.fn(() => new Date(`2026-${String(month).padStart(2, '0')}-31T23:59:00+09:00`)) };
     const monthlyRequests: string[] = [];
     server.use(
       http.get(`${API_URL}/api/temperature/4`, ({ request }) => {
         expect(new URL(request.url).searchParams.get('end_year')).toBe('2026');
-        clock.now.mockReturnValue(new Date(2026, month, 1, 0, 1));
+        clock.now.mockReturnValue(new Date(Date.UTC(2026, month, 1, 0, 1) - 9 * 60 * 60 * 1000));
         return HttpResponse.json(
           createResponse({
             fetching_required: true,
@@ -148,14 +149,14 @@ describe('useTemperatureData HTTP integration', () => {
       }),
       http.get(`${API_URL}/api/temperature/4/fetch-month`, ({ request }) => {
         monthlyRequests.push(new URL(request.url).search);
-        return HttpResponse.json({ detail: 'month failed' }, { status: 503 });
+        return HttpResponse.json({ detail: 'month failed' }, { status: 503, headers: { 'Retry-After': '1' } });
       }),
     );
     const { result } = renderHook(() => useTemperatureData(), { wrapper: createClockWrapper(clock) });
 
     act(() => result.current.fetchData(4));
 
-    await waitFor(() => expect(result.current.error?.message).toContain('一部の月'));
+    await waitFor(() => expect(result.current.error?.message).toContain('混雑または一時的な問題'));
     expect(result.current.error?.operation.endYear).toBe(2026);
     expect(monthlyRequests).toEqual([`?year=2026&month=${month}`]);
     expect(clock.now).toHaveBeenCalledOnce();

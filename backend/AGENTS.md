@@ -121,7 +121,7 @@ presentation/api/temperature/
 
 - **リポジトリパターン**: Domain 層の `StationRepository` / `TemperatureRepository` Port を Infrastructure 層の DynamoDB Repository が実装する
 - **依存性注入**: FastAPI の `Depends` を使用し、Presentation 層には UseCase を注入する
-- **負荷を抑えたデータ取得**: フロントエンドが2秒以上の間隔で順次取得し、`JmaClient` は3回リトライ + 指数バックオフ
+- **負荷を抑えたデータ取得**: フロントエンドが2秒以上の間隔で順次取得し、サーバーは共有leaseで上流を直列化する。`JmaClient`は最大3試行、試行間隔2秒以上、1試行8秒。詳細は`docs/API_PROTECTION.md`を参照
 
 ## API エンドポイント
 
@@ -130,7 +130,7 @@ presentation/api/temperature/
 | GET | `/health` | ヘルスチェック |
 | GET | `/api/prefectures` | 都道府県一覧 |
 | GET | `/api/stations` | 観測地点一覧（`?prec_no=` でフィルタ可） |
-| GET | `/api/temperature/{station_id}` | キャッシュ済み気温データ（`?start_year=&end_year=`） |
+| GET | `/api/temperature/{station_id}` | キャッシュ済み気温データ（`?end_year=`、最大50年） |
 | GET | `/api/temperature/{station_id}/fetch-month` | 月別データ取得（`?year=&month=`） |
 
 ## コーディングスタイル
@@ -154,3 +154,10 @@ presentation/api/temperature/
 | `DYNAMODB_REGION` | AWS リージョン（デフォルト: `ap-northeast-1`） |
 | `DYNAMODB_TABLE_PREFIX` | テーブル名のプレフィックス |
 | `CORS_ALLOW_ORIGINS` | CORS 許可オリジン（デフォルト: `http://localhost:3000`） |
+
+## 時刻の取得
+
+- 現在時刻と経過時間はDomainの`time/clock.py`の`Clock` Portを通して取得し、DIから注入する。
+- `datetime.now()`・`date.today()`・`time.time()`・`time.monotonic()`の実時計参照はInfrastructureの`SystemClock`へ集約する。日時値の構築・変換・比較は各層で行ってよい。
+- `Clock.now()`はtimezone-awareなUTC日時を返す。観測年月はDomainの純粋な変換で日本時間へ揃える。共有lease期限には壁時計、実行中の取得予算には単調増加時計を使い、混同しない。
+- テストでは固定時計を注入し、時刻取得関数のpatchで時計依存を隠さない。
