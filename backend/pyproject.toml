@@ -34,10 +34,6 @@ dev = [
 [tool.uv]
 package = false
 
-# Transitional compatibility for CI until #150; dependency definitions are PEP 621/735.
-[tool.poetry]
-package-mode = false
-
 [tool.black]
 line-length = 88
 target-version = ['py314']
