@@ -1,14 +1,14 @@
 from datetime import date as Date
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel, ConfigDict
 
 from app.di.container import FetchMonthUseCaseDep
+from app.domain.temperature.fetch_guard import FetchUnavailable
+from app.domain.temperature.input_policy import InvalidTemperatureInput
 
 router = APIRouter()
-
-MIN_MONTH = 1
-MAX_MONTH = 12
 
 
 class MonthTemperatureRecordResponse(BaseModel):
@@ -30,14 +30,11 @@ class MonthTemperatureResponse(BaseModel):
 
 @router.get("/{station_id}/fetch-month", response_model=MonthTemperatureResponse)
 async def fetch_month(
-    station_id: int,
+    station_id: Annotated[int, Path(gt=0)],
     use_case: FetchMonthUseCaseDep,
     year: int = Query(...),
     month: int = Query(...),
 ) -> MonthTemperatureResponse:
-    if month < MIN_MONTH or month > MAX_MONTH:
-        raise HTTPException(status_code=400, detail="month must be 1-12")
-
     try:
         records = await use_case.fetch_month(station_id, year, month)
         return MonthTemperatureResponse(
@@ -53,5 +50,13 @@ async def fetch_month(
                 for record in records
             ],
         )
+    except FetchUnavailable:
+        raise HTTPException(
+            status_code=503,
+            detail="Temporarily unavailable",
+            headers={"Retry-After": "5"},
+        )
+    except InvalidTemperatureInput as e:
+        raise HTTPException(status_code=422, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

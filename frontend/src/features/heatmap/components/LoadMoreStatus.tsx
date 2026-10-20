@@ -17,7 +17,9 @@ export function LoadMoreStatus({
   onRetry,
 }: LoadMoreStatusProps): React.JSX.Element | null {
   if (error?.operation.mode === 'more') {
-    return <LoadingStatus state="error" message={error.message} onRetry={onRetry} />;
+    return (
+      <LoadingStatus state="error" message={error.message} onRetry={onRetry} retryDisabled={error.retryDisabled} />
+    );
   }
   if (activeOperation?.mode !== 'more') return null;
   return (

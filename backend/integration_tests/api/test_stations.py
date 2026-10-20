@@ -33,12 +33,10 @@ async def test_get_stations_by_prec_no(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_get_stations_by_prec_no_empty(client: AsyncClient) -> None:
-    """存在しない prec_no を指定すると空配列が返却される。"""
+    """存在しない prec_no を指定すると404が返る。"""
     response = await client.get("/api/stations/", params={"prec_no": 99999})
 
-    assert response.status_code == 200
-    data = response.json()
-    assert data == []
+    assert response.status_code == 404
 
 
 @pytest.mark.asyncio

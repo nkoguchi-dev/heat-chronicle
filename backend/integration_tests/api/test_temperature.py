@@ -12,6 +12,7 @@ from integration_tests.fixtures.test_data import (
     insert_fetch_log_entry,
     insert_test_temperatures,
 )
+from tests.fixed_clock import FixedClock
 
 # ─────────────────────────────────────────────────────────────
 # GET /api/temperature/{station_id}
@@ -188,42 +189,42 @@ async def test_fetch_month_station_not_found(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_fetch_month_invalid_month(client: AsyncClient) -> None:
-    """month=13 を指定すると 400 が返る。"""
+    """month=13 を指定すると 422 が返る。"""
     response = await client.get(
         "/api/temperature/47662/fetch-month",
         params={"year": 2024, "month": 13},
     )
 
-    assert response.status_code == 400
-    assert "month must be 1-12" in response.json()["detail"]
+    assert response.status_code == 422
+    assert "month outside observation range" in response.json()["detail"]
 
 
 @pytest.mark.asyncio
 async def test_fetch_month_invalid_month_zero(client: AsyncClient) -> None:
-    """month=0 を指定すると 400 が返る。"""
+    """month=0 を指定すると 422 が返る。"""
     response = await client.get(
         "/api/temperature/47662/fetch-month",
         params={"year": 2024, "month": 0},
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_fetch_month_future_month(client: AsyncClient) -> None:
-    """未来の年月を指定すると 200 で records が空配列になる。"""
+async def test_fetch_month_future_month(client: AsyncClient, clock: FixedClock) -> None:
+    """未来の年月を指定すると 422 になる。"""
     response = await client.get(
         "/api/temperature/47662/fetch-month",
-        params={"year": 2027, "month": 1},
+        params={"year": clock.now().year + 1, "month": 1},
     )
 
-    assert response.status_code == 200
-    assert response.json()["records"] == []
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_fetch_month_db_side_effects(
     client: AsyncClient,
+    clock: FixedClock,
     dynamodb_resource: Any,
     test_settings: Settings,
     mock_temperature_data_source: MockTemperatureDataSource,
@@ -253,7 +254,7 @@ async def test_fetch_month_db_side_effects(
     log_table = dynamodb_resource.Table(test_settings.table_name("fetch-log"))
     log_result = log_table.get_item(Key={"station_id": 47662, "year_month": "2024-08"})
     assert "Item" in log_result
-    assert "fetched_at" in log_result["Item"]
+    assert log_result["Item"]["fetched_at"] == clock.now().isoformat()
 
 
 @pytest.mark.asyncio
