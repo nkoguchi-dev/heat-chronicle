@@ -1,6 +1,7 @@
 import os
 from typing import Any, Generator
 from unittest.mock import patch
+from urllib.parse import urlsplit
 
 import boto3
 import pytest
@@ -11,16 +12,34 @@ from integration_tests.fixtures.test_data import (
     insert_test_stations,
 )
 
-TEST_TABLE_PREFIX = os.getenv("DYNAMODB_TABLE_PREFIX", "test")
-
 
 @pytest.fixture(scope="session")
 def test_settings() -> Settings:
-    """テスト用の Settings を返す。
-    dynamodb_endpoint_url は .env.local または環境変数 DYNAMODB_ENDPOINT_URL から自動取得する。
-    """
+    """Require an explicit local target before any table cleanup or AWS client."""
+    endpoint = os.environ.get("DYNAMODB_ENDPOINT_URL", "")
+    prefix = os.environ.get("DYNAMODB_TABLE_PREFIX", "")
+    try:
+        target = urlsplit(endpoint)
+        is_local = (
+            target.scheme == "http"
+            and target.hostname in {"localhost", "127.0.0.1", "::1"}
+            and target.port is not None
+            and target.username is None
+            and target.password is None
+            and target.path in {"", "/"}
+            and not target.query
+            and not target.fragment
+        )
+    except ValueError:
+        is_local = False
+    if not is_local or not (prefix == "test" or prefix.startswith("test-")):
+        raise pytest.UsageError(
+            "Integration tests require an explicit HTTP loopback DYNAMODB_ENDPOINT_URL "
+            "with a port and DYNAMODB_TABLE_PREFIX=test or test-<unique-name>."
+        )
     return Settings(
-        dynamodb_table_prefix=TEST_TABLE_PREFIX,
+        dynamodb_endpoint_url=endpoint,
+        dynamodb_table_prefix=prefix,
         cors_allow_origins="http://localhost:3000",
     )
 
