@@ -37,6 +37,12 @@
 - PlaywrightとChromiumでproduction用Docker/Nginxを検証し、直接アクセス、再読み込み、履歴、キーボード操作を自動確認
 - Prettier、ESLint、TypeScript、本番ビルドをCIで検証し、変更領域ごとの品質基準を継続的に確認
 
+コードのセキュリティ検査は[継続検査と指摘の扱い](./docs/CODE_SECURITY.md)を参照してください。Python・TypeScriptをPR・main・日次で解析し、非公開のActionsに結果を保存します。
+
+秘密情報の検査、ローカルhookの有効化、漏洩時の失効手順は[秘密情報の検査と対応](./docs/SECRET_DETECTION.md)を参照してください。
+
+本番backend imageのOS・実行依存・秘密検査と更新手順は[配信用コンテナの検査と更新](./docs/CONTAINER_SECURITY.md)を参照してください。
+
 ### DynamoDBキャッシュと鮮度管理
 
 - `daily-temperature` に日別データ、`fetch-log` に地点・年月ごとの取得日時を保存
@@ -176,3 +182,5 @@ main向けのすべてのPRでfrontend、backendの静的解析・テストとBr
 Heat Chronicleが表示用に加工しています。コンテンツの利用にあたっては、
 [気象庁ホームページの利用規約](https://www.jma.go.jp/jma/kishou/info/coment.html)に基づき、
 出典と加工の事実を明示しています。本サービスは個人開発プロジェクトです。
+
+開発依存のauditと生成CSSの管理は[frontend依存の検査と生成CSS](./docs/FRONTEND_DEPENDENCIES.md)を参照してください。

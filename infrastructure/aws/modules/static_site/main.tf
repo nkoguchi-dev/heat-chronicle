@@ -100,6 +100,59 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
 }
 
 # -----------------------------------------------------------------------------
+# Viewer security headers — own policy shared by HTML and immutable assets
+# -----------------------------------------------------------------------------
+resource "aws_cloudfront_response_headers_policy" "frontend" {
+  name    = "${var.system_name}-${var.environment}-frontend-security"
+  comment = "Security headers for the static application; no API CORS changes"
+
+  security_headers_config {
+    content_security_policy {
+      content_security_policy = join("; ", [
+        "default-src 'none'",
+        "script-src 'self'",
+        # React/Radix use dynamic inline styles for canvas/tooltips/selects.
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self'",
+        "font-src 'self'",
+        "connect-src 'self' https://${var.api_domain_name}",
+        "base-uri 'none'",
+        "object-src 'none'",
+        "frame-ancestors 'none'",
+        "form-action 'none'",
+      ])
+      override = true
+    }
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    referrer_policy {
+      referrer_policy = "no-referrer"
+      override        = true
+    }
+    strict_transport_security {
+      # First rollout: limit browser persistence to one day; no subdomain/preload.
+      access_control_max_age_sec = 86400
+      include_subdomains         = false
+      preload                    = false
+      override                   = true
+    }
+  }
+
+  custom_headers_config {
+    items {
+      header   = "Permissions-Policy"
+      value    = "camera=(), microphone=(), geolocation=()"
+      override = true
+    }
+  }
+}
+
+# -----------------------------------------------------------------------------
 # CloudFront Distribution
 # -----------------------------------------------------------------------------
 resource "aws_cloudfront_distribution" "frontend" {
@@ -117,11 +170,12 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   default_cache_behavior {
-    target_origin_id       = aws_s3_bucket.frontend.id
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    compress               = true
+    target_origin_id           = aws_s3_bucket.frontend.id
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.frontend.id
 
     forwarded_values {
       query_string = false
@@ -138,12 +192,13 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   # Immutable hashed assets — cache for 1 year
   ordered_cache_behavior {
-    path_pattern           = "assets/*"
-    target_origin_id       = aws_s3_bucket.frontend.id
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    compress               = true
+    path_pattern               = "assets/*"
+    target_origin_id           = aws_s3_bucket.frontend.id
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = true
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.frontend.id
 
     forwarded_values {
       query_string = false

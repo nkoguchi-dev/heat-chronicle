@@ -168,9 +168,32 @@ resource "aws_iam_role" "lambda_execution" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+resource "aws_iam_policy" "lambda_logs" {
+  name = "${local.prefix}-lambda-logs"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+      Resource = "${aws_cloudwatch_log_group.lambda.arn}:*"
+    }]
+  })
+  tags = var.tags
+}
+
+moved {
+  from = aws_iam_role_policy_attachment.lambda_basic_execution
+  to   = aws_iam_role_policy_attachment.lambda_logs
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_execution.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  policy_arn = aws_iam_policy.lambda_logs.arn
+
+  # Attach the application-scoped policy before detaching the old AWS policy.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_role_policy" "lambda_dynamodb" {
@@ -181,43 +204,35 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "dynamodb:GetItem",
-          "dynamodb:PutItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",
-          "dynamodb:Query",
-          "dynamodb:Scan",
-          "dynamodb:BatchGetItem",
-          "dynamodb:BatchWriteItem",
-        ]
-        Resource = [
-          aws_dynamodb_table.stations.arn,
-          "${aws_dynamodb_table.stations.arn}/index/*",
-          aws_dynamodb_table.daily_temperature.arn,
-          "${aws_dynamodb_table.daily_temperature.arn}/index/*",
-          aws_dynamodb_table.fetch_log.arn,
-          "${aws_dynamodb_table.fetch_log.arn}/index/*",
-          aws_dynamodb_table.scrape_jobs.arn,
-          "${aws_dynamodb_table.scrape_jobs.arn}/index/*",
-        ]
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "lambda_self_invoke" {
-  name = "${local.prefix}-lambda-self-invoke"
-  role = aws_iam_role.lambda_execution.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
+        Sid      = "StationRead"
         Effect   = "Allow"
-        Action   = "lambda:InvokeFunction"
-        Resource = aws_lambda_function.backend.arn
+        Action   = ["dynamodb:GetItem", "dynamodb:Scan"]
+        Resource = [aws_dynamodb_table.stations.arn]
+      },
+      {
+        Sid      = "StationIndexQuery"
+        Effect   = "Allow"
+        Action   = ["dynamodb:Query"]
+        Resource = [aws_dynamodb_table.stations.arn, "${aws_dynamodb_table.stations.arn}/index/prec_no-index"]
+      },
+      {
+        # handler.py runs versioned station migrations on cold start.
+        Sid      = "StationMigrations"
+        Effect   = "Allow"
+        Action   = ["dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:BatchWriteItem"]
+        Resource = [aws_dynamodb_table.stations.arn]
+      },
+      {
+        Sid      = "TemperatureData"
+        Effect   = "Allow"
+        Action   = ["dynamodb:Query", "dynamodb:BatchWriteItem"]
+        Resource = [aws_dynamodb_table.daily_temperature.arn]
+      },
+      {
+        Sid      = "FetchLogAndLease"
+        Effect   = "Allow"
+        Action   = ["dynamodb:Query", "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"]
+        Resource = [aws_dynamodb_table.fetch_log.arn]
       }
     ]
   })
@@ -246,6 +261,8 @@ resource "aws_lambda_function" "backend" {
   memory_size   = 512
   timeout       = 900
 
+  reserved_concurrent_executions = var.api_capacity.lambda_reserved_concurrency
+
   environment {
     variables = {
       DYNAMODB_REGION       = var.aws_region
@@ -255,8 +272,9 @@ resource "aws_lambda_function" "backend" {
   }
 
   depends_on = [
+    aws_ecr_repository_policy.backend,
     aws_cloudwatch_log_group.lambda,
-    aws_iam_role_policy_attachment.lambda_basic_execution,
+    aws_iam_role_policy_attachment.lambda_logs,
     aws_iam_role_policy.lambda_dynamodb,
   ]
 
@@ -277,10 +295,12 @@ resource "aws_apigatewayv2_api" "backend" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins = ["https://${var.domain_name}"]
-    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allow_headers = ["Content-Type", "Authorization"]
-    max_age       = 86400
+    allow_origins     = ["https://${var.domain_name}"]
+    allow_methods     = ["GET"]
+    allow_headers     = ["accept", "accept-language", "content-language", "content-type"]
+    allow_credentials = false
+    expose_headers    = ["Retry-After"]
+    max_age           = 86400
   }
 
   tags = merge(var.tags, {
@@ -302,10 +322,43 @@ resource "aws_apigatewayv2_route" "default" {
   target    = "integrations/${aws_apigatewayv2_integration.backend.id}"
 }
 
+# The explicit route receives a tighter limit than the stage fallback.
+resource "aws_apigatewayv2_route" "fetch_month" {
+  api_id    = aws_apigatewayv2_api.backend.id
+  route_key = "GET /api/temperature/{station_id}/fetch-month"
+  target    = "integrations/${aws_apigatewayv2_integration.backend.id}"
+}
+
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.backend.id
   name        = "$default"
   auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_access.arn
+    format = jsonencode({
+      request_id             = "$context.requestId"
+      request_time_epoch     = "$context.requestTimeEpoch"
+      route_key              = "$context.routeKey"
+      status                 = "$context.status"
+      integration_status     = "$context.integration.status"
+      lambda_service_status  = "$context.integration.integrationStatus"
+      response_latency_ms    = "$context.responseLatency"
+      integration_latency_ms = "$context.integrationLatency"
+      response_length        = "$context.responseLength"
+    })
+  }
+
+  default_route_settings {
+    throttling_rate_limit  = var.api_capacity.stage_rate
+    throttling_burst_limit = var.api_capacity.stage_burst
+  }
+
+  route_settings {
+    route_key              = aws_apigatewayv2_route.fetch_month.route_key
+    throttling_rate_limit  = var.api_capacity.fetch_month_rate
+    throttling_burst_limit = var.api_capacity.fetch_month_burst
+  }
 
   tags = merge(var.tags, {
     Name = "${local.prefix}-api-default"

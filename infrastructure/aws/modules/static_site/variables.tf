@@ -29,3 +29,8 @@ variable "hosted_zone_name" {
   description = "Route 53 hosted zone name (e.g. koppepan.org)"
   type        = string
 }
+
+variable "api_domain_name" {
+  description = "Exact HTTPS API hostname allowed by the static application's CSP"
+  type        = string
+}

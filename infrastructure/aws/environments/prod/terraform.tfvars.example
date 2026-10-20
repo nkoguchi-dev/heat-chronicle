@@ -4,3 +4,18 @@ aws_region        = "ap-northeast-1"
 github_repository = "nkoguchi-dev/heat-chronicle"
 domain_name       = "heat-chronicle.koppepan.org"
 hosted_zone_name  = "koppepan.org"
+
+# Initial limits agreed in docs/API_PROTECTION.md. Verify shared account capacity first.
+api_capacity = {
+  stage_rate                  = 5
+  stage_burst                 = 10
+  fetch_month_rate            = 1
+  fetch_month_burst           = 2
+  lambda_reserved_concurrency = 5
+}
+
+# Actual URL belongs only in the owner-held SOPS input outside the public repository.
+# Terraform 1.11+ ephemeral/write-only prevents URL persistence in plan/state.
+discord_webhook_url = "https://discord.com/api/webhooks/123/example_token"
+# Increment together with each URL rotation; never edit the live parameter manually.
+discord_webhook_version = 1

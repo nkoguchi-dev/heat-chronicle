@@ -1,0 +1,23 @@
+title = "Heat Chronicle secret detection"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "An age public recipient is not a private key; reviewed for Issue #9"
+regexTarget = "secret"
+regexes = ['''^age1[0-9a-z]{58}$''']
+
+[[rules]]
+id = "heat-discord-webhook"
+description = "Discord incoming webhook URL"
+regex = '''https://(?:canary\.|ptb\.)?discord(?:app)?\.com/api(?:/v[0-9]+)?/webhooks/[0-9]{17,20}/[A-Za-z0-9_-]{50,}'''
+keywords = ["/webhooks/"]
+
+[[rules]]
+id = "heat-age-private-key"
+description = "age private identity"
+regex = '''AGE-SECRET-KEY-1[0-9A-Z]{58}'''
+keywords = ["AGE-SECRET-KEY-"]

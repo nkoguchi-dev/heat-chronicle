@@ -1,0 +1,63 @@
+name: Container Security
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths: ["backend/**", "tools/containers/**", ".github/workflows/container-security.yml"]
+  push:
+    branches: [main]
+    paths: ["backend/**", "tools/containers/**", ".github/workflows/container-security.yml"]
+  schedule:
+    - cron: "57 21 * * *" # Daily at 06:57 JST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: container-security-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  scan:
+    name: Backend container security
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install checksum-pinned Trivy
+        run: python tools/containers/install.py --bin-dir "${{ runner.temp }}/container-bin"
+      - name: Test fail-closed gate and actual secret detection
+        env:
+          TRIVY_BIN: ${{ runner.temp }}/container-bin/trivy
+        run: python -m unittest discover -s tools/containers/tests -v
+      - name: Build the production backend without publishing
+        run: >-
+          docker buildx build --platform linux/amd64 --pull --no-cache-filter base --provenance=false --load
+          -f backend/Dockerfile.prod -t heat-chronicle-ci:candidate backend
+      - name: Smoke test the final handler without AWS or upstream access
+        run: >-
+          docker run --rm -i --network none --platform linux/amd64
+          --entrypoint /var/lang/bin/python
+          -e AWS_EC2_METADATA_DISABLED=true -e AWS_DEFAULT_REGION=ap-northeast-1
+          -e AWS_ACCESS_KEY_ID=testing -e AWS_SECRET_ACCESS_KEY=testing
+          heat-chronicle-ci:candidate - < tools/containers/smoke.py
+      - name: Inspect final image vulnerabilities and secrets
+        run: >-
+          python tools/containers/scan.py --trivy "${{ runner.temp }}/container-bin/trivy"
+          --image heat-chronicle-ci:candidate --output-dir "${{ runner.temp }}/container-report"
+      - name: Preserve public scan summary
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: container-security-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/container-report/summary.json
+          retention-days: 7
+          if-no-files-found: error

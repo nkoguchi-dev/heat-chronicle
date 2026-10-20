@@ -39,3 +39,43 @@ variable "api_domain_name" {
   type        = string
   default     = "api.heat-chronicle.koppepan.org"
 }
+
+variable "api_capacity" {
+  description = "Public API capacity agreed in docs/API_PROTECTION.md; account headroom must be checked before applying"
+  type = object({
+    stage_rate                  = number
+    stage_burst                 = number
+    fetch_month_rate            = number
+    fetch_month_burst           = number
+    lambda_reserved_concurrency = number
+  })
+  default = {
+    stage_rate                  = 5
+    stage_burst                 = 10
+    fetch_month_rate            = 1
+    fetch_month_burst           = 2
+    lambda_reserved_concurrency = 5
+  }
+}
+
+variable "discord_webhook_url" {
+  description = "Discord incoming webhook URL; persist only in SOPS-encrypted tfvars, never in state or plan"
+  type        = string
+  sensitive   = true
+  ephemeral   = true
+  nullable    = false
+  validation {
+    condition     = can(regex("^https://discord\\.com/api/webhooks/[0-9]+/[A-Za-z0-9_-]+$", var.discord_webhook_url))
+    error_message = "Provide a Discord incoming webhook URL without query parameters or a fragment."
+  }
+}
+
+variable "discord_webhook_version" {
+  description = "Increment whenever the encrypted webhook URL changes; write-only values cannot be compared for drift"
+  type        = number
+  default     = 1
+  validation {
+    condition     = var.discord_webhook_version >= 1 && floor(var.discord_webhook_version) == var.discord_webhook_version
+    error_message = "Webhook version must be a positive integer."
+  }
+}

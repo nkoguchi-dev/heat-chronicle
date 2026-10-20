@@ -95,3 +95,18 @@ API Gatewayの制限はbest effortで、厳密な天井ではない。Lambda con
 ## 時刻依存の境界（#198）
 
 Domainの`Clock` PortがUTC現在時刻と単調増加の経過時間を提供し、Infrastructureの`SystemClock`だけが`datetime.now()`と`time.monotonic()`を呼ぶ。UseCase、共有lease、取得ログ保存にはDIで同じ時計を注入する。日本時間の観測年月への変換は純粋な業務ルールとして保持する。固定時計によって年境界・lease失効・壁時計補正と取得予算の独立性を検証する。日時の値型と日付計算はPython標準の`datetime`を継続使用する。
+
+## 容量設定の適用手順（#199）
+
+Terraformへの設定、実stateとの差分、共有上限、非本番検証と承認後の適用・切り戻しは[容量設定と適用確認](../infrastructure/docs/api-capacity.md)を参照する。コードとmock planの検証は、AWSでの反映・負荷制限・回復の確認を代替しない。
+
+## 公開APIのCORS契約
+
+公開業務APIのmethodはGETのみで、fetch-monthも既存のGET契約を維持します。CORSはブラウザからの応答読み取りを許可する設定であり、認証や非ブラウザのアクセス制御ではありません。
+本番の許可originは既存のfrontend HTTPS origin 1件、資格情報の許可はfalseです。OPTIONSはpreflightの処理であり、業務methodには含めません。
+許可request headerはAccept / Accept-Language / Content-Language / Content-Typeで、Authorizationや任意headerは許可しません。
+最初の3件はブラウザとStarletteのsafelisted headerに相当し、Gatewayにも明示して集合を揃えます。frontendのGETはContent-Type: application/jsonを使うため、そのpreflightを許可します。
+Retry-Afterの公開とGateway既存のmax_age=86400を維持し、アプリも同じ値へ揃えます。開発環境のorigin設定は従来どおり環境設定から取得します。
+
+HTTP APIはCORS設定時にbackendのCORS headerを上書きするため、アプリ単体の成功だけで本番Gatewayの一致を保証しません。
+[適用・検証手順](../infrastructure/docs/api-cors.md)に従い、設定照合と本番通常利用を別途確認します。

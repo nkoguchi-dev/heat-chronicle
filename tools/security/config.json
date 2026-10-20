@@ -1,0 +1,6 @@
+{
+  "semgrep_version": "1.181.0",
+  "rules_commit": "17e31e11ebac99fb7dfe1cd288f7a32151b6f3f9",
+  "languages": ["python", "javascript", "typescript"],
+  "excluded_paths": [".security-rules", "tools/security/tests", "tests", "integration_tests", "e2e", "*.test.ts", "*.test.tsx", "test_*.py"]
+}

@@ -1,0 +1,63 @@
+name: CI Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infrastructure/aws/**"
+      - ".github/workflows/ci-infrastructure.yml"
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "infrastructure/aws/**"
+      - ".github/workflows/ci-infrastructure.yml"
+
+concurrency:
+  group: ci-infrastructure-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-test:
+    name: Infrastructure validation and mock tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.3
+          terraform_wrapper: false
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive infrastructure
+      - name: Package and test Discord relay (no external requests)
+        run: |
+          python3 infrastructure/aws/modules/backend_api/discord/package.py
+          python3 -m unittest discover -s infrastructure/aws/modules/backend_api/discord -p 'test_*.py'
+      - name: Initialize without remote state
+        working-directory: infrastructure/aws/environments/prod
+        run: terraform init -backend=false -lockfile=readonly -input=false
+      - name: Validate configuration
+        working-directory: infrastructure/aws/environments/prod
+        run: terraform validate
+      - name: Run offline infrastructure tests
+        working-directory: infrastructure/aws/environments/prod
+        run: terraform test -no-color
+      - name: Package isolated capacity fixture
+        run: python3 infrastructure/aws/environments/capacity-test/package.py
+      - name: Test probe target boundary
+        run: python3 -m unittest discover -s infrastructure/aws/environments/capacity-test -p 'test_*.py'
+      - name: Initialize isolated fixture without remote state
+        working-directory: infrastructure/aws/environments/capacity-test
+        run: terraform init -backend=false -lockfile=readonly -input=false
+      - name: Validate isolated fixture
+        working-directory: infrastructure/aws/environments/capacity-test
+        run: terraform validate
+      - name: Run isolated fixture mock tests
+        working-directory: infrastructure/aws/environments/capacity-test
+        run: terraform test -no-color

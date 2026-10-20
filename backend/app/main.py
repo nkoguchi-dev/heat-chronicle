@@ -40,10 +40,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_allow_origins.split(","),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,
+    allow_methods=["GET"],
+    allow_headers=["Accept", "Accept-Language", "Content-Language", "Content-Type"],
     expose_headers=["Retry-After"],
+    max_age=86400,
 )
 
 app.include_router(hello.router, prefix="/api/hello", tags=["hello"])

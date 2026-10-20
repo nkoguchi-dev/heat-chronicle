@@ -1,0 +1,14 @@
+# Production needs only the locked dependency inputs, app and public station data.
+**
+!pyproject.toml
+!poetry.lock
+!app/
+!app/**
+!data/
+!data/**
+**/__pycache__/
+**/*.pyc
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
