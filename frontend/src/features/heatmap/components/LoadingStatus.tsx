@@ -9,6 +9,7 @@ interface LoadingStatusProps {
   message: string;
   progress?: ProgressEvent;
   onRetry?: () => void;
+  retryDisabled?: boolean;
   variant?: 'default' | 'compact';
 }
 
@@ -18,6 +19,7 @@ export function LoadingStatus({
   progress,
   onRetry,
   variant = 'default',
+  retryDisabled = false,
 }: LoadingStatusProps): React.JSX.Element {
   const percent = progress ? Math.round((progress.completed / Math.max(progress.total, 1)) * 100) : 0;
 
@@ -32,7 +34,7 @@ export function LoadingStatus({
           {message}
         </span>
         {onRetry && (
-          <Button variant="outline" size="sm" onClick={onRetry}>
+          <Button variant="outline" size="sm" onClick={onRetry} disabled={retryDisabled}>
             再試行
           </Button>
         )}

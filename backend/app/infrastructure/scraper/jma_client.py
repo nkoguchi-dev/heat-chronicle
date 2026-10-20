@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable
 
 import httpx
 
@@ -9,12 +10,13 @@ from app.infrastructure.dto.jma import JmaDailyPageRequestDTO
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.data.jma.go.jp/stats/etrn/view"
-REQUEST_TIMEOUT_SECONDS = 30.0
+REQUEST_TIMEOUT_SECONDS = 8.0
 MAX_RETRIES = 3
 
 
 class JmaClient:
-    def __init__(self) -> None:
+    def __init__(self, before_attempt: Callable[[], Awaitable[None]]) -> None:
+        self.before_attempt = before_attempt
         self._client = httpx.AsyncClient(
             timeout=REQUEST_TIMEOUT_SECONDS,
             headers={"User-Agent": "heat-chronicle/1.0"},
@@ -43,12 +45,18 @@ class JmaClient:
 
         last_exc: Exception | None = None
         for attempt in range(MAX_RETRIES):
+            await self.before_attempt()
             try:
-                response = await self._client.get(url, params=request.to_query_params())
+                async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
+                    response = await self._client.get(
+                        url, params=request.to_query_params()
+                    )
                 response.raise_for_status()
                 return response.text
-            except httpx.HTTPError as e:
+            except (httpx.HTTPError, TimeoutError) as e:
                 last_exc = e
+                if attempt == MAX_RETRIES - 1:
+                    break
                 wait = 2 ** (attempt + 1)
                 logger.warning(
                     "JMA request failed (attempt %d): %s, retrying in %ds",

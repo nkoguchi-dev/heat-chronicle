@@ -120,3 +120,29 @@ describe('apiClient', () => {
     await expect(apiClient.delete('/resource')).resolves.toBeUndefined();
   });
 });
+
+it.each([
+  ['1', 1],
+  ['60', 60],
+  ['0', 5],
+  ['61', 5],
+  ['-1', 5],
+  ['1.5', 5],
+  ['Wed, 21 Oct 2026 07:28:00 GMT', 5],
+  [null, 5],
+])('bounds Retry-After %s on non-JSON gateway failures', async (header, seconds) => {
+  server.use(
+    http.get(
+      `${API_URL}/busy`,
+      () =>
+        new HttpResponse('gateway busy', {
+          status: 503,
+          headers: header === null ? {} : { 'Retry-After': header },
+        }),
+    ),
+  );
+  await expect(apiClient.get('/busy', { schema: valueSchema })).rejects.toMatchObject({
+    status: 503,
+    retryAfterSeconds: seconds,
+  });
+});

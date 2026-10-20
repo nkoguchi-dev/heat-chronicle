@@ -25,7 +25,14 @@ export function PrimaryLoadingStatus(props: PrimaryLoadingStatusProps): React.JS
     return <LoadingStatus state="loading" message={message} />;
   }
   if (props.temperatureError?.operation.mode === 'initial') {
-    return <LoadingStatus state="error" message={props.temperatureError.message} onRetry={props.onRetryTemperature} />;
+    return (
+      <LoadingStatus
+        state="error"
+        message={props.temperatureError.message}
+        onRetry={props.onRetryTemperature}
+        retryDisabled={props.temperatureError.retryDisabled}
+      />
+    );
   }
   if (props.activeOperation?.mode !== 'initial' || props.progress?.total === 1) return null;
   return (
