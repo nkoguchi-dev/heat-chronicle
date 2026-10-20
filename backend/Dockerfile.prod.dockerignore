@@ -1,7 +1,8 @@
 # Production needs only the locked dependency inputs, app and public station data.
 **
 !pyproject.toml
-!poetry.lock
+!uv.lock
+!.python-version
 !app/
 !app/**
 !data/

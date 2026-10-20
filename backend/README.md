@@ -128,3 +128,15 @@ DYNAMODB_ENDPOINT_URL=http://127.0.0.1:8001 DYNAMODB_TABLE_PREFIX=test-host uv r
 
 終了時はFastAPIをCtrl-Cで止め、rootで`docker compose stop dynamodb-local`を実行します。
 ローカルデータはそのまま保持されます。外部気象庁の取得は通常の接続確認には不要です。
+
+## Linux imageの検証
+
+開発用は`docker build -f backend/Dockerfile -t heat-backend-dev backend`、Lambda用は
+`docker buildx build --platform linux/amd64 --pull --no-cache-filter base --provenance=false --load -f backend/Dockerfile.prod -t heat-backend-lambda backend`
+で構築します。両方ともuv 0.12.0の固定digestとuv.lockを使います。開発用の環境は/opt/venvに置き、ソースbind mountで上書きしません。
+開発用imageからDBへは明示したcontainer内endpointを指定し、health・主要APIを確認します。
+Lambdaはruntimeだけをtask rootへ導入し、uvや開発依存は最終imageへコピーしません。
+rootのtools/containers/smoke.pyを最終image内で実行して、AWS接続なしのhandlerを確認します。
+imageのbuild・検査は本番配備を意味しません。
+
+rootで`sh tools/run-backend-development-smoke.sh`を実行すると、専用のin-memory DB・networkで開発imageを検証し、自分の一時containerを終了時に削除します。既存DBのvolumeには触れません。
