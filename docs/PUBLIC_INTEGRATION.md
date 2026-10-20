@@ -10,7 +10,7 @@
 - OS更新と不要installer除去を含むLambda用image、コード・秘密情報・コンテナ検査。
 - 未使用shadcn CLIの削除と必要なCSS/MIT告知の保持。
 
-公開側のPoetry lockとprod AWS provider lockは維持します。
+公開側のPoetry lockとprod AWS providerの版を維持します。公開CIで判明したLinux用checksumの不足は公式配布物から補います。
 npmも残る全packageのversion/resolved/integrityを維持し、不要な217 lock entryだけを除きます。
 
 ## 公開しない内容と運用境界
