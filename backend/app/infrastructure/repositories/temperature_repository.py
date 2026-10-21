@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any
 
 from boto3.dynamodb.conditions import Key
 
+from app.application.shared.ports.outbound.clock import Clock
 from app.config import settings
 from app.domain.temperature.model import DailyTemperature
-from app.domain.time.clock import Clock
 from app.infrastructure.dto.dynamodb import (
     DailyTemperatureItemDTO,
     DailyTemperatureWriteDTO,

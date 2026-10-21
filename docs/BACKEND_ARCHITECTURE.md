@@ -222,6 +222,13 @@ unitではDomainから専用Outputへの変換、全件・絞り込み・空カ�
 DynamoDB Localの既存API回帰は、station全件／地域絞り込み、公開フィールドと404/422、station契約を共有するtemperatureの両経路を確認する。
 prefectureの固定カタログのDomain移送は[別Issue][prefecture-domain]で扱い、#156では変更しない。
 
+## temperature取得経路の移行（#157）
+
+取得用Inbound Portと3つの専用Outputを`application/temperature/ports/inbound/get_temperature.py`へ移した。
+TemperatureRepositoryとClockをApplicationのOutboundへ移し、月別取得・DynamoDB Adapter・Guardも参照先を更新した。
+純粋なDomain入力例外はUse CaseでInboundの入力例外へ変換し、HTTPの422/404・メッセージ・50年窓・空データを維持する。
+DIが`get_temperature_port`を登録し、旧具象aliasと対応する移行例外を除去した。月別取得のInboundとData Source/Guardは#158で扱う。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153

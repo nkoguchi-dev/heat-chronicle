@@ -1,11 +1,12 @@
 from datetime import date as Date
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, ConfigDict
 
-from app.di.container import GetTemperatureUseCaseDep
-from app.domain.temperature.input_policy import InvalidTemperatureInput
+from app.application.temperature.ports.inbound.errors import InvalidTemperatureInput
+from app.application.temperature.ports.inbound.get_temperature import GetTemperaturePort
+from app.presentation.api.shared.dependencies import get_temperature_port
 
 router = APIRouter()
 
@@ -43,7 +44,7 @@ class TemperatureResponse(BaseModel):
 @router.get("/{station_id}", response_model=TemperatureResponse)
 def get_temperature(
     station_id: Annotated[int, Path(gt=0)],
-    use_case: GetTemperatureUseCaseDep,
+    use_case: Annotated[GetTemperaturePort, Depends(get_temperature_port)],
     end_year: int | None = Query(default=None),
 ) -> TemperatureResponse:
     try:

@@ -8,14 +8,17 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from moto import mock_aws
 
+from app.application.shared.ports.outbound.clock import Clock
 from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
 from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
+from app.application.temperature.ports.inbound.errors import (
+    InvalidTemperatureInput as GetTemperatureInputError,
+)
 from app.config import Settings
 from app.di.container import get_fetch_month_use_case
 from app.domain.station.model import Station
 from app.domain.temperature.fetch_guard import FetchUnavailable
 from app.domain.temperature.input_policy import InvalidTemperatureInput, validate_month
-from app.domain.time.clock import Clock
 from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from app.main import app
 from tests.fixed_clock import FixedClock
@@ -183,7 +186,7 @@ async def test_other_execution_rejected_for_same_or_different_station(
 def test_history_rejects_before_temperature_io(end_year: int) -> None:
     stations, repo = Mock(), Mock()
     stations.get_by_id.return_value = STATION
-    with pytest.raises(InvalidTemperatureInput):
+    with pytest.raises(GetTemperatureInputError):
         GetTemperatureUseCase(stations, repo, FixedClock()).get_temperature_data(
             1, end_year
         )

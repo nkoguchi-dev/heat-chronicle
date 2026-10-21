@@ -3,13 +3,13 @@ import calendar
 from dataclasses import dataclass
 from datetime import date
 
+from app.application.shared.ports.outbound.clock import Clock
 from app.application.station.ports.outbound.repository import StationRepository
+from app.application.temperature.ports.outbound.repository import TemperatureRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.fetch_guard import FetchGuard, FetchUnavailable
 from app.domain.temperature.input_policy import observation_time, validate_month
-from app.domain.temperature.repository import TemperatureRepository
-from app.domain.time.clock import Clock
 
 FETCH_BUDGET_SECONDS = 25
 

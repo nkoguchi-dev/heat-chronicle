@@ -4,15 +4,16 @@ from fastapi import Depends, FastAPI
 
 from app.application.prefecture.list_prefecture_use_case import ListPrefectureUseCase
 from app.application.prefecture.ports.inbound.list_prefecture import ListPrefecturePort
+from app.application.shared.ports.outbound.clock import Clock
 from app.application.station.list_station_use_case import ListStationUseCase
 from app.application.station.ports.inbound.list_station import ListStationPort
 from app.application.station.ports.outbound.repository import StationRepository
 from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
 from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
+from app.application.temperature.ports.inbound.get_temperature import GetTemperaturePort
+from app.application.temperature.ports.outbound.repository import TemperatureRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.fetch_guard import FetchGuard
-from app.domain.temperature.repository import TemperatureRepository
-from app.domain.time.clock import Clock
 from app.infrastructure.database import get_dynamodb_resource
 from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from app.infrastructure.repositories.station_repository import DynamoDBStationRepository
@@ -26,6 +27,7 @@ from app.infrastructure.time.system_clock import SystemClock
 from app.presentation.api.shared.dependencies import (
     get_prefecture_port,
     get_station_port,
+    get_temperature_port,
 )
 
 
@@ -70,7 +72,7 @@ def get_temperature_use_case(
     station_repo: StationRepoDep,
     temp_repo: TempRepoDep,
     clock: ClockDep,
-) -> GetTemperatureUseCase:
+) -> GetTemperaturePort:
     return GetTemperatureUseCase(station_repo, temp_repo, clock)
 
 
@@ -90,9 +92,6 @@ def get_fetch_month_use_case(
     )
 
 
-GetTemperatureUseCaseDep = Annotated[
-    GetTemperatureUseCase, Depends(get_temperature_use_case)
-]
 FetchMonthUseCaseDep = Annotated[FetchMonthUseCase, Depends(get_fetch_month_use_case)]
 
 
@@ -100,3 +99,4 @@ def register_dependencies(app: FastAPI) -> None:
     """Connect migrated Inbound Ports without exposing concrete types to routes."""
     app.dependency_overrides[get_prefecture_port] = get_prefecture_use_case
     app.dependency_overrides[get_station_port] = get_station_use_case
+    app.dependency_overrides[get_temperature_port] = get_temperature_use_case
