@@ -4,6 +4,7 @@ from app.application.prefecture.ports.inbound.list_prefecture import PrefectureO
 
 def test_prefecture_output_preserves_catalog_and_order() -> None:
     output = ListPrefectureUseCase().list_prefectures()
+    assert all(type(item) is PrefectureOutput for item in output)
     assert len(output) == 61
     assert len({item.prec_no for item in output}) == 61
     assert output[0] == PrefectureOutput(prec_no=11, name="宗谷地方")

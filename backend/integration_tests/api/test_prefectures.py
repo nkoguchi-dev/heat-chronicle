@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pytest
 from httpx import AsyncClient
 
@@ -10,7 +13,10 @@ async def test_get_prefectures_returns_all(client: AsyncClient) -> None:
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    assert len(data) == 61
+    expected = json.loads(
+        (Path(__file__).parents[2] / "tests/fixtures/prefectures.json").read_text()
+    )
+    assert data == expected
 
 
 @pytest.mark.asyncio
