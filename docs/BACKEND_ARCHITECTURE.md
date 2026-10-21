@@ -229,6 +229,13 @@ TemperatureRepositoryとClockをApplicationのOutboundへ移し、月別取得�
 純粋なDomain入力例外はUse CaseでInboundの入力例外へ変換し、HTTPの422/404・メッセージ・50年窓・空データを維持する。
 DIが`get_temperature_port`を登録し、旧具象aliasと対応する移行例外を除去した。月別取得のInboundとData Source/Guardは#158で扱う。
 
+## 月別取得経路の移行（#158）
+
+FetchMonthPortと専用Output、Data Source/FetchGuardをApplicationへ移送し、Domainの外部I/O Protocolを解消した。
+Use Caseの公開境界で純粋な入力例外とOutboundの取得不可をInbound例外へ変換し、422/404/503とRetry-Afterを維持する。
+JMA AdapterはDIからclient factoryを受け、取得ごとに生成してfinallyでcloseする。Guardは同一リクエストのDIキャッシュでUse Caseとclientに共有する。
+HTTP試行間隔・retry・25秒の取得予算・lease・取得ログの順序は変更していない。失敗・キャンセル時のcloseと既存API回帰を検証した。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153

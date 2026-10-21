@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, patch
 import httpx
 import pytest
 
-from app.domain.temperature.fetch_guard import FetchUnavailable
+from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
 from app.infrastructure.scraper.jma_client import JmaClient
 
 

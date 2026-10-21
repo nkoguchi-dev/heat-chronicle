@@ -9,8 +9,8 @@ from botocore.exceptions import ClientError
 from pydantic import ValidationError
 
 from app.application.shared.ports.outbound.clock import Clock
+from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
 from app.config import settings
-from app.domain.temperature.fetch_guard import FetchUnavailable
 from app.infrastructure.dto.fetch_lease import FetchLeaseItemDTO
 
 if TYPE_CHECKING:

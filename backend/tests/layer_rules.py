@@ -113,23 +113,9 @@ def violations(app_dir: Path) -> set[ImportEdge]:
 # Baseline at #154. Remove each pair in its migration PR; never regenerate to
 # accept new violations. Stale exceptions also fail the boundary test.
 MIGRATION_EXCEPTIONS: set[ImportEdge] = {
-    ImportEdge("domain/temperature/data_source.py", "typing.Protocol"),
-    ImportEdge("domain/temperature/fetch_guard.py", "typing.Protocol"),
     ImportEdge("handler.py", "app.infrastructure.seed.seed_and_migrate"),
     ImportEdge("main.py", "app.infrastructure.init_tables.ensure_tables_exist"),
     ImportEdge("main.py", "app.infrastructure.seed.seed_and_migrate"),
-    ImportEdge(
-        "presentation/api/temperature/fetch_month.py",
-        "app.di.container.FetchMonthUseCaseDep",
-    ),
-    ImportEdge(
-        "presentation/api/temperature/fetch_month.py",
-        "app.domain.temperature.fetch_guard.FetchUnavailable",
-    ),
-    ImportEdge(
-        "presentation/api/temperature/fetch_month.py",
-        "app.domain.temperature.input_policy.InvalidTemperatureInput",
-    ),
 }
 
 
@@ -160,7 +146,4 @@ def domain_protocols(app_dir: Path) -> set[tuple[str, str]]:
 
 
 # Delete these definitions and entries together in #156 / #157 / #158.
-DOMAIN_PROTOCOL_EXCEPTIONS = {
-    ("domain/temperature/data_source.py", "TemperatureDataSource"),
-    ("domain/temperature/fetch_guard.py", "FetchGuard"),
-}
+DOMAIN_PROTOCOL_EXCEPTIONS: set[tuple[str, str]] = set()

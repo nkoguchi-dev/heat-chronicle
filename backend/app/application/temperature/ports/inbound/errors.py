@@ -4,3 +4,7 @@ class InvalidTemperatureInput(ValueError):
 
 class StationNotFound(ValueError):
     """Requested station does not exist."""
+
+
+class FetchUnavailable(Exception):
+    """Upstream capacity or time budget is unavailable to this request."""

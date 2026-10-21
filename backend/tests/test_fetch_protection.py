@@ -12,15 +12,18 @@ from app.application.shared.ports.outbound.clock import Clock
 from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
 from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
 from app.application.temperature.ports.inbound.errors import (
+    FetchUnavailable as InboundFetchUnavailable,
+)
+from app.application.temperature.ports.inbound.errors import (
     InvalidTemperatureInput as GetTemperatureInputError,
 )
+from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
 from app.config import Settings
-from app.di.container import get_fetch_month_use_case
 from app.domain.station.model import Station
-from app.domain.temperature.fetch_guard import FetchUnavailable
-from app.domain.temperature.input_policy import InvalidTemperatureInput, validate_month
+from app.domain.temperature.input_policy import validate_month
 from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from app.main import app
+from app.presentation.api.shared.dependencies import get_fetch_month_port
 from tests.fixed_clock import FixedClock
 
 STATION = Station(1, "Tokyo", 44, "47662", "s", earliest_year=1872)
@@ -111,7 +114,7 @@ def make_use_case(
 )
 async def test_reject_before_temperature_io(year: int, month: int) -> None:
     use_case, _, repo, source = make_use_case()
-    with pytest.raises(InvalidTemperatureInput):
+    with pytest.raises(GetTemperatureInputError):
         await use_case.fetch_month(1, year, month)
     repo.get_fetched_months.assert_not_called()
     repo.bulk_insert_temperatures.assert_not_called()
@@ -142,7 +145,7 @@ async def test_empty_success_is_cached_and_failure_is_not() -> None:
     source.fetch_daily_temperatures.side_effect = RuntimeError(
         "private upstream detail"
     )
-    with pytest.raises(FetchUnavailable):
+    with pytest.raises(InboundFetchUnavailable):
         await use_case.fetch_month(1, 2024, 1)
     repo.insert_fetch_log.assert_not_called()
 
@@ -160,7 +163,7 @@ async def test_lost_owner_cannot_write() -> None:
     guard = Mock()
     guard.check_owner.side_effect = FetchUnavailable()
     use_case, _, repo, _ = make_use_case(guard)
-    with pytest.raises(FetchUnavailable):
+    with pytest.raises(InboundFetchUnavailable):
         await use_case.fetch_month(1, 2024, 1)
     repo.bulk_insert_temperatures.assert_not_called()
     repo.insert_fetch_log.assert_not_called()
@@ -176,7 +179,7 @@ async def test_other_execution_rejected_for_same_or_different_station(
     )
     use_case, _, repo, source = make_use_case(second)
     first.acquire()
-    with pytest.raises(FetchUnavailable):
+    with pytest.raises(InboundFetchUnavailable):
         await use_case.fetch_month(station_id, 2024, 1)
     source.fetch_daily_temperatures.assert_not_called()
     repo.insert_fetch_log.assert_not_called()
@@ -201,7 +204,7 @@ async def test_http_invalid_station_has_no_upstream(
     use_case, stations, repo, source = make_use_case()
     stations.get_by_id.return_value = None
     original_overrides = app.dependency_overrides.copy()
-    app.dependency_overrides[get_fetch_month_use_case] = lambda: use_case
+    app.dependency_overrides[get_fetch_month_port] = lambda: use_case
     try:
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
@@ -219,9 +222,11 @@ async def test_http_invalid_station_has_no_upstream(
 
 async def test_http_busy_is_safe_retryable_response() -> None:
     use_case = Mock()
-    use_case.fetch_month = AsyncMock(side_effect=FetchUnavailable("private detail"))
+    use_case.fetch_month = AsyncMock(
+        side_effect=InboundFetchUnavailable("private detail")
+    )
     original_overrides = app.dependency_overrides.copy()
-    app.dependency_overrides[get_fetch_month_use_case] = lambda: use_case
+    app.dependency_overrides[get_fetch_month_port] = lambda: use_case
     try:
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
@@ -252,7 +257,7 @@ async def test_budget_timeout_releases_lease_without_success_log() -> None:
     with patch(
         "app.application.temperature.fetch_month_use_case.FETCH_BUDGET_SECONDS", 0.01
     ):
-        with pytest.raises(FetchUnavailable):
+        with pytest.raises(InboundFetchUnavailable):
             await use_case.fetch_month(1, 2024, 1)
     repo.insert_fetch_log.assert_not_called()
     guard.release.assert_called_once()
@@ -274,7 +279,7 @@ async def test_two_overlapping_requests_share_one_upstream(dynamodb: Any) -> Non
     task = asyncio.create_task(first.fetch_month(1, 2024, 1))
     await started.wait()
     try:
-        with pytest.raises(FetchUnavailable):
+        with pytest.raises(InboundFetchUnavailable):
             await second.fetch_month(1, 2024, 1)
         other_source.fetch_daily_temperatures.assert_not_called()
         repo.insert_fetch_log.assert_not_called()
@@ -298,7 +303,7 @@ async def test_budget_uses_elapsed_clock_not_wall_time(
 
     source.fetch_daily_temperatures.side_effect = fetch
     if expect_failure:
-        with pytest.raises(FetchUnavailable):
+        with pytest.raises(InboundFetchUnavailable):
             await use_case.fetch_month(1, 2024, 1)
         repo.insert_fetch_log.assert_not_called()
     else:

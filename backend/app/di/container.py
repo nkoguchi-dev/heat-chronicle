@@ -10,21 +10,24 @@ from app.application.station.ports.inbound.list_station import ListStationPort
 from app.application.station.ports.outbound.repository import StationRepository
 from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
 from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
+from app.application.temperature.ports.inbound.fetch_month import FetchMonthPort
 from app.application.temperature.ports.inbound.get_temperature import GetTemperaturePort
+from app.application.temperature.ports.outbound.data_source import TemperatureDataSource
+from app.application.temperature.ports.outbound.fetch_guard import FetchGuard
 from app.application.temperature.ports.outbound.repository import TemperatureRepository
-from app.domain.temperature.data_source import TemperatureDataSource
-from app.domain.temperature.fetch_guard import FetchGuard
 from app.infrastructure.database import get_dynamodb_resource
 from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from app.infrastructure.repositories.station_repository import DynamoDBStationRepository
 from app.infrastructure.repositories.temperature_repository import (
     DynamoDBTemperatureRepository,
 )
+from app.infrastructure.scraper.jma_client import JmaClient
 from app.infrastructure.scraper.jma_temperature_data_source import (
     JmaTemperatureDataSource,
 )
 from app.infrastructure.time.system_clock import SystemClock
 from app.presentation.api.shared.dependencies import (
+    get_fetch_month_port,
     get_prefecture_port,
     get_station_port,
     get_temperature_port,
@@ -54,7 +57,9 @@ FetchGuardDep = Annotated[FetchGuard, Depends(get_fetch_guard)]
 
 
 def get_temperature_data_source(guard: FetchGuardDep) -> TemperatureDataSource:
-    return JmaTemperatureDataSource(guard)
+    return JmaTemperatureDataSource(
+        lambda: JmaClient(before_attempt=guard.before_attempt)
+    )
 
 
 StationRepoDep = Annotated[StationRepository, Depends(get_station_repository)]
@@ -86,13 +91,10 @@ def get_fetch_month_use_case(
     temperature_data_source: TemperatureDataSourceDep,
     guard: FetchGuardDep,
     clock: ClockDep,
-) -> FetchMonthUseCase:
+) -> FetchMonthPort:
     return FetchMonthUseCase(
         station_repo, temp_repo, temperature_data_source, guard, clock
     )
-
-
-FetchMonthUseCaseDep = Annotated[FetchMonthUseCase, Depends(get_fetch_month_use_case)]
 
 
 def register_dependencies(app: FastAPI) -> None:
@@ -100,3 +102,4 @@ def register_dependencies(app: FastAPI) -> None:
     app.dependency_overrides[get_prefecture_port] = get_prefecture_use_case
     app.dependency_overrides[get_station_port] = get_station_use_case
     app.dependency_overrides[get_temperature_port] = get_temperature_use_case
+    app.dependency_overrides[get_fetch_month_port] = get_fetch_month_use_case
