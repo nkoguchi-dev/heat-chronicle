@@ -1,44 +1,28 @@
-from dataclasses import dataclass
 from datetime import date, datetime
 
+from app.application.shared.ports.outbound.clock import Clock
 from app.application.station.ports.outbound.repository import StationRepository
+from app.application.temperature.ports.inbound.errors import (
+    InvalidTemperatureInput,
+    StationNotFound,
+)
+from app.application.temperature.ports.inbound.get_temperature import (
+    GetTemperatureDataOutput,
+    TemperatureMetadataOutput,
+    TemperatureRecordOutput,
+)
+from app.application.temperature.ports.outbound.repository import TemperatureRepository
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
+from app.domain.temperature.input_policy import (
+    InvalidTemperatureInput as DomainInvalidTemperatureInput,
+)
 from app.domain.temperature.input_policy import (
     earliest_year,
     observation_time,
     validate_year,
 )
-from app.domain.temperature.repository import TemperatureRepository
-from app.domain.time.clock import Clock
 
 CHUNK_SIZE = 50
-
-
-@dataclass(frozen=True)
-class TemperatureMetadataOutput:
-    station_id: int
-    station_name: str
-    start_year: int
-    end_year: int
-    total_records: int
-    fetched_months: list[str]
-    fetching_required: bool
-    has_older_data: bool
-    next_end_year: int | None
-
-
-@dataclass(frozen=True)
-class TemperatureRecordOutput:
-    date: date
-    max_temp: float | None = None
-    min_temp: float | None = None
-    avg_temp: float | None = None
-
-
-@dataclass(frozen=True)
-class GetTemperatureDataOutput:
-    metadata: TemperatureMetadataOutput
-    data: list[TemperatureRecordOutput]
 
 
 def _build_date_range(start_year: int, end_year: int) -> tuple[str, str]:
@@ -82,10 +66,13 @@ class GetTemperatureUseCase:
         now_jst = observation_time(now)
         station = self.station_repo.get_by_id(station_id)
         if station is None:
-            raise ValueError(f"Station {station_id} not found")
+            raise StationNotFound(f"Station {station_id} not found")
 
         end_year = now_jst.year if end_year is None else end_year
-        validate_year(station, end_year, now_jst)
+        try:
+            validate_year(station, end_year, now_jst)
+        except DomainInvalidTemperatureInput as exc:
+            raise InvalidTemperatureInput(str(exc)) from exc
         effective_earliest = earliest_year(station)
         start_year = max(effective_earliest, end_year - CHUNK_SIZE + 1)
 

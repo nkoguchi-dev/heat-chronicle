@@ -8,9 +8,9 @@ from uuid import uuid4
 from botocore.exceptions import ClientError
 from pydantic import ValidationError
 
+from app.application.shared.ports.outbound.clock import Clock
 from app.config import settings
 from app.domain.temperature.fetch_guard import FetchUnavailable
-from app.domain.time.clock import Clock
 from app.infrastructure.dto.fetch_lease import FetchLeaseItemDTO
 
 if TYPE_CHECKING:

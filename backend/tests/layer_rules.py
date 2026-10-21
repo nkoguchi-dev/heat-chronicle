@@ -115,8 +115,6 @@ def violations(app_dir: Path) -> set[ImportEdge]:
 MIGRATION_EXCEPTIONS: set[ImportEdge] = {
     ImportEdge("domain/temperature/data_source.py", "typing.Protocol"),
     ImportEdge("domain/temperature/fetch_guard.py", "typing.Protocol"),
-    ImportEdge("domain/temperature/repository.py", "typing.Protocol"),
-    ImportEdge("domain/time/clock.py", "typing.Protocol"),
     ImportEdge("handler.py", "app.infrastructure.seed.seed_and_migrate"),
     ImportEdge("main.py", "app.infrastructure.init_tables.ensure_tables_exist"),
     ImportEdge("main.py", "app.infrastructure.seed.seed_and_migrate"),
@@ -130,14 +128,6 @@ MIGRATION_EXCEPTIONS: set[ImportEdge] = {
     ),
     ImportEdge(
         "presentation/api/temperature/fetch_month.py",
-        "app.domain.temperature.input_policy.InvalidTemperatureInput",
-    ),
-    ImportEdge(
-        "presentation/api/temperature/get_temperature.py",
-        "app.di.container.GetTemperatureUseCaseDep",
-    ),
-    ImportEdge(
-        "presentation/api/temperature/get_temperature.py",
         "app.domain.temperature.input_policy.InvalidTemperatureInput",
     ),
 }
@@ -171,8 +161,6 @@ def domain_protocols(app_dir: Path) -> set[tuple[str, str]]:
 
 # Delete these definitions and entries together in #156 / #157 / #158.
 DOMAIN_PROTOCOL_EXCEPTIONS = {
-    ("domain/temperature/repository.py", "TemperatureRepository"),
     ("domain/temperature/data_source.py", "TemperatureDataSource"),
     ("domain/temperature/fetch_guard.py", "FetchGuard"),
-    ("domain/time/clock.py", "Clock"),
 }

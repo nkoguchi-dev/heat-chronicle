@@ -166,7 +166,7 @@ presentation/api/temperature/
 
 ## 時刻の取得
 
-- 現在時刻と経過時間は`Clock` Outbound Portを通して取得し、DIから注入する。現状の`domain/time/clock.py`は#157で`application/shared/ports/outbound/clock.py`へ移す。
+- 現在時刻と経過時間は`Clock` Outbound Portを通して取得し、DIから注入する。`application/shared/ports/outbound/clock.py`が契約を所有する。
 - `datetime.now()`・`date.today()`・`time.time()`・`time.monotonic()`の実時計参照はInfrastructureの`SystemClock`へ集約する。日時値の構築・変換・比較は各層で行ってよい。
 - `Clock.now()`はtimezone-awareなUTC日時を返す。観測年月はDomainの純粋な変換で日本時間へ揃える。共有lease期限には壁時計、実行中の取得予算には単調増加時計を使い、混同しない。
 - テストでは固定時計を注入し、時刻取得関数のpatchで時計依存を隠さない。
