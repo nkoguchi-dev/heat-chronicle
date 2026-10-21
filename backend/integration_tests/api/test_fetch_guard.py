@@ -3,8 +3,8 @@ from typing import Any
 
 import pytest
 
+from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
 from app.config import Settings
-from app.domain.temperature.fetch_guard import FetchUnavailable
 from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from tests.fixed_clock import FixedClock
 

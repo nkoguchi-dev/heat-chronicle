@@ -1,25 +1,33 @@
 import asyncio
 import calendar
-from dataclasses import dataclass
 from datetime import date
 
 from app.application.shared.ports.outbound.clock import Clock
 from app.application.station.ports.outbound.repository import StationRepository
+from app.application.temperature.ports.inbound.errors import (
+    FetchUnavailable as InboundFetchUnavailable,
+)
+from app.application.temperature.ports.inbound.errors import (
+    InvalidTemperatureInput as InboundInvalidTemperatureInput,
+)
+from app.application.temperature.ports.inbound.errors import StationNotFound
+from app.application.temperature.ports.inbound.fetch_month import (
+    FetchMonthTemperatureOutput,
+)
+from app.application.temperature.ports.outbound.data_source import TemperatureDataSource
+from app.application.temperature.ports.outbound.fetch_guard import (
+    FetchGuard,
+    FetchUnavailable,
+)
 from app.application.temperature.ports.outbound.repository import TemperatureRepository
-from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
-from app.domain.temperature.fetch_guard import FetchGuard, FetchUnavailable
-from app.domain.temperature.input_policy import observation_time, validate_month
+from app.domain.temperature.input_policy import (
+    InvalidTemperatureInput,
+    observation_time,
+    validate_month,
+)
 
 FETCH_BUDGET_SECONDS = 25
-
-
-@dataclass(frozen=True)
-class FetchMonthTemperatureOutput:
-    date: date
-    max_temp: float | None = None
-    min_temp: float | None = None
-    avg_temp: float | None = None
 
 
 class FetchMonthUseCase:
@@ -38,6 +46,16 @@ class FetchMonthUseCase:
         self.clock = clock
 
     async def fetch_month(
+        self, station_id: int, year: int, month: int
+    ) -> list[FetchMonthTemperatureOutput]:
+        try:
+            return await self._fetch_month(station_id, year, month)
+        except InvalidTemperatureInput as exc:
+            raise InboundInvalidTemperatureInput(str(exc)) from exc
+        except FetchUnavailable as exc:
+            raise InboundFetchUnavailable() from exc
+
+    async def _fetch_month(
         self,
         station_id: int,
         year: int,
@@ -47,7 +65,7 @@ class FetchMonthUseCase:
         now = observation_time(self.clock.now())
         station = self.station_repo.get_by_id(station_id)
         if station is None:
-            raise ValueError(f"Station {station_id} not found")
+            raise StationNotFound(f"Station {station_id} not found")
 
         validate_month(station, year, month, now)
 

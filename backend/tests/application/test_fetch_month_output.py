@@ -1,8 +1,10 @@
 from typing import get_args, get_type_hints
 
 from app.application.temperature.fetch_month_use_case import (
-    FetchMonthTemperatureOutput,
     FetchMonthUseCase,
+)
+from app.application.temperature.ports.inbound.fetch_month import (
+    FetchMonthTemperatureOutput,
 )
 
 

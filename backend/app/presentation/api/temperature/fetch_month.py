@@ -1,12 +1,15 @@
 from datetime import date as Date
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel, ConfigDict
 
-from app.di.container import FetchMonthUseCaseDep
-from app.domain.temperature.fetch_guard import FetchUnavailable
-from app.domain.temperature.input_policy import InvalidTemperatureInput
+from app.application.temperature.ports.inbound.errors import (
+    FetchUnavailable,
+    InvalidTemperatureInput,
+)
+from app.application.temperature.ports.inbound.fetch_month import FetchMonthPort
+from app.presentation.api.shared.dependencies import get_fetch_month_port
 
 router = APIRouter()
 
@@ -31,7 +34,7 @@ class MonthTemperatureResponse(BaseModel):
 @router.get("/{station_id}/fetch-month", response_model=MonthTemperatureResponse)
 async def fetch_month(
     station_id: Annotated[int, Path(gt=0)],
-    use_case: FetchMonthUseCaseDep,
+    use_case: Annotated[FetchMonthPort, Depends(get_fetch_month_port)],
     year: int = Query(...),
     month: int = Query(...),
 ) -> MonthTemperatureResponse:
