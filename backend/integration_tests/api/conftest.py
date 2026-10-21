@@ -45,6 +45,8 @@ async def client(
     """テストごとに新しい AsyncClient を作成する。
     DI をオーバーライドしてテスト用 DynamoDB を注入し、lifespan を無効化する。
     """
+    original_lifespan = app.router.lifespan_context
+    original_overrides = app.dependency_overrides.copy()
     app.router.lifespan_context = _noop_lifespan
     app.dependency_overrides[get_clock] = lambda: clock
 
@@ -62,13 +64,16 @@ async def client(
         dynamodb_resource, clock
     )
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test",
-    ) as ac:
-        yield ac
-
-    app.dependency_overrides.clear()
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as ac:
+            yield ac
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(original_overrides)
+        app.router.lifespan_context = original_lifespan
 
 
 @pytest.fixture

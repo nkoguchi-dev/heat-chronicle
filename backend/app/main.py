@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from starlette.requests import Request
 
 from app.config import settings
+from app.di.container import register_dependencies
 from app.infrastructure.init_tables import ensure_tables_exist
 from app.infrastructure.seed import seed_and_migrate
 from app.presentation.api import health, hello, prefectures, stations, temperature
@@ -36,6 +37,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+register_dependencies(app)
 
 app.add_middleware(
     CORSMiddleware,
