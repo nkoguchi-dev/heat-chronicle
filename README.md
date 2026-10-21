@@ -82,6 +82,9 @@
 
 ## アーキテクチャ
 
+バックエンドの現状、Application所有のPort／Adapterへの目標構成、API経路ごとの移行順は
+[バックエンド設計](./docs/BACKEND_ARCHITECTURE.md)を参照してください。Issue #153で設計を定義し、後続Issueで段階的にコードを移行します。
+
 ```text
 ┌─────────────────────┐      ┌────────────────────────┐
 │ Vite / React / Canvas│─────▶│ API Gateway            │

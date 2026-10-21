@@ -25,25 +25,29 @@ uv run --locked mypy .       # 4. 型チェック
 uv run --locked pytest tests/ -v  # 5. テスト
 ```
 
-## レイヤードアーキテクチャ
+## Port／Adapterアーキテクチャ
 
-4 層構成を採用しています。依存方向は上から下への一方向のみ許可します。
+目標構成と段階移行の正本は[バックエンド設計](../docs/BACKEND_ARCHITECTURE.md)です。
+Issue #153は設計のみを変更します。コードは従来構成を維持し、#154で境界検査を準備してから#155〜#159で経路ごとに移行します。
+未移行経路の既存依存だけを移行期間中の例外とし、新しい依存へ広げません。
 
-| レイヤー | ディレクトリ | 責務 |
-|----------|------------|------|
-| Presentation | `presentation/api/` | FastAPI ルーター（HTTP ハンドリング） |
-| Application | `application/` | ユースケース（気象データ取得、キャッシュ判定） |
-| Domain | `domain/` | ドメインモデル、純粋な業務ルール、I/O Port |
-| Infrastructure | `infrastructure/` | DynamoDB アクセス、気象庁データ取得・解析 |
+| 役割 | ディレクトリ | 責務 |
+|------|-------------|------|
+| Inbound Adapter | `presentation/api/` | HTTP検証、Inbound Port呼び出し、専用Responseへの変換 |
+| Application | `application/` | Inbound／Outbound Port、入出力、Use Case、取得手順 |
+| Domain | `domain/` | 外部I/Oを持たないモデル、純粋な業務規則 |
+| Outbound Adapter | `infrastructure/` | DynamoDB、気象庁、実時計と外部DTO変換 |
+| Composition Root | `di/` | Portと具象の接続、外部client生成・終了の配線 |
 
 ### レイヤー間の制約
 
-- **Presentation → Application**: ルーターは UseCase のみを呼び出す
-- **Presentation → Infrastructure**: 直接呼び出し禁止（必ず Application 層を経由する）
-- **Application → Domain**: Application 層が import できるプロジェクト内レイヤーは Domain 層だけとする。Infrastructure / Presentation / DI の import を禁止する
-- **Domain**: 他レイヤーに依存しない（純粋なドメインモデルと業務ルール）
-- **Infrastructure → Domain**: Infrastructure 層は Domain 層の Repository / Port インターフェースを実装する。Application / Presentation / DI の import を禁止する
-- **DI / Composition Root**: Application と Infrastructure の両方を import し、Domain のインターフェースに Infrastructure 実装を注入する唯一の場所とする
+- **Presentation → Application Inbound Port**: 移行済みendpointは`application/<feature>/ports/inbound/`の契約だけに依存する。Use Case具象、Outbound Port、Domain、Infrastructure、DIをimportしない。
+- **Application → Domain**: Application内とDomainだけをimportできる。FastAPI、Pydantic、boto3、具体Adapter、Presentation、DI、設定への依存を禁止する。
+- **Domain**: 標準ライブラリとDomain内だけに依存する。外部I/O Protocol、Application、framework、実時計参照を置かない。
+- **Infrastructure → Application Outbound Port / Domain**: Outbound PortとDomainモデル・規則を利用できる。Inbound Port、Use Case具象、Presentation、DIへの依存を禁止する。
+- **DI / Composition Root**: Inbound Port、Use Case、Outbound Adapterの具象を接続する唯一の場所。mainとLambda handlerはDIの初期化・登録を呼び、router、middleware、起動終了を配線する。
+- FastAPIの`Depends`はPresentation内のPort型付き依存関数を指し、Composition Rootがproviderを登録する。移行済みendpointからDIの具象Use Case aliasをimportしない。
+- import境界テストは現状と目標を区別する。#154以降は絶対／相対importの負例を検査し、各経路の移行PRで例外を減らす。
 
 ### モデルと DTO の境界
 
@@ -61,11 +65,11 @@ uv run --locked pytest tests/ -v  # 5. テスト
 
 Domain Model は `frozen=True` の dataclass を基本とし、Application 専用 DTO は標準 dataclass、外部境界 DTO は Pydantic Model を使用します。
 
-Repository や外部データ取得など、Application が必要とする I/O は Domain 層に `Protocol` として定義し、Infrastructure 層で実装します。Application は具体実装を知らず、DI が実装を組み立てます。
+Applicationが必要とする外部I/Oは`application/<feature>/ports/outbound/`の`Protocol`として所有し、Infrastructureが実装します。Inbound Portと公開する入出力は`ports/inbound/`へ置き、Use Case具象から分離します。詳細な配置と移行中の例外は[バックエンド設計](../docs/BACKEND_ARCHITECTURE.md)を参照してください。
 
 ### Application のファイル構成
 
-- UseCase クラスとユースケース固有の入出力は、`prefecture/`、`station/`、`temperature/` のような機能単位のディレクトリに配置する
+- UseCase クラスとPort・ユースケース固有の入出力は、`prefecture/`、`station/`、`temperature/` のような機能単位のディレクトリに配置する
 - Application の Python ファイルを `application/` 直下へ直接追加しない
 - 1つのユースケースにつき1つの UseCase クラスを作成し、異なるユースケースを1つのクラスに混在させない
 - UseCase クラスは `ListStationUseCase` のように操作名を含めて `UseCase` を接尾辞とし、ファイル名は `list_station_use_case.py` のように操作を表す snake_case とする
@@ -87,20 +91,20 @@ application/
 
 ### Domain のファイル構成
 
-- Domain Model、業務ルール、Repository / Port は、`station/` や `temperature/` のようなドメインリソース単位のディレクトリに配置する
+以下は移行後の配置です。既存Portは各経路の移行時にApplicationへ移送します。
+
+- Domain Model、純粋な業務ルールは、`station/` や `temperature/` のようなドメインリソース単位のディレクトリに配置する
 - Domain の Python ファイルを `domain/` 直下へ直接追加しない
-- リソースディレクトリ内では `model.py`、`repository.py`、`data_source.py` のように責務を表す snake_case のファイル名を使用する
+- リソースディレクトリ内では `model.py`、`fetch_freshness.py`、`input_policy.py` のように責務を表す snake_case のファイル名を使用する
 
 ```text
 domain/
 ├── station/
-│   ├── model.py       # 観測地点モデル
-│   └── repository.py  # 観測地点 Repository Port
+│   └── model.py
 └── temperature/
-    ├── model.py             # 日別気温モデル
-    ├── repository.py        # 気温 Repository Port
-    ├── data_source.py       # 気象データ取得 Port
-    └── fetch_freshness.py   # 取得鮮度の業務ルール
+    ├── model.py
+    ├── fetch_freshness.py
+    └── input_policy.py
 ```
 
 ### Presentation のファイル構成
@@ -121,8 +125,8 @@ presentation/api/temperature/
 
 ## 主要パターン
 
-- **リポジトリパターン**: Domain 層の `StationRepository` / `TemperatureRepository` Port を Infrastructure 層の DynamoDB Repository が実装する
-- **依存性注入**: FastAPI の `Depends` を使用し、Presentation 層には UseCase を注入する
+- **リポジトリパターン**: Application所有の `StationRepository` / `TemperatureRepository` Outbound Port を Infrastructure 層の DynamoDB Repository が実装する
+- **依存性注入**: FastAPI の `Depends` を使用し、Presentation層にはInbound Port型でUse Case実装を注入する
 - **負荷を抑えたデータ取得**: フロントエンドが2秒以上の間隔で順次取得し、サーバーは共有leaseで上流を直列化する。`JmaClient`は最大3試行、試行間隔2秒以上、1試行8秒。詳細は`docs/API_PROTECTION.md`を参照
 
 ## API エンドポイント
@@ -159,7 +163,7 @@ presentation/api/temperature/
 
 ## 時刻の取得
 
-- 現在時刻と経過時間はDomainの`time/clock.py`の`Clock` Portを通して取得し、DIから注入する。
+- 現在時刻と経過時間は`Clock` Outbound Portを通して取得し、DIから注入する。現状の`domain/time/clock.py`は#157で`application/shared/ports/outbound/clock.py`へ移す。
 - `datetime.now()`・`date.today()`・`time.time()`・`time.monotonic()`の実時計参照はInfrastructureの`SystemClock`へ集約する。日時値の構築・変換・比較は各層で行ってよい。
 - `Clock.now()`はtimezone-awareなUTC日時を返す。観測年月はDomainの純粋な変換で日本時間へ揃える。共有lease期限には壁時計、実行中の取得予算には単調増加時計を使い、混同しない。
 - テストでは固定時計を注入し、時刻取得関数のpatchで時計依存を隠さない。
