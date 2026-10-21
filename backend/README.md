@@ -34,14 +34,15 @@ backend/
 │   │   ├── prefecture/
 │   │   │   └── list_prefecture_use_case.py … 都道府県一覧の取得
 │   │   ├── station/
+│   │   │   ├── ports/inbound/list_station.py … Inbound Portと専用Output
+│   │   │   ├── ports/outbound/repository.py  … Station Repository Port
 │   │   │   └── list_station_use_case.py   … 観測地点一覧の取得
 │   │   └── temperature/
 │   │       ├── fetch_month_use_case.py     … 気象庁からの月別データ取得
 │   │       └── get_temperature_use_case.py … キャッシュ済みデータのクエリ
 │   ├── domain/                      … ドメインモデル、業務ルール、I/O Port
 │   │   ├── station/                … 観測地点ドメイン
-│   │   │   ├── model.py            … 観測地点モデル
-│   │   │   └── repository.py       … 観測地点 Repository Port
+│   │   │   └── model.py            … 観測地点モデル
 │   │   └── temperature/            … 気温ドメイン
 │   │       ├── data_source.py      … 気象データ取得 Port
 │   │       ├── fetch_freshness.py  … 取得鮮度の業務ルール
@@ -66,7 +67,7 @@ backend/
 └── Dockerfile.prod                  … 本番用（Lambda コンテナ）
 ```
 
-コーディング規約・開発コマンド・アーキテクチャの詳細は [AGENTS.md](./AGENTS.md) を参照してください。
+コーディング規約・開発コマンドは[AGENTS.md](./AGENTS.md)、Portの所有と段階移行は[バックエンド設計](../docs/BACKEND_ARCHITECTURE.md)を参照してください。Domainに残るtemperature等のI/O Portは後続段階でApplicationへ移します。
 
 ## 気象庁データ取得仕様
 

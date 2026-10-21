@@ -3,7 +3,7 @@ import calendar
 from dataclasses import dataclass
 from datetime import date
 
-from app.domain.station.repository import StationRepository
+from app.application.station.ports.outbound.repository import StationRepository
 from app.domain.temperature.data_source import TemperatureDataSource
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.fetch_guard import FetchGuard, FetchUnavailable

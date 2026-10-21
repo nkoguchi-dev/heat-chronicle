@@ -1,19 +1,8 @@
-from dataclasses import dataclass
-from typing import Literal
-
-from app.domain.station.repository import StationRepository
-
-
-@dataclass(frozen=True)
-class StationOutput:
-    id: int
-    station_name: str
-    prec_no: int
-    block_no: str
-    station_type: Literal["s", "a"]
-    latitude: float | None = None
-    longitude: float | None = None
-    earliest_year: int | None = None
+from app.application.station.ports.inbound.list_station import (
+    PrefectureNotFound,
+    StationOutput,
+)
+from app.application.station.ports.outbound.repository import StationRepository
 
 
 class ListStationUseCase:
@@ -24,7 +13,7 @@ class ListStationUseCase:
         if prec_no is not None:
             stations = self.station_repo.get_by_prec_no(prec_no)
             if not stations:
-                raise ValueError("Prefecture not found")
+                raise PrefectureNotFound("Prefecture not found")
         else:
             stations = self.station_repo.get_all()
 

@@ -1,9 +1,10 @@
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 
-from app.di.container import ListStationUseCaseDep
+from app.application.station.ports.inbound.list_station import ListStationPort
+from app.presentation.api.shared.dependencies import get_station_port
 
 router = APIRouter()
 
@@ -23,7 +24,7 @@ class StationResponse(BaseModel):
 
 @router.get("/", response_model=list[StationResponse])
 def get_stations(
-    use_case: ListStationUseCaseDep,
+    use_case: Annotated[ListStationPort, Depends(get_station_port)],
     prec_no: int | None = None,
 ) -> list[StationResponse]:
     try:
