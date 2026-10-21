@@ -10,7 +10,7 @@
 - OS更新と不要installer除去を含むLambda用image、コード・秘密情報・コンテナ検査。
 - 未使用shadcn CLIの削除と必要なCSS/MIT告知の保持。
 
-公開側のPoetry lockとprod AWS providerの版を維持します。公開CIで判明したLinux用checksumの不足は公式配布物から補います。
+この統合当時は公開側のPoetry lockとprod AWS providerの版を維持しました。現在の依存管理は後続の[uv移行の結合確認](./BACKEND_VERIFICATION.md)を参照してください。公開CIで判明したLinux用checksumの不足は公式配布物から補います。
 npmも残る全packageのversion/resolved/integrityを維持し、不要な217 lock entryだけを除きます。
 
 ## 公開しない内容と運用境界
@@ -26,7 +26,7 @@ backend bucket/keyを維持し、同じ資源を複数のTerraform rootから適
 
 mainへの統合は本番反映ではありません。release/prodへのpush、配備workflow実行、AWS apply、通知送信は別途扱います。
 未完了の費用メール到達確認と停止・復旧検証は既存の非公開運用課題に残し、この統合で完了扱いにしません。
-uv移行はこの統合の後、公開Issue #136で進めます。
+uv移行は後続の公開Issue #136で実施しました。
 
 ## 統合時の検証（2026-10-21）
 

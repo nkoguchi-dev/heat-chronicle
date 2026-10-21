@@ -150,3 +150,5 @@ Lambda imageは既存Container Securityでbuild・隔離handler・脆弱性/秘�
 Dependabotのbackendはuv ecosystemへ切り替えます。CI成功や候補buildを本番配備と扱いません。
 
 専用portで確認する場合は、frontendのoriginをCORS_ALLOW_ORIGINSへ明示し、frontendのHEAT_CHRONICLE_API_PROXY_TARGETをホストAPIのportへ合わせます。既定手順はfrontend localhost:3000、API 127.0.0.1:8000です。
+
+移行完了時の新worktree・host/DB/frontend・両image・CIの確認範囲は[結合確認](../docs/BACKEND_VERIFICATION.md)を参照してください。
