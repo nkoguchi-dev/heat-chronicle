@@ -72,3 +72,5 @@ uv run --locked pytest ../tools/tests/ -v
 ```
 
 手動で起動したホストプロセスの停止は、そのターミナルのCtrl+Cで行います。make stopは他のターミナルのプロセスを探して終了しません。
+
+初回構築・反復停止・異常終了・CIの検証範囲は[確認記録](./LOCAL_DEVELOPMENT_VERIFICATION.md)を参照してください。
