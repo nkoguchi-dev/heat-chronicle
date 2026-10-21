@@ -61,7 +61,9 @@ class JmaTemperatureDataSource:
             active_error = sys.exception()
             try:
                 await client.close()
-            except httpx.RequestError, OSError, TimeoutError:
+            except (httpx.RequestError, OSError, TimeoutError) as exc:
+                if isinstance(exc, httpx.UnsupportedProtocol) and active_error is None:
+                    raise
                 logger.warning("jma_close_unavailable")
                 if active_error is None and isinstance(result, TemperaturesFetched):
                     result = TemperatureSourceUnavailable()
