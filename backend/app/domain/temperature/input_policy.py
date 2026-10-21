@@ -18,10 +18,6 @@ class InvalidObservationPeriod:
     detail: str
 
 
-class InvalidTemperatureInput(ValueError):
-    pass
-
-
 def observation_time(now: datetime) -> datetime:
     return now.astimezone(ZoneInfo("Asia/Tokyo"))
 
@@ -38,14 +34,16 @@ def validate_year(
     return ObservationPeriodValid()
 
 
-def validate_month(station: Station, year: int, month: int, now: datetime) -> None:
-    # Temporary legacy bridge for fetch-month, removed in #250.
+def validate_month(
+    station: Station, year: int, month: int, now: datetime
+) -> ObservationPeriodValid | InvalidObservationPeriod:
     match validate_year(station, year, now):
         case InvalidObservationPeriod(detail=detail):
-            raise InvalidTemperatureInput(detail)
+            return InvalidObservationPeriod(detail)
         case ObservationPeriodValid():
             pass
         case unreachable:
             assert_never(unreachable)
     if not 1 <= month <= 12 or (year, month) > (now.year, now.month):
-        raise InvalidTemperatureInput("month outside observation range")
+        return InvalidObservationPeriod("month outside observation range")
+    return ObservationPeriodValid()

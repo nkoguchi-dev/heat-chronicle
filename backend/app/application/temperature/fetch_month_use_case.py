@@ -1,7 +1,7 @@
 import asyncio
 import calendar
 import logging
-import sys
+from dataclasses import dataclass
 from datetime import date
 from typing import assert_never
 
@@ -12,16 +12,13 @@ from app.application.station.ports.outbound.repository import (
     StationRepository,
     StationStorageUnavailable,
 )
-from app.application.temperature.ports.inbound.errors import (
-    FetchUnavailable as InboundFetchUnavailable,
-)
-from app.application.temperature.ports.inbound.errors import (
-    InvalidTemperatureInput as InboundInvalidTemperatureInput,
-)
-from app.application.temperature.ports.inbound.errors import StationNotFound
 from app.application.temperature.ports.inbound.fetch_month import (
+    FetchMonthInvalidPeriod,
+    FetchMonthNotFound,
+    FetchMonthResult,
     FetchMonthStorageUnavailable,
     FetchMonthTemperatureOutput,
+    FetchMonthUnavailable,
 )
 from app.application.temperature.ports.outbound.data_source import (
     TemperatureDataSource,
@@ -46,7 +43,8 @@ from app.application.temperature.ports.outbound.repository import (
 from app.domain.station.model import Station
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.input_policy import (
-    InvalidTemperatureInput,
+    InvalidObservationPeriod,
+    ObservationPeriodValid,
     observation_time,
     validate_month,
 )
@@ -54,6 +52,11 @@ from app.domain.temperature.input_policy import (
 logger = logging.getLogger(__name__)
 
 FETCH_BUDGET_SECONDS = 25
+
+
+@dataclass(frozen=True)
+class _RefreshSucceeded:
+    pass
 
 
 class FetchMonthUseCase:
@@ -73,31 +76,32 @@ class FetchMonthUseCase:
 
     async def fetch_month(
         self, station_id: int, year: int, month: int
-    ) -> list[FetchMonthTemperatureOutput] | FetchMonthStorageUnavailable:
-        try:
-            return await self._fetch_month(station_id, year, month)
-        except InvalidTemperatureInput as exc:
-            raise InboundInvalidTemperatureInput(str(exc)) from exc
-
-    async def _fetch_month(
-        self,
-        station_id: int,
-        year: int,
-        month: int,
-    ) -> list[FetchMonthTemperatureOutput] | FetchMonthStorageUnavailable:
+    ) -> (
+        FetchMonthResult
+        | FetchMonthNotFound
+        | FetchMonthInvalidPeriod
+        | FetchMonthStorageUnavailable
+        | FetchMonthUnavailable
+    ):
         """1ヶ月分のデータを取得して返す。キャッシュ済みならDBから返す。"""
         now = observation_time(self.clock.now())
         match self.station_repo.get_by_id(station_id):
             case StationFound(station=station):
                 pass
             case StationMissing():
-                raise StationNotFound(f"Station {station_id} not found")
+                return FetchMonthNotFound(station_id)
             case StationStorageUnavailable():
                 return FetchMonthStorageUnavailable()
             case unreachable_1:
                 assert_never(unreachable_1)
 
-        validate_month(station, year, month, now)
+        match validate_month(station, year, month, now):
+            case ObservationPeriodValid():
+                pass
+            case InvalidObservationPeriod(detail=detail):
+                return FetchMonthInvalidPeriod(detail)
+            case unreachable_period:
+                assert_never(unreachable_period)
 
         # キャッシュ済みか確認
         match self.temp_repo.get_fetched_months(station_id):
@@ -117,33 +121,46 @@ class FetchMonthUseCase:
                 case GuardSucceeded():
                     pass
                 case LeaseBusy():
-                    # Temporary Inbound bridge; removed in #250.
-                    raise InboundFetchUnavailable()
+                    return FetchMonthUnavailable()
                 case GuardStorageUnavailable():
                     return FetchMonthStorageUnavailable()
                 case unreachable_acquire:
                     assert_never(unreachable_acquire)
-            result: FetchMonthStorageUnavailable | None = None
+            result: (
+                _RefreshSucceeded | FetchMonthStorageUnavailable | FetchMonthUnavailable
+            ) = _RefreshSucceeded()
+            active_error = False
             try:
                 result = await self._refresh(station_id, year, month, station, policy)
+            except BaseException:
+                active_error = True
+                raise
             finally:
-                active_error = sys.exception()
                 try:
                     match self.fetch_guard.release():
                         case GuardSucceeded():
                             pass
                         case GuardStorageUnavailable():
                             logger.warning("lease_release_unavailable")
-                            if active_error is None and result is None:
+                            if not active_error and isinstance(
+                                result, _RefreshSucceeded
+                            ):
                                 result = FetchMonthStorageUnavailable()
                         case unreachable_release:
                             assert_never(unreachable_release)
                 except BaseException:
-                    if active_error is None:
+                    if not active_error:
                         raise
                     logger.warning("lease_release_failed_during_exception")
-            if result is not None:
-                return result
+            match result:
+                case _RefreshSucceeded():
+                    pass
+                case (
+                    FetchMonthUnavailable() | FetchMonthStorageUnavailable() as failure
+                ):
+                    return failure
+                case unreachable_refresh:
+                    assert_never(unreachable_refresh)
 
         # DBからデータを取得して返す
         start_date = date(year, month, 1).isoformat()
@@ -158,15 +175,17 @@ class FetchMonthUseCase:
             case unreachable_6:
                 assert_never(unreachable_6)
 
-        return [
-            FetchMonthTemperatureOutput(
-                date=record.date,
-                max_temp=record.max_temp,
-                min_temp=record.min_temp,
-                avg_temp=record.avg_temp,
-            )
-            for record in temperature_records
-        ]
+        return FetchMonthResult(
+            [
+                FetchMonthTemperatureOutput(
+                    date=record.date,
+                    max_temp=record.max_temp,
+                    min_temp=record.min_temp,
+                    avg_temp=record.avg_temp,
+                )
+                for record in temperature_records
+            ]
+        )
 
     async def _refresh(
         self,
@@ -175,7 +194,7 @@ class FetchMonthUseCase:
         month: int,
         station: Station,
         policy: FetchFreshnessPolicy,
-    ) -> FetchMonthStorageUnavailable | None:
+    ) -> _RefreshSucceeded | FetchMonthStorageUnavailable | FetchMonthUnavailable:
         deadline = self.clock.monotonic() + FETCH_BUDGET_SECONDS
         try:
             async with asyncio.timeout(FETCH_BUDGET_SECONDS):
@@ -190,23 +209,29 @@ class FetchMonthUseCase:
                     year, month, refreshed.get((year, month)), self.clock.now()
                 )
                 if status not in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
-                    return None
+                    return _RefreshSucceeded()
                 match await self.temperature_data_source.fetch_daily_temperatures(
                     station, year, month
                 ):
                     case TemperaturesFetched(records=records):
                         pass
                     case TemperatureSourceUnavailable():
-                        raise InboundFetchUnavailable()
+                        return FetchMonthUnavailable()
                     case TemperatureSourceStorageUnavailable():
                         return FetchMonthStorageUnavailable()
                     case unreachable_source:
                         assert_never(unreachable_source)
                 if self.clock.monotonic() >= deadline:
-                    raise InboundFetchUnavailable()
-                owner_failure = self._check_owner()
-                if owner_failure is not None:
-                    return owner_failure
+                    return FetchMonthUnavailable()
+                match self.fetch_guard.check_owner():
+                    case GuardSucceeded():
+                        pass
+                    case LeaseLost():
+                        return FetchMonthUnavailable()
+                    case GuardStorageUnavailable():
+                        return FetchMonthStorageUnavailable()
+                    case unreachable_before_write:
+                        assert_never(unreachable_before_write)
                 if records:
                     match self.temp_repo.bulk_insert_temperatures(station_id, records):
                         case TemperatureWriteSucceeded():
@@ -215,26 +240,21 @@ class FetchMonthUseCase:
                             return FetchMonthStorageUnavailable()
                         case unreachable_write:
                             assert_never(unreachable_write)
-                owner_failure = self._check_owner()
-                if owner_failure is not None:
-                    return owner_failure
+                match self.fetch_guard.check_owner():
+                    case GuardSucceeded():
+                        pass
+                    case LeaseLost():
+                        return FetchMonthUnavailable()
+                    case GuardStorageUnavailable():
+                        return FetchMonthStorageUnavailable()
+                    case unreachable_before_log:
+                        assert_never(unreachable_before_log)
                 match self.temp_repo.insert_fetch_log(station_id, year, month):
                     case TemperatureWriteSucceeded():
-                        return None
+                        return _RefreshSucceeded()
                     case TemperatureStorageUnavailable():
                         return FetchMonthStorageUnavailable()
                     case unreachable_log:
                         assert_never(unreachable_log)
-        except TimeoutError as exc:
-            raise InboundFetchUnavailable() from exc
-
-    def _check_owner(self) -> FetchMonthStorageUnavailable | None:
-        match self.fetch_guard.check_owner():
-            case GuardSucceeded():
-                return None
-            case LeaseLost():
-                raise InboundFetchUnavailable()
-            case GuardStorageUnavailable():
-                return FetchMonthStorageUnavailable()
-            case unreachable:
-                assert_never(unreachable)
+        except TimeoutError:
+            return FetchMonthUnavailable()
