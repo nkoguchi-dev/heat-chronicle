@@ -4,8 +4,14 @@ import pytest
 
 from app.application.station.list_station_use_case import ListStationUseCase
 from app.application.station.ports.inbound.list_station import (
+    ListStationStorageUnavailable,
     PrefectureNotFound,
     StationOutput,
+)
+from app.application.station.ports.outbound.repository import (
+    StationFound,
+    StationMissing,
+    StationsRead,
 )
 from app.domain.station.model import Station
 
@@ -13,7 +19,8 @@ from app.domain.station.model import Station
 def test_list_station_use_case_uses_application_output_dto() -> None:
     return_type = get_type_hints(ListStationUseCase.list_stations)["return"]
 
-    assert get_args(return_type) == (StationOutput,)
+    assert list[StationOutput] in get_args(return_type)
+    assert ListStationStorageUnavailable in get_args(return_type)
 
 
 class MemoryStationRepository:
@@ -21,18 +28,21 @@ class MemoryStationRepository:
         self.stations = stations
         self.calls: list[int | None] = []
 
-    def get_all(self) -> list[Station]:
+    def get_all(self) -> StationsRead:
         self.calls.append(None)
-        return self.stations
+        return StationsRead(self.stations)
 
-    def get_by_prec_no(self, prec_no: int) -> list[Station]:
+    def get_by_prec_no(self, prec_no: int) -> StationsRead:
         self.calls.append(prec_no)
-        return [station for station in self.stations if station.prec_no == prec_no]
+        return StationsRead(
+            [station for station in self.stations if station.prec_no == prec_no]
+        )
 
-    def get_by_id(self, station_id: int) -> Station | None:
-        return next(
+    def get_by_id(self, station_id: int) -> StationFound | StationMissing:
+        station = next(
             (station for station in self.stations if station.id == station_id), None
         )
+        return StationMissing() if station is None else StationFound(station)
 
 
 @pytest.mark.parametrize("prec_no", [None, 44])
@@ -41,6 +51,7 @@ def test_station_use_case_maps_domain_to_output(prec_no: int | None) -> None:
     repo = MemoryStationRepository([station])
     output = ListStationUseCase(repo).list_stations(prec_no)
     assert output == [StationOutput(4, "東京", 44, "47662", "s", 35.69, 139.75, 1872)]
+    assert isinstance(output, list)
     assert type(output[0]) is StationOutput
     assert repo.calls == [prec_no]
 

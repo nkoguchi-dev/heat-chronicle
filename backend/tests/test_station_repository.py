@@ -5,7 +5,12 @@ import boto3
 import pytest
 from moto import mock_aws
 
-from app.application.station.ports.outbound.repository import StationRepository
+from app.application.station.ports.outbound.repository import (
+    StationFound,
+    StationMissing,
+    StationRepository,
+    StationsRead,
+)
 from app.config import Settings
 from app.infrastructure.repositories.station_repository import (
     DynamoDBStationRepository,
@@ -83,38 +88,45 @@ def repo() -> Generator[StationRepository, None, None]:
 
 class TestGetAll:
     def test_excludes_id_zero(self, repo: StationRepository) -> None:
-        stations = repo.get_all()
+        result = repo.get_all()
+        assert isinstance(result, StationsRead)
+        stations = result.stations
         ids = [s.id for s in stations]
         assert 0 not in ids
         assert len(stations) == 2
 
     def test_sorted_by_id(self, repo: StationRepository) -> None:
-        stations = repo.get_all()
+        result = repo.get_all()
+        assert isinstance(result, StationsRead)
+        stations = result.stations
         assert stations[0].id == 1
         assert stations[1].id == 2
 
 
 class TestGetById:
     def test_returns_none_for_id_zero(self, repo: StationRepository) -> None:
-        assert repo.get_by_id(0) is None
+        assert isinstance(repo.get_by_id(0), StationMissing)
 
     def test_returns_station(self, repo: StationRepository) -> None:
-        station = repo.get_by_id(1)
-        assert station is not None
+        result = repo.get_by_id(1)
+        assert isinstance(result, StationFound)
+        station = result.station
         assert station.id == 1
         assert station.station_name == "札幌"
 
     def test_returns_none_for_nonexistent(self, repo: StationRepository) -> None:
-        assert repo.get_by_id(999) is None
+        assert isinstance(repo.get_by_id(999), StationMissing)
 
 
 class TestEarliestYear:
     def test_earliest_year_present(self, repo: StationRepository) -> None:
-        station = repo.get_by_id(1)
-        assert station is not None
+        result = repo.get_by_id(1)
+        assert isinstance(result, StationFound)
+        station = result.station
         assert station.earliest_year == 1872
 
     def test_earliest_year_absent(self, repo: StationRepository) -> None:
-        station = repo.get_by_id(2)
-        assert station is not None
+        result = repo.get_by_id(2)
+        assert isinstance(result, StationFound)
+        station = result.station
         assert station.earliest_year is None

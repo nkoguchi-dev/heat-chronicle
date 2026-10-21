@@ -9,6 +9,10 @@ from httpx import ASGITransport, AsyncClient
 from moto import mock_aws
 
 from app.application.shared.ports.outbound.clock import Clock
+from app.application.station.ports.outbound.repository import (
+    StationFound,
+    StationMissing,
+)
 from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
 from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
 from app.application.temperature.ports.inbound.errors import (
@@ -17,7 +21,15 @@ from app.application.temperature.ports.inbound.errors import (
 from app.application.temperature.ports.inbound.errors import (
     InvalidTemperatureInput as GetTemperatureInputError,
 )
+from app.application.temperature.ports.inbound.get_temperature import (
+    GetTemperatureDataOutput,
+)
 from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
+from app.application.temperature.ports.outbound.repository import (
+    FetchedMonthsRead,
+    TemperaturesRead,
+    TemperatureWriteSucceeded,
+)
 from app.config import Settings
 from app.domain.station.model import Station
 from app.domain.temperature.input_policy import validate_month
@@ -95,9 +107,11 @@ def make_use_case(
     guard: Any = None, clock: Clock | None = None
 ) -> tuple[FetchMonthUseCase, Mock, Mock, AsyncMock]:
     station_repo, repo, source = Mock(), Mock(), AsyncMock()
-    station_repo.get_by_id.return_value = STATION
-    repo.get_fetched_months.return_value = {}
-    repo.get_by_station_and_range.return_value = []
+    station_repo.get_by_id.return_value = StationFound(STATION)
+    repo.get_fetched_months.return_value = FetchedMonthsRead({})
+    repo.get_by_station_and_range.return_value = TemperaturesRead([])
+    repo.bulk_insert_temperatures.return_value = TemperatureWriteSucceeded()
+    repo.insert_fetch_log.return_value = TemperatureWriteSucceeded()
     source.fetch_daily_temperatures.return_value = []
     return (
         FetchMonthUseCase(
@@ -124,7 +138,7 @@ async def test_reject_before_temperature_io(year: int, month: int) -> None:
 
 async def test_unknown_station_precedes_month_validation() -> None:
     use_case, stations, repo, source = make_use_case()
-    stations.get_by_id.return_value = None
+    stations.get_by_id.return_value = StationMissing()
     with pytest.raises(ValueError, match="not found"):
         await use_case.fetch_month(2, 0, 0)
     repo.get_fetched_months.assert_not_called()
@@ -153,7 +167,10 @@ async def test_empty_success_is_cached_and_failure_is_not() -> None:
 async def test_recheck_cache_after_acquiring_lease() -> None:
     guard = Mock()
     use_case, _, repo, source = make_use_case(guard)
-    repo.get_fetched_months.side_effect = [{}, {(2024, 1): NOW}]
+    repo.get_fetched_months.side_effect = [
+        FetchedMonthsRead({}),
+        FetchedMonthsRead({(2024, 1): NOW}),
+    ]
     await use_case.fetch_month(1, 2024, 1)
     source.fetch_daily_temperatures.assert_not_called()
     guard.release.assert_called_once()
@@ -188,7 +205,7 @@ async def test_other_execution_rejected_for_same_or_different_station(
 @pytest.mark.parametrize("end_year", [0, 1871, 10000])
 def test_history_rejects_before_temperature_io(end_year: int) -> None:
     stations, repo = Mock(), Mock()
-    stations.get_by_id.return_value = STATION
+    stations.get_by_id.return_value = StationFound(STATION)
     with pytest.raises(GetTemperatureInputError):
         GetTemperatureUseCase(stations, repo, FixedClock()).get_temperature_data(
             1, end_year
@@ -202,7 +219,7 @@ async def test_http_invalid_station_has_no_upstream(
     station_id: int, status: int
 ) -> None:
     use_case, stations, repo, source = make_use_case()
-    stations.get_by_id.return_value = None
+    stations.get_by_id.return_value = StationMissing()
     original_overrides = app.dependency_overrides.copy()
     app.dependency_overrides[get_fetch_month_port] = lambda: use_case
     try:
@@ -321,9 +338,10 @@ async def test_budget_uses_elapsed_clock_not_wall_time(
 def test_history_uses_japan_year_from_injected_clock(instant: str, year: int) -> None:
     clock = FixedClock(datetime.fromisoformat(instant))
     stations, repo = Mock(), Mock()
-    stations.get_by_id.return_value = STATION
-    repo.get_fetched_months.return_value = {}
-    repo.get_by_station_and_range.return_value = []
+    stations.get_by_id.return_value = StationFound(STATION)
+    repo.get_fetched_months.return_value = FetchedMonthsRead({})
+    repo.get_by_station_and_range.return_value = TemperaturesRead([])
     result = GetTemperatureUseCase(stations, repo, clock).get_temperature_data(1, None)
+    assert isinstance(result, GetTemperatureDataOutput)
     assert result.metadata.end_year == year
     assert result.metadata.start_year == year - 49

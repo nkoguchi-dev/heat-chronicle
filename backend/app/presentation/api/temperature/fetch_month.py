@@ -1,15 +1,20 @@
 from datetime import date as Date
-from typing import Annotated
+from typing import Annotated, assert_never
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
 from app.application.temperature.ports.inbound.errors import (
     FetchUnavailable,
     InvalidTemperatureInput,
 )
-from app.application.temperature.ports.inbound.fetch_month import FetchMonthPort
+from app.application.temperature.ports.inbound.fetch_month import (
+    FetchMonthPort,
+    FetchMonthStorageUnavailable,
+)
 from app.presentation.api.shared.dependencies import get_fetch_month_port
+from app.presentation.api.shared.internal_server_error import storage_error_response
 
 router = APIRouter()
 
@@ -37,9 +42,15 @@ async def fetch_month(
     use_case: Annotated[FetchMonthPort, Depends(get_fetch_month_port)],
     year: int = Query(...),
     month: int = Query(...),
-) -> MonthTemperatureResponse:
+) -> MonthTemperatureResponse | JSONResponse:
     try:
-        records = await use_case.fetch_month(station_id, year, month)
+        match await use_case.fetch_month(station_id, year, month):
+            case FetchMonthStorageUnavailable():
+                return storage_error_response()
+            case list() as records:
+                pass
+            case unreachable_1:
+                assert_never(unreachable_1)
         return MonthTemperatureResponse(
             year=year,
             month=month,

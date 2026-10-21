@@ -30,7 +30,12 @@ class GetTemperatureDataOutput:
     data: list[TemperatureRecordOutput]
 
 
+@dataclass(frozen=True)
+class GetTemperatureStorageUnavailable:
+    pass
+
+
 class GetTemperaturePort(Protocol):
     def get_temperature_data(
         self, station_id: int, end_year: int | None
-    ) -> GetTemperatureDataOutput: ...
+    ) -> GetTemperatureDataOutput | GetTemperatureStorageUnavailable: ...
