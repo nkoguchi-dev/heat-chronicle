@@ -8,9 +8,9 @@ import pytest
 from botocore.exceptions import ClientError
 from pydantic import ValidationError
 
-from app.application.temperature.ports.inbound.errors import FetchUnavailable
 from app.application.temperature.ports.inbound.fetch_month import (
     FetchMonthStorageUnavailable,
+    FetchMonthUnavailable,
 )
 from app.application.temperature.ports.outbound.data_source import (
     TemperatureSourceStorageUnavailable,
@@ -227,8 +227,7 @@ async def test_release_storage_failure_preserves_primary_result(primary: str) ->
     guard.release.return_value = GuardStorageUnavailable()
     if primary == "source":
         source.fetch_daily_temperatures.return_value = TemperatureSourceUnavailable()
-        with pytest.raises(FetchUnavailable):
-            await use_case.fetch_month(1, 2024, 1)
+        assert isinstance(await use_case.fetch_month(1, 2024, 1), FetchMonthUnavailable)
     else:
         if primary == "storage":
             source.fetch_daily_temperatures.return_value = (
@@ -311,3 +310,31 @@ async def test_http_failure_retries_three_times_without_exposing_details(
         assert "private" not in caplog.text
     finally:
         await client.close()
+
+
+async def test_callers_handled_exception_does_not_mask_release_failure() -> None:
+    guard = Mock()
+    use_case, _, _, _ = make_use_case(guard)
+    guard.release.side_effect = RuntimeError("cleanup must propagate")
+    try:
+        raise ValueError("already handled by caller")
+    except ValueError:
+        with pytest.raises(RuntimeError, match="cleanup must propagate"):
+            await use_case.fetch_month(1, 2024, 1)
+
+
+async def test_callers_handled_exception_does_not_mask_close_failure() -> None:
+    client = AsyncMock()
+    client.fetch_daily_page.return_value = JmaPageFetched("html")
+    client.close.side_effect = RuntimeError("cleanup must propagate")
+    try:
+        raise ValueError("already handled by caller")
+    except ValueError:
+        with patch(
+            "app.infrastructure.scraper.jma_temperature_data_source.parse_daily_page",
+            return_value=[],
+        ):
+            with pytest.raises(RuntimeError, match="cleanup must propagate"):
+                await JmaTemperatureDataSource(lambda: client).fetch_daily_temperatures(
+                    STATION, 2024, 1
+                )

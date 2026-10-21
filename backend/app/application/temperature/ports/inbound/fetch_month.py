@@ -16,7 +16,33 @@ class FetchMonthStorageUnavailable:
     pass
 
 
+@dataclass(frozen=True)
+class FetchMonthResult:
+    records: list[FetchMonthTemperatureOutput]
+
+
+@dataclass(frozen=True)
+class FetchMonthNotFound:
+    station_id: int
+
+
+@dataclass(frozen=True)
+class FetchMonthInvalidPeriod:
+    detail: str
+
+
+@dataclass(frozen=True)
+class FetchMonthUnavailable:
+    pass
+
+
 class FetchMonthPort(Protocol):
     async def fetch_month(
         self, station_id: int, year: int, month: int
-    ) -> list[FetchMonthTemperatureOutput] | FetchMonthStorageUnavailable: ...
+    ) -> (
+        FetchMonthResult
+        | FetchMonthNotFound
+        | FetchMonthInvalidPeriod
+        | FetchMonthStorageUnavailable
+        | FetchMonthUnavailable
+    ): ...

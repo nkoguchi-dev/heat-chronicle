@@ -1,5 +1,4 @@
 import logging
-import sys
 from collections.abc import Callable
 from typing import assert_never
 
@@ -39,6 +38,7 @@ class JmaTemperatureDataSource:
             | TemperatureSourceUnavailable
             | TemperatureSourceStorageUnavailable
         ) = TemperatureSourceUnavailable()
+        active_error = False
         try:
             match await client.fetch_daily_page(
                 prec_no=station.prec_no,
@@ -57,19 +57,21 @@ class JmaTemperatureDataSource:
                     result = TemperatureSourceStorageUnavailable()
                 case unreachable:
                     assert_never(unreachable)
+        except BaseException:
+            active_error = True
+            raise
         finally:
-            active_error = sys.exception()
             try:
                 await client.close()
             except (httpx.RequestError, OSError, TimeoutError) as exc:
-                if isinstance(exc, httpx.UnsupportedProtocol) and active_error is None:
+                if isinstance(exc, httpx.UnsupportedProtocol) and not active_error:
                     raise
                 logger.warning("jma_close_unavailable")
-                if active_error is None and isinstance(result, TemperaturesFetched):
+                if not active_error and isinstance(result, TemperaturesFetched):
                     result = TemperatureSourceUnavailable()
             except BaseException:
                 # Cleanup must not mask an active cancellation or unexpected failure.
-                if active_error is None:
+                if not active_error:
                     raise
                 logger.warning("jma_close_failed_during_exception")
         return result
