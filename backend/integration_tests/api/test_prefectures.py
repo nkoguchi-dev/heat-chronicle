@@ -21,6 +21,7 @@ async def test_get_prefectures_structure(client: AsyncClient) -> None:
     assert response.status_code == 200
     data = response.json()
     for prefecture in data:
+        assert set(prefecture) == {"prec_no", "name"}
         assert isinstance(prefecture["prec_no"], int)
         assert isinstance(prefecture["name"], str)
         assert len(prefecture["name"]) > 0
