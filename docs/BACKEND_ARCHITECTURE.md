@@ -176,7 +176,7 @@ Browser Smokeは固定API応答による画面回帰、host/image smokeは実行
 動的importや実行時の具象生成までは保証しない。具象接続とlifecycleは移行PRのレビュー・#159の検索・#160の起動検証で確認する。
 
 - `MIGRATION_EXCEPTIONS`は#154開始時の既存違反15組を「ファイルとimport先」で固定する。新規違反と、解消済みなのに残った例外の両方を失敗にする。
-- `DOMAIN_PROTOCOL_EXCEPTIONS`は残る5つのDomain Protocol定義を固定し、別名や修飾名でのProtocol追加も検出する。
+- `DOMAIN_PROTOCOL_EXCEPTIONS`は#154開始時の5つのDomain Protocol定義を固定し、別名や修飾名でのProtocol追加も検出する。
 - 各移行PRでは経路のコード・テストと同時に対応する例外だけを削除する。例外一覧を現物から再生成して新規違反を容認しない。
 - `application/<feature>/ports/`の契約クラスはUse Case/Service命名検査の対象外とし、Port配置と依存方向で検査する。Use Case自身の単一公開メソッド検査は維持する。
 - `test_layer_rule_guards.py`は一時Pythonファイルへの禁止import配置と正例を自動検証する。appツリーへの絶対／相対禁止import配置でも境界pytestが終了コード1となり、除去後に成功することを#154で確認した。
@@ -209,9 +209,23 @@ prefectureの旧具象型aliasを削除し、対応するimport移行例外1組�
 unitではカタログ・順序、空／複数要素のPort差し替え、実provider登録、未登録エラー、Lambdaのlifespan off経路を検証する。
 integrationでは既存の61件・フィールド・東京都の応答契約を維持する。
 
+## station経路の移行（#156）
+
+- `application/station/ports/inbound/list_station.py`が`ListStationPort`、`StationOutput`と`PrefectureNotFound`を所有する。単純な任意の地域番号は引数のまま受け、未使用Input DTOは作らない。
+- `ListStationUseCase`はApplication所有の`StationRepository`からDomainモデルを受け、専用Outputへ変換する。地域に地点がないときはInboundの`PrefectureNotFound("Prefecture not found")`を送出する。
+- station endpointは`get_station_port()`を通じてPortを受ける。既存のValueErrorから404への変換とResponse DTOのstrict検証を維持し、APIのエラー契約を広げない。
+- Repository Protocolは`domain/station/repository.py`から`application/station/ports/outbound/repository.py`へ移送した。temperatureの両Use CaseとDIも新しい契約を参照し、旧パスや再exportを残さない。
+- DynamoDB Adapterのクエリ・scan・ソート・DTO変換は変更しない。構造的Protocol適合をDI providerとRepositoryテストfixtureのPort型で検査する。
+- DIはstationのInbound Port providerを登録し、具象型aliasを撤去した。旧import例外2組とDomain Protocol定義例外1件を除去する。
+
+unitではDomainから専用Outputへの変換、全件・絞り込み・空カタログ・未検出・null値とPort差し替えを確認する。
+DynamoDB Localの既存API回帰は、station全件／地域絞り込み、公開フィールドと404/422、station契約を共有するtemperatureの両経路を確認する。
+prefectureの固定カタログのDomain移送は[別Issue][prefecture-domain]で扱い、#156では変更しない。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153
 [product]: ./specs/product.md
 [testing]: ./TESTING_STRATEGY.md
+[prefecture-domain]: https://github.com/nkoguchi-dev/heat-chronicle/issues/238
 <!-- /links -->

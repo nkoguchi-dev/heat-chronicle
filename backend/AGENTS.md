@@ -28,7 +28,7 @@ uv run --locked pytest tests/ -v  # 5. テスト
 ## Port／Adapterアーキテクチャ
 
 目標構成と段階移行の正本は[バックエンド設計](../docs/BACKEND_ARCHITECTURE.md)です。
-Issue #153で設計、#154で境界検査を定義しました。#155のprefecture一覧はInbound Portへ移行済みで、station・temperatureは#156〜#159で順に移行します。
+Issue #153で設計、#154で境界検査を定義しました。#155のprefecture一覧と#156のstation一覧はInbound Portへ移行済みです。Station RepositoryもApplicationが所有し、temperatureの残る契約は#157〜#159で移行します。
 未移行経路の既存依存だけを移行期間中の例外とし、新しい依存へ広げません。
 
 | 役割 | ディレクトリ | 責務 |
@@ -84,6 +84,8 @@ application/
 │   └── list_prefecture_use_case.py
 ├── shared/              # 複数 UseCase の共通 Service
 ├── station/
+│   ├── ports/inbound/list_station.py    # Port・専用Output・未検出例外
+│   ├── ports/outbound/repository.py     # StationRepository
 │   └── list_station_use_case.py
 └── temperature/
     ├── get_temperature_use_case.py

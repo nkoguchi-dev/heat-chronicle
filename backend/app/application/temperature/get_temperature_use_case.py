@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 
-from app.domain.station.repository import StationRepository
+from app.application.station.ports.outbound.repository import StationRepository
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.input_policy import (
     earliest_year,
