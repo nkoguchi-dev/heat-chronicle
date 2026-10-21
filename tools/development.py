@@ -44,7 +44,9 @@ class Runner:
     ) -> subprocess.Popen[bytes]:
         self.ensure_running()
         print(f"[{cwd.name}] {shlex.join(command)}", flush=True)
-        process = subprocess.Popen(command, cwd=cwd, env=env, start_new_session=True)
+        process = subprocess.Popen(
+            command, cwd=cwd, env=env, shell=False, start_new_session=True
+        )
         self.children.append(process)
         return process
 
