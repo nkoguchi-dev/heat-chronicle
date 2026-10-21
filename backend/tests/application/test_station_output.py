@@ -4,8 +4,9 @@ import pytest
 
 from app.application.station.list_station_use_case import ListStationUseCase
 from app.application.station.ports.inbound.list_station import (
+    ListStationNotFound,
     ListStationStorageUnavailable,
-    PrefectureNotFound,
+    StationListResult,
     StationOutput,
 )
 from app.application.station.ports.outbound.repository import (
@@ -19,7 +20,7 @@ from app.domain.station.model import Station
 def test_list_station_use_case_uses_application_output_dto() -> None:
     return_type = get_type_hints(ListStationUseCase.list_stations)["return"]
 
-    assert list[StationOutput] in get_args(return_type)
+    assert StationListResult in get_args(return_type)
     assert ListStationStorageUnavailable in get_args(return_type)
 
 
@@ -50,23 +51,29 @@ def test_station_use_case_maps_domain_to_output(prec_no: int | None) -> None:
     station = Station(4, "東京", 44, "47662", "s", 35.69, 139.75, 1872)
     repo = MemoryStationRepository([station])
     output = ListStationUseCase(repo).list_stations(prec_no)
-    assert output == [StationOutput(4, "東京", 44, "47662", "s", 35.69, 139.75, 1872)]
-    assert isinstance(output, list)
-    assert type(output[0]) is StationOutput
+    assert isinstance(output, StationListResult)
+    assert output.stations == [
+        StationOutput(4, "東京", 44, "47662", "s", 35.69, 139.75, 1872)
+    ]
+    assert type(output.stations[0]) is StationOutput
     assert repo.calls == [prec_no]
 
 
 def test_station_use_case_preserves_null_fields() -> None:
     repo = MemoryStationRepository([Station(1, "地点", 44, "0001", "a")])
-    assert ListStationUseCase(repo).list_stations() == [
-        StationOutput(1, "地点", 44, "0001", "a")
-    ]
+    assert ListStationUseCase(repo).list_stations() == StationListResult(
+        [StationOutput(1, "地点", 44, "0001", "a")]
+    )
 
 
 def test_empty_station_catalog_is_success() -> None:
-    assert ListStationUseCase(MemoryStationRepository([])).list_stations() == []
+    assert ListStationUseCase(
+        MemoryStationRepository([])
+    ).list_stations() == StationListResult([])
 
 
 def test_missing_region_uses_inbound_error_contract() -> None:
-    with pytest.raises(PrefectureNotFound, match="^Prefecture not found$"):
-        ListStationUseCase(MemoryStationRepository([])).list_stations(99999)
+    assert isinstance(
+        ListStationUseCase(MemoryStationRepository([])).list_stations(99999),
+        ListStationNotFound,
+    )

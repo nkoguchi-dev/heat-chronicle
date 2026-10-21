@@ -341,6 +341,12 @@ Station/Temperature Repositoryの全操作は成功・未検出・想定内I/O�
 各Use Caseはmatch/assert_neverで処理し、ユースケース専用の永続化不能を返す。HTTPはその値を直接汎用500へ変換する。
 未検出・観測期間・上流の旧例外は#247〜#250まで維持する。失敗コードの限定・全操作の障害注入と、月別途中失敗後の停止/lease解放を検証した。
 
+### station結果の移行状態（#247）
+
+station InboundはStationListResult・ListStationNotFound・ListStationStorageUnavailableのUnionを返す。
+HTTPは具体型をmatchして200/404/500を直接返す。全件空は成功、指定地域空は404を維持する。
+旧PrefectureNotFound例外、広いValueError捕捉、業務HTTPExceptionを撤去し、想定外ValueErrorは汎用500へ到達する回帰を確認した。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153
