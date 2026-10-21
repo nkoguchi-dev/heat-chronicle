@@ -1,5 +1,5 @@
+from app.application.temperature.ports.outbound.data_source import TemperaturesFetched
 from app.domain.station.model import Station
-from app.domain.temperature.model import DailyTemperature
 from app.infrastructure.scraper.jma_parser import parse_daily_page
 
 
@@ -14,14 +14,16 @@ class MockTemperatureDataSource:
         station: Station,
         year: int,
         month: int,
-    ) -> list[DailyTemperature]:
+    ) -> TemperaturesFetched:
         key = (year, month)
         if key in self.responses:
-            return parse_daily_page(
-                self.responses[key],
-                year,
-                month,
-                station.station_type,
+            return TemperaturesFetched(
+                parse_daily_page(
+                    self.responses[key],
+                    year,
+                    month,
+                    station.station_type,
+                )
             )
         raise RuntimeError(
             f"MockTemperatureDataSource: 未設定のリクエスト " f"({year}-{month:02d})"

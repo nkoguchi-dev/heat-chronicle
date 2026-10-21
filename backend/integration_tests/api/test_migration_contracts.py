@@ -190,7 +190,7 @@ async def test_observation_year_error_contract(
 @pytest.mark.parametrize(
     ("error", "status", "detail"),
     [
-        (RuntimeError("upstream private detail"), 503, "Temporarily unavailable"),
+        (RuntimeError("upstream private detail"), 500, "Internal server error"),
         (TimeoutError("upstream private detail"), 503, "Temporarily unavailable"),
         (OSError("upstream private detail"), 500, "Internal server error"),
     ],

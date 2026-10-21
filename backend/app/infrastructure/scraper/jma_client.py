@@ -1,9 +1,16 @@
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from typing import assert_never
 
 import httpx
 
+from app.application.temperature.ports.outbound.fetch_guard import (
+    GuardStorageUnavailable,
+    GuardSucceeded,
+    LeaseLost,
+)
 from app.domain.station.model import StationType
 from app.infrastructure.dto.jma import JmaDailyPageRequestDTO
 
@@ -14,8 +21,28 @@ REQUEST_TIMEOUT_SECONDS = 8.0
 MAX_RETRIES = 3
 
 
+@dataclass(frozen=True)
+class JmaPageFetched:
+    html: str
+
+
+@dataclass(frozen=True)
+class JmaPageUnavailable:
+    pass
+
+
+@dataclass(frozen=True)
+class JmaPageStorageUnavailable:
+    pass
+
+
 class JmaClient:
-    def __init__(self, before_attempt: Callable[[], Awaitable[None]]) -> None:
+    def __init__(
+        self,
+        before_attempt: Callable[
+            [], Awaitable[GuardSucceeded | LeaseLost | GuardStorageUnavailable]
+        ],
+    ) -> None:
         self.before_attempt = before_attempt
         self._client = httpx.AsyncClient(
             timeout=REQUEST_TIMEOUT_SECONDS,
@@ -33,7 +60,7 @@ class JmaClient:
         year: int,
         month: int,
         station_type: StationType,
-    ) -> str:
+    ) -> JmaPageFetched | JmaPageUnavailable | JmaPageStorageUnavailable:
         request = JmaDailyPageRequestDTO(
             prec_no=prec_no,
             block_no=block_no,
@@ -43,29 +70,30 @@ class JmaClient:
         )
         url = f"{BASE_URL}/{request.page}"
 
-        last_exc: Exception | None = None
         for attempt in range(MAX_RETRIES):
-            await self.before_attempt()
+            match await self.before_attempt():
+                case GuardSucceeded():
+                    pass
+                case LeaseLost():
+                    return JmaPageUnavailable()
+                case GuardStorageUnavailable():
+                    return JmaPageStorageUnavailable()
+                case unreachable:
+                    assert_never(unreachable)
             try:
                 async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
                     response = await self._client.get(
                         url, params=request.to_query_params()
                     )
                 response.raise_for_status()
-                return response.text
-            except (httpx.HTTPError, TimeoutError) as e:
-                last_exc = e
+                return JmaPageFetched(response.text)
+            except (httpx.HTTPStatusError, httpx.RequestError, TimeoutError) as exc:
+                # Unsupported protocol/configuration must reach the unexpected-500 path.
+                if isinstance(exc, httpx.UnsupportedProtocol):
+                    raise
+                logger.warning("jma_request_unavailable attempt=%d", attempt + 1)
                 if attempt == MAX_RETRIES - 1:
                     break
-                wait = 2 ** (attempt + 1)
-                logger.warning(
-                    "JMA request failed (attempt %d): %s, retrying in %ds",
-                    attempt + 1,
-                    e,
-                    wait,
-                )
-                await asyncio.sleep(wait)
+                await asyncio.sleep(2 ** (attempt + 1))
 
-        raise RuntimeError(
-            f"Failed to fetch JMA data after {MAX_RETRIES} retries: {last_exc}"
-        )
+        return JmaPageUnavailable()

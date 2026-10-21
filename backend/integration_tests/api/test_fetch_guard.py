@@ -1,9 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any
 
-import pytest
-
-from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
+from app.application.temperature.ports.outbound.fetch_guard import LeaseBusy, LeaseLost
 from app.config import Settings
 from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
 from tests.fixed_clock import FixedClock
@@ -18,14 +16,12 @@ async def test_shared_gate_on_dynamodb_local(
     b = DynamoDBFetchGuard(dynamodb_resource, clock)
     a.acquire()
     await a.before_attempt()
-    with pytest.raises(FetchUnavailable):
-        b.acquire()
+    assert isinstance(b.acquire(), LeaseBusy)
     # Advance without TTL deletion; the conditional write must transfer ownership.
     clock.advance(31)
     b.acquire()
     a.release()
     b.check_owner()
-    with pytest.raises(FetchUnavailable):
-        a.check_owner()
+    assert isinstance(a.check_owner(), LeaseLost)
     b.release()
     assert a.table.name == test_settings.table_name("fetch-log")

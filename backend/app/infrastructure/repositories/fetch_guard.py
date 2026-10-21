@@ -2,16 +2,24 @@ from __future__ import annotations
 
 import asyncio
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, assert_never
 from uuid import uuid4
 
 from botocore.exceptions import ClientError
-from pydantic import ValidationError
 
 from app.application.shared.ports.outbound.clock import Clock
-from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
+from app.application.temperature.ports.outbound.fetch_guard import (
+    GuardStorageUnavailable,
+    GuardSucceeded,
+    LeaseBusy,
+    LeaseLost,
+)
 from app.config import settings
 from app.infrastructure.dto.fetch_lease import FetchLeaseItemDTO
+from app.infrastructure.repositories.storage_errors import (
+    STORAGE_EXCEPTIONS,
+    expected_storage_failure,
+)
 
 if TYPE_CHECKING:
     from mypy_boto3_dynamodb import DynamoDBServiceResource
@@ -28,7 +36,7 @@ class DynamoDBFetchGuard:
         self.table = dynamodb.Table(settings.table_name("fetch-log"))
         self.token = str(uuid4())
 
-    def acquire(self) -> None:
+    def acquire(self) -> GuardSucceeded | LeaseBusy | GuardStorageUnavailable:
         now = Decimal(str(self.clock.now().timestamp()))
         try:
             self.table.update_item(
@@ -43,21 +51,43 @@ class DynamoDBFetchGuard:
                     ":now": now,
                 },
             )
-        except ClientError as exc:
-            if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
-                raise FetchUnavailable() from exc
+        except STORAGE_EXCEPTIONS as exc:
+            if (
+                isinstance(exc, ClientError)
+                and exc.response["Error"]["Code"] == "ConditionalCheckFailedException"
+            ):
+                return LeaseBusy()
+            if expected_storage_failure(exc, "lease.acquire"):
+                return GuardStorageUnavailable()
             raise
+        return GuardSucceeded()
 
-    def check_owner(self) -> None:
-        item = self._read_lease()
-        if item.owner_token != self.token or item.expires_at <= Decimal(
-            str(self.clock.now().timestamp())
-        ):
-            raise FetchUnavailable()
+    def check_owner(self) -> GuardSucceeded | LeaseLost | GuardStorageUnavailable:
+        match self._read_lease():
+            case LeaseLost() as lost:
+                return lost
+            case GuardStorageUnavailable() as failure:
+                return failure
+            case FetchLeaseItemDTO() as item:
+                if item.owner_token != self.token or item.expires_at <= Decimal(
+                    str(self.clock.now().timestamp())
+                ):
+                    return LeaseLost()
+                return GuardSucceeded()
+            case unreachable:
+                assert_never(unreachable)
 
-    async def before_attempt(self) -> None:
+    async def before_attempt(
+        self,
+    ) -> GuardSucceeded | LeaseLost | GuardStorageUnavailable:
         while True:
-            self.check_owner()
+            match self.check_owner():
+                case GuardSucceeded():
+                    pass
+                case LeaseLost() | GuardStorageUnavailable() as failure:
+                    return failure
+                case unreachable_owner:
+                    assert_never(unreachable_owner)
             now = Decimal(str(self.clock.now().timestamp()))
             try:
                 self.table.update_item(
@@ -73,19 +103,36 @@ class DynamoDBFetchGuard:
                         ":next": now + ATTEMPT_INTERVAL_SECONDS,
                     },
                 )
-                # Recheck after I/O; an expired process must not start another attempt.
-                self.check_owner()
-                return
-            except ClientError as exc:
-                if exc.response["Error"]["Code"] != "ConditionalCheckFailedException":
-                    raise
-                self.check_owner()
-                item = self._read_lease()
-                await asyncio.sleep(max(0.01, float((item.next_start or now) - now)))
+            except STORAGE_EXCEPTIONS as exc:
+                if (
+                    isinstance(exc, ClientError)
+                    and exc.response["Error"]["Code"]
+                    == "ConditionalCheckFailedException"
+                ):
+                    match self._read_lease():
+                        case LeaseLost() | GuardStorageUnavailable() as failure_read:
+                            return failure_read
+                        case FetchLeaseItemDTO() as item:
+                            if (
+                                item.owner_token != self.token
+                                or item.expires_at
+                                <= Decimal(str(self.clock.now().timestamp()))
+                            ):
+                                return LeaseLost()
+                            await asyncio.sleep(
+                                max(0.01, float((item.next_start or now) - now))
+                            )
+                        case unreachable_read:
+                            assert_never(unreachable_read)
+                    continue
+                if expected_storage_failure(exc, "lease.before_attempt"):
+                    return GuardStorageUnavailable()
+                raise
+            # Recheck after SDK latency, before starting any upstream attempt.
+            return self.check_owner()
 
-    def release(self) -> None:
+    def release(self) -> GuardSucceeded | GuardStorageUnavailable:
         try:
-            # Start the cooldown after completion, including the final SDK latency.
             self.table.update_item(
                 Key=LEASE_KEY,
                 UpdateExpression=(
@@ -99,15 +146,25 @@ class DynamoDBFetchGuard:
                     + ATTEMPT_INTERVAL_SECONDS,
                 },
             )
-        except ClientError as exc:
-            if exc.response["Error"]["Code"] != "ConditionalCheckFailedException":
-                raise
+        except STORAGE_EXCEPTIONS as exc:
+            if (
+                isinstance(exc, ClientError)
+                and exc.response["Error"]["Code"] == "ConditionalCheckFailedException"
+            ):
+                return GuardSucceeded()
+            if expected_storage_failure(exc, "lease.release"):
+                return GuardStorageUnavailable()
+            raise
+        return GuardSucceeded()
 
-    def _read_lease(self) -> FetchLeaseItemDTO:
-        item = self.table.get_item(Key=LEASE_KEY, ConsistentRead=True).get("Item")
-        if item is None:
-            raise FetchUnavailable()
+    def _read_lease(self) -> FetchLeaseItemDTO | LeaseLost | GuardStorageUnavailable:
         try:
-            return FetchLeaseItemDTO.model_validate(item)
-        except ValidationError as exc:
-            raise FetchUnavailable() from exc
+            item = self.table.get_item(Key=LEASE_KEY, ConsistentRead=True).get("Item")
+        except STORAGE_EXCEPTIONS as exc:
+            if expected_storage_failure(exc, "lease.read"):
+                return GuardStorageUnavailable()
+            raise
+        if item is None:
+            return LeaseLost()
+        # Malformed stored data is an unexpected failure, not lease contention.
+        return FetchLeaseItemDTO.model_validate(item)

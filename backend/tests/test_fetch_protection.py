@@ -25,7 +25,15 @@ from app.application.temperature.ports.inbound.get_temperature import (
     GetTemperatureDataOutput,
     GetTemperatureInvalidPeriod,
 )
-from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
+from app.application.temperature.ports.outbound.data_source import (
+    TemperaturesFetched,
+    TemperatureSourceUnavailable,
+)
+from app.application.temperature.ports.outbound.fetch_guard import (
+    GuardSucceeded,
+    LeaseBusy,
+    LeaseLost,
+)
 from app.application.temperature.ports.outbound.repository import (
     FetchedMonthsRead,
     TemperaturesRead,
@@ -72,14 +80,12 @@ def test_shared_lease_expiry_and_stale_owner(dynamodb: Any) -> None:
     clock = FixedClock(datetime.fromtimestamp(100, timezone.utc))
     a, b = DynamoDBFetchGuard(dynamodb, clock), DynamoDBFetchGuard(dynamodb, clock)
     a.acquire()
-    with pytest.raises(FetchUnavailable):
-        b.acquire()
+    assert isinstance(b.acquire(), LeaseBusy)
     clock.advance(31)
     b.acquire()
     a.release()
     b.check_owner()
-    with pytest.raises(FetchUnavailable):
-        a.check_owner()
+    assert isinstance(a.check_owner(), LeaseLost)
     b.release()
     a.acquire()
 
@@ -113,11 +119,14 @@ def make_use_case(
     repo.get_by_station_and_range.return_value = TemperaturesRead([])
     repo.bulk_insert_temperatures.return_value = TemperatureWriteSucceeded()
     repo.insert_fetch_log.return_value = TemperatureWriteSucceeded()
-    source.fetch_daily_temperatures.return_value = []
+    source.fetch_daily_temperatures.return_value = TemperaturesFetched([])
+    guard = guard or Mock()
+    if isinstance(guard, Mock):
+        guard.acquire.return_value = GuardSucceeded()
+        guard.check_owner.return_value = GuardSucceeded()
+        guard.release.return_value = GuardSucceeded()
     return (
-        FetchMonthUseCase(
-            station_repo, repo, source, guard or Mock(), clock or FixedClock()
-        ),
+        FetchMonthUseCase(station_repo, repo, source, guard, clock or FixedClock()),
         station_repo,
         repo,
         source,
@@ -157,9 +166,7 @@ async def test_empty_success_is_cached_and_failure_is_not() -> None:
     repo.insert_fetch_log.assert_called_once_with(1, 2024, 1)
     repo.bulk_insert_temperatures.assert_not_called()
     repo.reset_mock()
-    source.fetch_daily_temperatures.side_effect = RuntimeError(
-        "private upstream detail"
-    )
+    source.fetch_daily_temperatures.return_value = TemperatureSourceUnavailable()
     with pytest.raises(InboundFetchUnavailable):
         await use_case.fetch_month(1, 2024, 1)
     repo.insert_fetch_log.assert_not_called()
@@ -179,8 +186,8 @@ async def test_recheck_cache_after_acquiring_lease() -> None:
 
 async def test_lost_owner_cannot_write() -> None:
     guard = Mock()
-    guard.check_owner.side_effect = FetchUnavailable()
     use_case, _, repo, _ = make_use_case(guard)
+    guard.check_owner.return_value = LeaseLost()
     with pytest.raises(InboundFetchUnavailable):
         await use_case.fetch_month(1, 2024, 1)
     repo.bulk_insert_temperatures.assert_not_called()
@@ -268,9 +275,9 @@ async def test_budget_timeout_releases_lease_without_success_log() -> None:
     use_case, _, repo, source = make_use_case(guard)
     source.fetch_daily_temperatures.side_effect = lambda *args: None
 
-    async def slow(*args: object) -> list[Any]:
+    async def slow(*args: object) -> TemperaturesFetched:
         await asyncio.sleep(0.05)
-        return []
+        return TemperaturesFetched([])
 
     source.fetch_daily_temperatures.side_effect = slow
     with patch(
@@ -289,10 +296,10 @@ async def test_two_overlapping_requests_share_one_upstream(dynamodb: Any) -> Non
     )
     started, finish = asyncio.Event(), asyncio.Event()
 
-    async def fetch(*args: object) -> list[Any]:
+    async def fetch(*args: object) -> TemperaturesFetched:
         started.set()
         await finish.wait()
-        return []
+        return TemperaturesFetched([])
 
     source.fetch_daily_temperatures.side_effect = fetch
     task = asyncio.create_task(first.fetch_month(1, 2024, 1))
@@ -314,11 +321,11 @@ async def test_budget_uses_elapsed_clock_not_wall_time(
     clock = FixedClock()
     use_case, _, repo, source = make_use_case(clock=clock)
 
-    async def fetch(*args: object) -> list[Any]:
+    async def fetch(*args: object) -> TemperaturesFetched:
         # Simulate an NTP/wall-clock adjustment independently of elapsed time.
         clock.wall_time = datetime(2030, 1, 1, tzinfo=timezone.utc)
         clock.elapsed_seconds += elapsed
-        return []
+        return TemperaturesFetched([])
 
     source.fetch_daily_temperatures.side_effect = fetch
     if expect_failure:
