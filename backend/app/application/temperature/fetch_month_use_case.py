@@ -1,5 +1,7 @@
 import asyncio
 import calendar
+import logging
+import sys
 from datetime import date
 from typing import assert_never
 
@@ -21,10 +23,18 @@ from app.application.temperature.ports.inbound.fetch_month import (
     FetchMonthStorageUnavailable,
     FetchMonthTemperatureOutput,
 )
-from app.application.temperature.ports.outbound.data_source import TemperatureDataSource
+from app.application.temperature.ports.outbound.data_source import (
+    TemperatureDataSource,
+    TemperaturesFetched,
+    TemperatureSourceStorageUnavailable,
+    TemperatureSourceUnavailable,
+)
 from app.application.temperature.ports.outbound.fetch_guard import (
     FetchGuard,
-    FetchUnavailable,
+    GuardStorageUnavailable,
+    GuardSucceeded,
+    LeaseBusy,
+    LeaseLost,
 )
 from app.application.temperature.ports.outbound.repository import (
     FetchedMonthsRead,
@@ -33,12 +43,15 @@ from app.application.temperature.ports.outbound.repository import (
     TemperatureStorageUnavailable,
     TemperatureWriteSucceeded,
 )
+from app.domain.station.model import Station
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.input_policy import (
     InvalidTemperatureInput,
     observation_time,
     validate_month,
 )
+
+logger = logging.getLogger(__name__)
 
 FETCH_BUDGET_SECONDS = 25
 
@@ -65,8 +78,6 @@ class FetchMonthUseCase:
             return await self._fetch_month(station_id, year, month)
         except InvalidTemperatureInput as exc:
             raise InboundInvalidTemperatureInput(str(exc)) from exc
-        except FetchUnavailable as exc:
-            raise InboundFetchUnavailable() from exc
 
     async def _fetch_month(
         self,
@@ -102,55 +113,37 @@ class FetchMonthUseCase:
         status = policy.evaluate(year, month, fetched_at, self.clock.now())
 
         if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
-            self.fetch_guard.acquire()
-            deadline = self.clock.monotonic() + FETCH_BUDGET_SECONDS
+            match self.fetch_guard.acquire():
+                case GuardSucceeded():
+                    pass
+                case LeaseBusy():
+                    # Temporary Inbound bridge; removed in #250.
+                    raise InboundFetchUnavailable()
+                case GuardStorageUnavailable():
+                    return FetchMonthStorageUnavailable()
+                case unreachable_acquire:
+                    assert_never(unreachable_acquire)
+            result: FetchMonthStorageUnavailable | None = None
             try:
-                async with asyncio.timeout(FETCH_BUDGET_SECONDS):
-                    # Another owner may have populated the cache since the first read.
-                    match self.temp_repo.get_fetched_months(station_id):
-                        case FetchedMonthsRead(months=refreshed):
-                            pass
-                        case TemperatureStorageUnavailable():
-                            return FetchMonthStorageUnavailable()
-                        case unreachable_3:
-                            assert_never(unreachable_3)
-                    status = policy.evaluate(
-                        year,
-                        month,
-                        refreshed.get((year, month)),
-                        self.clock.now(),
-                    )
-                    if status in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
-                        records = (
-                            await self.temperature_data_source.fetch_daily_temperatures(
-                                station, year, month
-                            )
-                        )
-                        if self.clock.monotonic() >= deadline:
-                            raise FetchUnavailable()
-                        self.fetch_guard.check_owner()
-                        if records:
-                            match self.temp_repo.bulk_insert_temperatures(
-                                station_id, records
-                            ):
-                                case TemperatureWriteSucceeded():
-                                    pass
-                                case TemperatureStorageUnavailable():
-                                    return FetchMonthStorageUnavailable()
-                                case unreachable_4:
-                                    assert_never(unreachable_4)
-                        self.fetch_guard.check_owner()
-                        match self.temp_repo.insert_fetch_log(station_id, year, month):
-                            case TemperatureWriteSucceeded():
-                                pass
-                            case TemperatureStorageUnavailable():
-                                return FetchMonthStorageUnavailable()
-                            case unreachable_5:
-                                assert_never(unreachable_5)
-            except (TimeoutError, RuntimeError) as exc:
-                raise FetchUnavailable() from exc
+                result = await self._refresh(station_id, year, month, station, policy)
             finally:
-                self.fetch_guard.release()
+                active_error = sys.exception()
+                try:
+                    match self.fetch_guard.release():
+                        case GuardSucceeded():
+                            pass
+                        case GuardStorageUnavailable():
+                            logger.warning("lease_release_unavailable")
+                            if active_error is None and result is None:
+                                result = FetchMonthStorageUnavailable()
+                        case unreachable_release:
+                            assert_never(unreachable_release)
+                except BaseException:
+                    if active_error is None:
+                        raise
+                    logger.warning("lease_release_failed_during_exception")
+            if result is not None:
+                return result
 
         # DBからデータを取得して返す
         start_date = date(year, month, 1).isoformat()
@@ -174,3 +167,74 @@ class FetchMonthUseCase:
             )
             for record in temperature_records
         ]
+
+    async def _refresh(
+        self,
+        station_id: int,
+        year: int,
+        month: int,
+        station: Station,
+        policy: FetchFreshnessPolicy,
+    ) -> FetchMonthStorageUnavailable | None:
+        deadline = self.clock.monotonic() + FETCH_BUDGET_SECONDS
+        try:
+            async with asyncio.timeout(FETCH_BUDGET_SECONDS):
+                match self.temp_repo.get_fetched_months(station_id):
+                    case FetchedMonthsRead(months=refreshed):
+                        pass
+                    case TemperatureStorageUnavailable():
+                        return FetchMonthStorageUnavailable()
+                    case unreachable_read:
+                        assert_never(unreachable_read)
+                status = policy.evaluate(
+                    year, month, refreshed.get((year, month)), self.clock.now()
+                )
+                if status not in (FetchStatus.UNFETCHED, FetchStatus.NEEDS_REFRESH):
+                    return None
+                match await self.temperature_data_source.fetch_daily_temperatures(
+                    station, year, month
+                ):
+                    case TemperaturesFetched(records=records):
+                        pass
+                    case TemperatureSourceUnavailable():
+                        raise InboundFetchUnavailable()
+                    case TemperatureSourceStorageUnavailable():
+                        return FetchMonthStorageUnavailable()
+                    case unreachable_source:
+                        assert_never(unreachable_source)
+                if self.clock.monotonic() >= deadline:
+                    raise InboundFetchUnavailable()
+                owner_failure = self._check_owner()
+                if owner_failure is not None:
+                    return owner_failure
+                if records:
+                    match self.temp_repo.bulk_insert_temperatures(station_id, records):
+                        case TemperatureWriteSucceeded():
+                            pass
+                        case TemperatureStorageUnavailable():
+                            return FetchMonthStorageUnavailable()
+                        case unreachable_write:
+                            assert_never(unreachable_write)
+                owner_failure = self._check_owner()
+                if owner_failure is not None:
+                    return owner_failure
+                match self.temp_repo.insert_fetch_log(station_id, year, month):
+                    case TemperatureWriteSucceeded():
+                        return None
+                    case TemperatureStorageUnavailable():
+                        return FetchMonthStorageUnavailable()
+                    case unreachable_log:
+                        assert_never(unreachable_log)
+        except TimeoutError as exc:
+            raise InboundFetchUnavailable() from exc
+
+    def _check_owner(self) -> FetchMonthStorageUnavailable | None:
+        match self.fetch_guard.check_owner():
+            case GuardSucceeded():
+                return None
+            case LeaseLost():
+                raise InboundFetchUnavailable()
+            case GuardStorageUnavailable():
+                return FetchMonthStorageUnavailable()
+            case unreachable:
+                assert_never(unreachable)

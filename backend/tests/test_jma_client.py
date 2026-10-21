@@ -2,14 +2,20 @@ import asyncio
 from unittest.mock import AsyncMock, patch
 
 import httpx
-import pytest
 
-from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
-from app.infrastructure.scraper.jma_client import JmaClient
+from app.application.temperature.ports.outbound.fetch_guard import (
+    GuardSucceeded,
+    LeaseLost,
+)
+from app.infrastructure.scraper.jma_client import (
+    JmaClient,
+    JmaPageFetched,
+    JmaPageUnavailable,
+)
 
 
 async def test_each_retry_uses_shared_gate_and_no_final_sleep() -> None:
-    before = AsyncMock()
+    before = AsyncMock(return_value=GuardSucceeded())
     client = JmaClient(before)
     try:
         with (
@@ -21,8 +27,10 @@ async def test_each_retry_uses_shared_gate_and_no_final_sleep() -> None:
                 new_callable=AsyncMock,
             ) as sleep,
         ):
-            with pytest.raises(RuntimeError):
-                await client.fetch_daily_page(44, "47662", 2024, 1, "s")
+            assert isinstance(
+                await client.fetch_daily_page(44, "47662", 2024, 1, "s"),
+                JmaPageUnavailable,
+            )
             assert request.call_count == 3
             assert before.await_count == 3
             assert [call.args[0] for call in sleep.await_args_list] == [2, 4]
@@ -31,7 +39,7 @@ async def test_each_retry_uses_shared_gate_and_no_final_sleep() -> None:
 
 
 async def test_total_attempt_timeout_and_successful_retry() -> None:
-    before = AsyncMock()
+    before = AsyncMock(return_value=GuardSucceeded())
     client = JmaClient(before)
     calls = 0
 
@@ -62,7 +70,9 @@ async def test_total_attempt_timeout_and_successful_retry() -> None:
                 side_effect=fast_backoff,
             ),
         ):
-            assert await client.fetch_daily_page(44, "47662", 2024, 1, "s") == "ok"
+            assert await client.fetch_daily_page(
+                44, "47662", 2024, 1, "s"
+            ) == JmaPageFetched("ok")
             assert calls == 2
             assert before.await_count == 2
     finally:
@@ -70,11 +80,13 @@ async def test_total_attempt_timeout_and_successful_retry() -> None:
 
 
 async def test_lost_lease_prevents_request() -> None:
-    client = JmaClient(AsyncMock(side_effect=FetchUnavailable()))
+    client = JmaClient(AsyncMock(return_value=LeaseLost()))
     try:
         with patch.object(client._client, "get", new_callable=AsyncMock) as request:
-            with pytest.raises(FetchUnavailable):
-                await client.fetch_daily_page(44, "47662", 2024, 1, "s")
+            assert isinstance(
+                await client.fetch_daily_page(44, "47662", 2024, 1, "s"),
+                JmaPageUnavailable,
+            )
             request.assert_not_called()
     finally:
         await client.close()

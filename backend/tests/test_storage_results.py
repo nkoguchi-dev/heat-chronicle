@@ -17,6 +17,7 @@ from app.application.temperature.ports.inbound.fetch_month import (
 from app.application.temperature.ports.inbound.get_temperature import (
     GetTemperatureStorageUnavailable,
 )
+from app.application.temperature.ports.outbound.data_source import TemperaturesFetched
 from app.application.temperature.ports.outbound.repository import (
     FetchedMonthsRead,
     TemperatureStorageUnavailable,
@@ -118,9 +119,9 @@ async def test_month_storage_failure_stops_following_writes_and_releases(
             TemperatureStorageUnavailable(),
         ]
     else:
-        source.fetch_daily_temperatures.return_value = [
-            DailyTemperature(date(2024, 1, 1))
-        ]
+        source.fetch_daily_temperatures.return_value = TemperaturesFetched(
+            [DailyTemperature(date(2024, 1, 1))]
+        )
         repo.bulk_insert_temperatures.return_value = TemperatureStorageUnavailable()
     assert isinstance(
         await use_case.fetch_month(1, 2024, 1), FetchMonthStorageUnavailable

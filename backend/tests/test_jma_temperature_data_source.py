@@ -3,8 +3,10 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
+from app.application.temperature.ports.outbound.data_source import TemperaturesFetched
 from app.domain.station.model import Station
 from app.domain.temperature.model import DailyTemperature
+from app.infrastructure.scraper.jma_client import JmaPageFetched
 from app.infrastructure.scraper.jma_temperature_data_source import (
     JmaTemperatureDataSource,
 )
@@ -28,7 +30,7 @@ async def test_fetch_daily_temperatures() -> None:
         )
     ]
     client = AsyncMock()
-    client.fetch_daily_page.return_value = "<html></html>"
+    client.fetch_daily_page.return_value = JmaPageFetched("<html></html>")
 
     with (
         patch(
@@ -44,7 +46,7 @@ async def test_fetch_daily_temperatures() -> None:
             8,
         )
 
-    assert result == expected
+    assert result == TemperaturesFetched(expected)
     client.fetch_daily_page.assert_awaited_once_with(
         prec_no=44,
         block_no="47662",
@@ -59,7 +61,7 @@ async def test_fetch_daily_temperatures() -> None:
 @pytest.mark.parametrize("failure", ["fetch", "parse"])
 async def test_client_is_closed_on_failure(failure: str) -> None:
     client = AsyncMock()
-    client.fetch_daily_page.return_value = "html"
+    client.fetch_daily_page.return_value = JmaPageFetched("html")
     if failure == "fetch":
         client.fetch_daily_page.side_effect = RuntimeError("failed fetch")
     with patch(
