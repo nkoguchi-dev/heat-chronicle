@@ -1,17 +1,29 @@
 from datetime import date, datetime
+from typing import assert_never
 
 from app.application.shared.ports.outbound.clock import Clock
-from app.application.station.ports.outbound.repository import StationRepository
+from app.application.station.ports.outbound.repository import (
+    StationFound,
+    StationMissing,
+    StationRepository,
+    StationStorageUnavailable,
+)
 from app.application.temperature.ports.inbound.errors import (
     InvalidTemperatureInput,
     StationNotFound,
 )
 from app.application.temperature.ports.inbound.get_temperature import (
     GetTemperatureDataOutput,
+    GetTemperatureStorageUnavailable,
     TemperatureMetadataOutput,
     TemperatureRecordOutput,
 )
-from app.application.temperature.ports.outbound.repository import TemperatureRepository
+from app.application.temperature.ports.outbound.repository import (
+    FetchedMonthsRead,
+    TemperatureRepository,
+    TemperaturesRead,
+    TemperatureStorageUnavailable,
+)
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.input_policy import (
     InvalidTemperatureInput as DomainInvalidTemperatureInput,
@@ -61,12 +73,18 @@ class GetTemperatureUseCase:
 
     def get_temperature_data(
         self, station_id: int, end_year: int | None
-    ) -> GetTemperatureDataOutput:
+    ) -> GetTemperatureDataOutput | GetTemperatureStorageUnavailable:
         now = self.clock.now()
         now_jst = observation_time(now)
-        station = self.station_repo.get_by_id(station_id)
-        if station is None:
-            raise StationNotFound(f"Station {station_id} not found")
+        match self.station_repo.get_by_id(station_id):
+            case StationFound(station=station):
+                pass
+            case StationMissing():
+                raise StationNotFound(f"Station {station_id} not found")
+            case StationStorageUnavailable():
+                return GetTemperatureStorageUnavailable()
+            case unreachable_1:
+                assert_never(unreachable_1)
 
         end_year = now_jst.year if end_year is None else end_year
         try:
@@ -80,10 +98,20 @@ class GetTemperatureUseCase:
         next_end_year = start_year - 1 if has_older_data else None
 
         start_date, end_date = _build_date_range(start_year, end_year)
-        records = self.temp_repo.get_by_station_and_range(
-            station_id, start_date, end_date
-        )
-        fetched_months = self.temp_repo.get_fetched_months(station_id)
+        match self.temp_repo.get_by_station_and_range(station_id, start_date, end_date):
+            case TemperaturesRead(records=records):
+                pass
+            case TemperatureStorageUnavailable():
+                return GetTemperatureStorageUnavailable()
+            case unreachable_2:
+                assert_never(unreachable_2)
+        match self.temp_repo.get_fetched_months(station_id):
+            case FetchedMonthsRead(months=fetched_months):
+                pass
+            case TemperatureStorageUnavailable():
+                return GetTemperatureStorageUnavailable()
+            case unreachable_3:
+                assert_never(unreachable_3)
 
         policy = FetchFreshnessPolicy()
         required_months = _find_missing_months(

@@ -7,6 +7,12 @@ from typing import TYPE_CHECKING, Any
 from boto3.dynamodb.conditions import Key
 
 from app.application.shared.ports.outbound.clock import Clock
+from app.application.temperature.ports.outbound.repository import (
+    FetchedMonthsRead,
+    TemperaturesRead,
+    TemperatureStorageUnavailable,
+    TemperatureWriteSucceeded,
+)
 from app.config import settings
 from app.domain.temperature.model import DailyTemperature
 from app.infrastructure.dto.dynamodb import (
@@ -14,6 +20,10 @@ from app.infrastructure.dto.dynamodb import (
     DailyTemperatureWriteDTO,
     FetchLogItemDTO,
     FetchLogWriteDTO,
+)
+from app.infrastructure.repositories.storage_errors import (
+    STORAGE_EXCEPTIONS,
+    expected_storage_failure,
 )
 
 if TYPE_CHECKING:
@@ -26,7 +36,7 @@ class DynamoDBTemperatureRepository:
         self.temp_table = dynamodb.Table(settings.table_name("daily-temperature"))
         self.log_table = dynamodb.Table(settings.table_name("fetch-log"))
 
-    def get_by_station_and_range(
+    def _get_by_station_and_range(
         self, station_id: int, start_date: str, end_date: str
     ) -> list[DailyTemperature]:
         items: list[dict[str, Any]] = []
@@ -44,7 +54,7 @@ class DynamoDBTemperatureRepository:
             kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         return [self._to_domain(item) for item in items]
 
-    def get_fetched_months(self, station_id: int) -> dict[tuple[int, int], datetime]:
+    def _get_fetched_months(self, station_id: int) -> dict[tuple[int, int], datetime]:
         items: list[dict[str, Any]] = []
         kwargs: dict[str, Any] = {
             "KeyConditionExpression": Key("station_id").eq(station_id),
@@ -64,7 +74,7 @@ class DynamoDBTemperatureRepository:
             results[(int(year), int(month))] = fetched_at
         return results
 
-    def bulk_insert_temperatures(
+    def _bulk_insert_temperatures(
         self, station_id: int, records: list[DailyTemperature]
     ) -> None:
         if not records:
@@ -92,7 +102,7 @@ class DynamoDBTemperatureRepository:
                 )
                 batch.put_item(Item=dto.model_dump(exclude_none=True))
 
-    def insert_fetch_log(self, station_id: int, year: int, month: int) -> None:
+    def _insert_fetch_log(self, station_id: int, year: int, month: int) -> None:
         dto = FetchLogWriteDTO(
             station_id=station_id,
             year_month=f"{year:04d}-{month:02d}",
@@ -108,3 +118,51 @@ class DynamoDBTemperatureRepository:
             min_temp=float(dto.min_temp) if dto.min_temp is not None else None,
             avg_temp=float(dto.avg_temp) if dto.avg_temp is not None else None,
         )
+
+    def get_by_station_and_range(
+        self, station_id: int, start_date: str, end_date: str
+    ) -> TemperaturesRead | TemperatureStorageUnavailable:
+        try:
+            return TemperaturesRead(
+                self._get_by_station_and_range(station_id, start_date, end_date)
+            )
+        except STORAGE_EXCEPTIONS as exc:
+            if not expected_storage_failure(
+                exc, "temperature.get_by_station_and_range"
+            ):
+                raise
+            return TemperatureStorageUnavailable()
+
+    def get_fetched_months(
+        self, station_id: int
+    ) -> FetchedMonthsRead | TemperatureStorageUnavailable:
+        try:
+            return FetchedMonthsRead(self._get_fetched_months(station_id))
+        except STORAGE_EXCEPTIONS as exc:
+            if not expected_storage_failure(exc, "temperature.get_fetched_months"):
+                raise
+            return TemperatureStorageUnavailable()
+
+    def bulk_insert_temperatures(
+        self, station_id: int, records: list[DailyTemperature]
+    ) -> TemperatureWriteSucceeded | TemperatureStorageUnavailable:
+        try:
+            self._bulk_insert_temperatures(station_id, records)
+            return TemperatureWriteSucceeded()
+        except STORAGE_EXCEPTIONS as exc:
+            if not expected_storage_failure(
+                exc, "temperature.bulk_insert_temperatures"
+            ):
+                raise
+            return TemperatureStorageUnavailable()
+
+    def insert_fetch_log(
+        self, station_id: int, year: int, month: int
+    ) -> TemperatureWriteSucceeded | TemperatureStorageUnavailable:
+        try:
+            self._insert_fetch_log(station_id, year, month)
+            return TemperatureWriteSucceeded()
+        except STORAGE_EXCEPTIONS as exc:
+            if not expected_storage_failure(exc, "temperature.insert_fetch_log"):
+                raise
+            return TemperatureStorageUnavailable()

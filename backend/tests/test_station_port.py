@@ -7,8 +7,12 @@ from app.application.station.ports.inbound.list_station import (
     PrefectureNotFound,
     StationOutput,
 )
+from app.application.station.ports.outbound.repository import (
+    StationFound,
+    StationMissing,
+    StationsRead,
+)
 from app.di.container import get_station_repository, register_dependencies
-from app.domain.station.model import Station
 from app.presentation.api.shared.dependencies import get_station_port
 from app.presentation.api.stations.get_stations import router
 
@@ -76,14 +80,14 @@ async def test_inbound_not_found_maps_to_existing_404() -> None:
 async def test_real_di_connects_use_case_to_outbound_port() -> None:
     # A fake repository satisfies the Outbound Port without boto3/AWS.
     class EmptyRepository:
-        def get_all(self) -> list[Station]:
-            return []
+        def get_all(self) -> StationsRead:
+            return StationsRead([])
 
-        def get_by_prec_no(self, prec_no: int) -> list[Station]:
-            return []
+        def get_by_prec_no(self, prec_no: int) -> StationsRead:
+            return StationsRead([])
 
-        def get_by_id(self, station_id: int) -> Station | None:
-            return None
+        def get_by_id(self, station_id: int) -> StationFound | StationMissing:
+            return StationMissing()
 
     app = routed_app()
     app.dependency_overrides[get_station_repository] = EmptyRepository

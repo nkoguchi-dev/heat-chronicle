@@ -1,12 +1,18 @@
 from datetime import date as Date
-from typing import Annotated
+from typing import Annotated, assert_never
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
 from app.application.temperature.ports.inbound.errors import InvalidTemperatureInput
-from app.application.temperature.ports.inbound.get_temperature import GetTemperaturePort
+from app.application.temperature.ports.inbound.get_temperature import (
+    GetTemperatureDataOutput,
+    GetTemperaturePort,
+    GetTemperatureStorageUnavailable,
+)
 from app.presentation.api.shared.dependencies import get_temperature_port
+from app.presentation.api.shared.internal_server_error import storage_error_response
 
 router = APIRouter()
 
@@ -46,9 +52,15 @@ def get_temperature(
     station_id: Annotated[int, Path(gt=0)],
     use_case: Annotated[GetTemperaturePort, Depends(get_temperature_port)],
     end_year: int | None = Query(default=None),
-) -> TemperatureResponse:
+) -> TemperatureResponse | JSONResponse:
     try:
-        output = use_case.get_temperature_data(station_id, end_year)
+        match use_case.get_temperature_data(station_id, end_year):
+            case GetTemperatureStorageUnavailable():
+                return storage_error_response()
+            case GetTemperatureDataOutput() as output:
+                pass
+            case unreachable_1:
+                assert_never(unreachable_1)
         metadata = output.metadata
         return TemperatureResponse(
             metadata=TemperatureMetadataResponse(

@@ -335,6 +335,12 @@ CancelledErrorを成功や業務エラーに変換しない。lease喪失後に�
 各PRで型検査・unit・integrationと変更境界の障害注入を行う。最後の検査Issueへ実装テストを先送りしない。
 実装・HTTP変換では具体型のcaseを列挙し、型付き失敗の追加がassert_neverへ到達する負例も確認する。汎用catch-all・cast・type ignoreで分岐漏れを隠さない。
 
+### 永続化結果の移行状態（#246）
+
+Station/Temperature Repositoryの全操作は成功・未検出・想定内I/O障害を型付き値で返す。
+各Use Caseはmatch/assert_neverで処理し、ユースケース専用の永続化不能を返す。HTTPはその値を直接汎用500へ変換する。
+未検出・観測期間・上流の旧例外は#247〜#250まで維持する。失敗コードの限定・全操作の障害注入と、月別途中失敗後の停止/lease解放を検証した。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153
