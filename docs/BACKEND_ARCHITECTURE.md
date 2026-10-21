@@ -2,10 +2,10 @@
 
 エンジニア向けに、APIを維持してApplication所有のPortへ段階移行する設計を定義する。
 設計の基準は2026-10-21の`eb5d792`、親Issueは[#137][parent]、設計Issueは[#153][design]。
-本設計の追加時点ではアプリケーションコードを変更していない。以下の「目標」は後続Issueで実装する契約である。
+設計追加後に#154〜#159で全経路を移行した。現在の配置と規則は以下の完成形を正本とし、移行前の棚卸しは当時の基準として残す。最終統合確認は#160で行う。
 利用者向け仕様は[プロダクト仕様][product]、検証層は[テスト戦略][testing]を正本とする。
 
-## 現行の経路と依存
+## 移行前の経路と依存（#153時点）
 
 次図の実線は呼び出し、点線は型への依存を表す。各endpointはDIが公開する具象Use Case型の`Annotated` aliasをimportしている。
 
@@ -51,7 +51,7 @@ stationの未検出エラーも#156でstationのInbound契約へ定義し、現�
 現在のtemperature endpointによるDomain例外importは#157/#158で除去する。
 `/health`と`/api/hello`はI/OもUse Caseも持たない応答であり、空のInbound Portを作らない。
 
-## 目標の所有と配置
+## 現在の所有と配置
 
 ```mermaid
 flowchart LR
@@ -124,7 +124,7 @@ Infrastructure内のparser・DTO変換などの部品利用は許可する。外
 
 移行中だけ、表の未移行経路に残る既存のDomain Port、DI alias、Domain例外参照を許可する。
 #154で例外を具体的なファイル／import単位で固定し、移行PRで削減する。新規違反をディレクトリ単位で免除しない。
-現行のAST検査はProtocolを想定しないUse Case命名検査と相対import解決の不足を持つため、#154で先に対応する。
+移行前のAST検査の相対import解決とProtocol配置の不足は#154で解消した。現在は全import移行例外・Domain Protocol例外が0である。
 
 ### 入出力と例外の変換
 
@@ -141,7 +141,7 @@ Presentation内の依存関数はInbound Portを戻り値に持ち、未登録�
 endpointは`Annotated[ListStationPort, Depends(...)]`のようにその関数を参照する。DIの具象型aliasを使わない。
 DIは具象生成providerを用意し、FastAPI appのdependency overrideへ依存関数とproviderの対応を登録する。
 mainがapp作成時に登録を呼び、Lambdaでも同じappの登録を利用する。Applicationはこの登録方式を知らない。
-現行mainのグローバル500 handlerによるResponse DTO変換は#159でPresentationの補助関数へ移し、mainにはhandlerの登録だけを残す。ログと応答本文は維持する。
+グローバル500 handlerのResponse DTO変換はPresentationの補助関数が所有し、mainにはhandlerの登録だけを置く。ログと応答本文は維持する。
 テストは同じPresentation依存関数をPort準拠fakeに差し替え、実施後にoverrideを復元する。DI具象providerを差し替え続けるfixtureは移行経路ごとに更新する。
 
 ClockはUTC壁時計と単調増加時計を区別する。FetchGuardのlease取得・所有確認・試行間隔・releaseの責務を維持する。
@@ -243,10 +243,19 @@ HTTP試行間隔・retry・25秒の取得予算・lease・取得ログの順序�
 500応答のDTO変換はPresentationの例外ハンドラへ移し、mainは登録だけを行う。main/handlerのInfrastructure直参照と移行例外を解消した。
 ASTのimport検査に加え、DI外でのUse Case/Adapter生成を検出し、絶対・相対・別名の負例を確認する。動的生成は静的検査の対象外であり、レビューと実行経路検査を併用する。
 
+## 統合検証（#160）
+
+コードの基準は#159マージ後の`e4c7191`。クリーンなworktreeでPython 3.14.8とlocked依存を再現し、静的検査・mypy strict・unit187件・DynamoDB Local integration45件を確認した。
+全5 APIを実UvicornとLambda/Mangumで確認し、月別取得は実client/parser/lease/保存経路を使い、気象庁HTTPだけを固定応答へ置換した。
+絶対・相対importとDI外生成の負例で実pytestが失敗し、除去後の境界関連64件が成功した。
+開発用Linux/amd64 imageとLambda imageのsmoke、production静的配信のBrowser Smoke4件も確認した。
+実AWS・実気象庁への通信・本番デプロイは検証対象外であり、本番確認を代替しない。commit、環境、詳細な結果は[検証Issue][verification]に記録する。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153
 [product]: ./specs/product.md
 [testing]: ./TESTING_STRATEGY.md
+[verification]: https://github.com/nkoguchi-dev/heat-chronicle/issues/160
 [prefecture-domain]: https://github.com/nkoguchi-dev/heat-chronicle/issues/238
 <!-- /links -->

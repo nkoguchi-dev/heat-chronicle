@@ -28,8 +28,8 @@ uv run --locked pytest tests/ -v  # 5. テスト
 ## Port／Adapterアーキテクチャ
 
 目標構成と段階移行の正本は[バックエンド設計](../docs/BACKEND_ARCHITECTURE.md)です。
-Issue #153で設計、#154で境界検査を定義しました。#155のprefecture一覧と#156のstation一覧はInbound Portへ移行済みです。Station RepositoryもApplicationが所有し、temperatureの残る契約は#157〜#159で移行します。
-未移行経路の既存依存だけを移行期間中の例外とし、新しい依存へ広げません。
+Issue #153〜#159で全API経路を移行しました。ApplicationがInbound/Outbound Portを所有し、Domainはモデルと純粋な規則だけを持ちます。
+移行例外はありません。`tests/layer_rules.py`がimport境界とDI外の具象生成を検査します。
 
 | 役割 | ディレクトリ | 責務 |
 |------|-------------|------|
@@ -41,13 +41,13 @@ Issue #153で設計、#154で境界検査を定義しました。#155のprefectu
 
 ### レイヤー間の制約
 
-- **Presentation → Application Inbound Port**: 移行済みendpointは`application/<feature>/ports/inbound/`の契約だけに依存する。Use Case具象、Outbound Port、Domain、Infrastructure、DIをimportしない。
+- **Presentation → Application Inbound Port**: endpointは`application/<feature>/ports/inbound/`の契約だけに依存する。Use Case具象、Outbound Port、Domain、Infrastructure、DIをimportしない。
 - **Application → Domain**: Application内とDomainだけをimportできる。FastAPI、Pydantic、boto3、具体Adapter、Presentation、DI、設定への依存を禁止する。
 - **Domain**: 標準ライブラリとDomain内だけに依存する。外部I/O Protocol、Application、framework、実時計参照を置かない。
 - **Infrastructure → Application Outbound Port / Domain**: Outbound PortとDomainモデル・規則を利用できる。Inbound Port、Use Case具象、Presentation、DIへの依存を禁止する。
 - **DI / Composition Root**: Inbound Port、Use Case、Outbound Adapterの具象を接続する唯一の場所。mainとLambda handlerはDIの初期化・登録を呼び、router、middleware、起動終了を配線する。
-- FastAPIの`Depends`はPresentation内のPort型付き依存関数を指し、Composition Rootがproviderを登録する。移行済みendpointからDIの具象Use Case aliasをimportしない。
-- import境界テストは現状と目標を区別する。#154以降は絶対／相対importの負例を検査し、各経路の移行PRで例外を減らす。
+- FastAPIの`Depends`はPresentation内のPort型付き依存関数を指し、Composition Rootがproviderを登録する。endpointからDIの具象Use Case aliasをimportしない。
+- import境界テストは絶対／相対importの違反と、DI外のUse Case/Adapter生成を検出する。例外を追加して迂回しない。
 
 ### モデルと DTO の境界
 
@@ -82,19 +82,22 @@ application/
 ├── prefecture/
 │   ├── ports/inbound/list_prefecture.py  # Portと専用Output
 │   └── list_prefecture_use_case.py
-├── shared/              # 複数 UseCase の共通 Service
+├── shared/
+│   └── ports/outbound/clock.py         # 実時計の契約
 ├── station/
 │   ├── ports/inbound/list_station.py    # Port・専用Output・未検出例外
 │   ├── ports/outbound/repository.py     # StationRepository
 │   └── list_station_use_case.py
 └── temperature/
+    ├── ports/inbound/                  # Port・専用Output・例外
+    ├── ports/outbound/                 # Repository・Data Source・Guard
     ├── get_temperature_use_case.py
     └── fetch_month_use_case.py
 ```
 
 ### Domain のファイル構成
 
-以下は移行後の配置です。既存Portは各経路の移行時にApplicationへ移送します。
+Domainに外部I/O Protocolを置かず、ApplicationのOutbound Portとして所有します。
 
 - Domain Model、純粋な業務ルールは、`station/` や `temperature/` のようなドメインリソース単位のディレクトリに配置する
 - Domain の Python ファイルを `domain/` 直下へ直接追加しない
