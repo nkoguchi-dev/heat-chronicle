@@ -56,8 +56,8 @@ Codex による実装・レビューで使用します。
 - [ ] Request / Response DTO が Presentation 層に専用の Pydantic Model として定義されているか
 - [ ] Presentation 層の API リソースがディレクトリ化され、各エンドポイントが 1 ファイルに分離されているか
 - [ ] Presentation DTO が原則 `strict=True`, `extra="forbid"` で外部入出力を厳密に検証しているか
-- [ ] `HTTPException` のステータスコードが適切か（404 / 400 / 422 / 500 の使い分け）
-- [ ] 500 エラーを返す際に `logger.error(..., exc_info=True)` でログが記録されているか
+- [ ] 想定内失敗をHTTPExceptionで送出せず、結果型から直接Responseへ変換しているか（404 / 422 / 503 / 500）
+- [ ] 想定内I/O失敗はAdapterで安全な操作名を記録し、想定外500は共通handlerで例外ログを記録しているか
 - [ ] 例外の握りつぶし（`except: pass`）がないか
 - [ ] ビジネスロジック上の例外と予期しない例外が適切に分離されているか
 
@@ -113,8 +113,9 @@ uv run --locked pytest
 
 ## 型付き結果への移行
 
-- [ ] 変更段階に応じて成功・未検出・入力不正・I/O失敗がPortのUnionへ現れ、matchで扱われているか
+- [ ] 成功・未検出・入力不正・I/O失敗がPortのUnionへ現れ、matchで扱われているか
 - [ ] Outbound→Inbound→HTTPの変換と、assert_neverによる網羅性が明示されているか
 - [ ] SDKエラーコードの捕捉範囲が技術設計と一致し、不具合/破損/設定不備を正常結果へ丸めていないか
 - [ ] 既存404/422/503/500・Retry-After・入力判定順・cache/lease/予算・キャンセル/cleanup優先順位を維持しているか
-- [ ] 暫定変換の撤去担当と時期が明確か。最終状態で旧独自例外が残っていないか
+- [ ] 旧独自例外と暫定変換が残らず、結果契約の再混入検査・API回帰・mypy strictが成功しているか
+- [ ] 検査自体の正負例が維持され、正当なSDK/validator/timeout/起動/共通500/cleanup例外を一律禁止していないか
