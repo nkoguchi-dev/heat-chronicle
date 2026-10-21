@@ -4,30 +4,19 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from starlette.requests import Request
 
 from app.config import settings
 from app.di.container import register_dependencies
-from app.infrastructure.init_tables import ensure_tables_exist
-from app.infrastructure.seed import seed_and_migrate
+from app.di.lifecycle import initialize_host
 from app.presentation.api import health, hello, prefectures, stations, temperature
-from app.presentation.api.shared.internal_server_error import (
-    InternalServerErrorResponse,
-)
+from app.presentation.api.shared.exception_handlers import unhandled_exception_handler
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    logger.info("Initializing DynamoDB tables...")
-    ensure_tables_exist()
-    logger.info("DynamoDB tables ready.")
-    logger.info("Running station migrations...")
-    seed_and_migrate()
-    logger.info("Station migrations complete.")
+    initialize_host()
     yield
 
 
@@ -57,11 +46,4 @@ app.include_router(temperature.router, prefix="/api/temperature", tags=["tempera
 app.include_router(health.router, tags=["health"])
 
 
-@app.exception_handler(Exception)
-async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    logger.exception("Unhandled exception")
-    response = InternalServerErrorResponse(detail="Internal server error")
-    return JSONResponse(
-        status_code=500,
-        content=response.model_dump(),
-    )
+app.add_exception_handler(Exception, unhandled_exception_handler)

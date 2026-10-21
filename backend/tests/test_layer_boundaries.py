@@ -172,3 +172,9 @@ def test_domain_has_only_known_unmigrated_protocols() -> None:
     from tests.layer_rules import DOMAIN_PROTOCOL_EXCEPTIONS, domain_protocols
 
     assert domain_protocols(APP_DIR) == DOMAIN_PROTOCOL_EXCEPTIONS
+
+
+def test_concrete_connections_are_only_in_di() -> None:
+    from tests.layer_rules import concrete_connections
+
+    assert concrete_connections(APP_DIR) == set()
