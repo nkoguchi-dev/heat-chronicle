@@ -54,5 +54,13 @@
     "reason": "検査専用CLIが所有者指定のローカルTrivyへ固定オプションと引数リストを渡す監査項目。shell=False既定でシェル展開せず、HTTPから到達しない。CIのbinaryは固定SHA-256で導入し、imageは固定候補名、出力と設定は一時ローカルパス。",
     "owner": "repository maintainer",
     "review_by": "2027-01-20"
+  },
+  {
+    "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit.dangerous-subprocess-use-audit",
+    "path": "tools/development.py",
+    "match_sha256": "911e2466b7ed607019f6e72c30c5535693ec9b1eecc21d357547e452ef33d1bf",
+    "reason": "ローカル開発専用CLIの共通実行関数。全呼び出し元を照合し、uv/npm/dockerの固定実行名と固定オプション・所有者指定の検証済み数値portだけを引数リストで渡す。shell=Falseを明示し、シェル展開を行わない。アプリやHTTP入力から呼び出されず、外部入力をコマンド文字列として評価する経路はない。PATHは所有者のローカルツール解決に使用する。",
+    "owner": "repository maintainer",
+    "review_by": "2027-01-21"
   }
 ]
