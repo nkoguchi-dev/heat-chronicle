@@ -40,3 +40,11 @@ frontendの検査buildはCI同様の固定ローカルAPI originを渡し、AWS�
 新規worktreeでsetup/check/browser-smokeを実行し、専用bind mountのsentinelをstop・再起動後に照合します。既存利用者のdatabase/dataを検証fixtureとして使いません。
 
 個別の規則は[backendガイド](../backend/AGENTS.md)、[frontendガイド](../frontend/AGENTS.md)、[バックエンド契約](./BACKEND_DEVELOPMENT.md)を参照してください。
+
+## 実装の入力
+
+`make setup`の後に`make dev`を実行します。macOS/LinuxのPOSIX process groupを使用します。Windowsでの実行は契約に含めません。
+検証や既存portの回避には`HEAT_DEV_API_PORT`、`HEAT_DEV_FRONTEND_PORT`を指定します。既定は8000/3000で、launcherがproxyとCORSを同じ値へ合わせます。
+DBの設定はbackendの.env.localと通常の環境変数優先順位をそのまま使います。Composeの標準入力`COMPOSE_FILE`/`COMPOSE_PROJECT_NAME`も利用可能ですが、DB endpointはComposeの公開portと一致させてください。
+`make check`のintegrationは`test-make`prefixを使用します。同じDBへ複数worktreeから同時にcheckを実行しないでください。
+`make browser-smoke`のportは既存の`E2E_PORT`で変更できます。失敗時はfrontend/test-resultsとfrontend/playwright-reportを確認します。
