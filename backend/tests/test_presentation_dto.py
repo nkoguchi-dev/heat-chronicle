@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 from pydantic import ValidationError
 
+from app.presentation.api.prefectures.get_prefectures import PrefectureResponse
 from app.presentation.api.shared.internal_server_error import (
     InternalServerErrorResponse,
 )
@@ -82,3 +83,16 @@ def test_temperature_record_response_is_strict() -> None:
 
 def test_endpoints_do_not_share_temperature_record_dto() -> None:
     assert TemperatureRecordResponse.__name__ != MonthTemperatureRecordResponse.__name__
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"prec_no": "44", "name": "東京都"},
+        {"prec_no": 44, "name": 44},
+        {"prec_no": 44, "name": "東京都", "unexpected": True},
+    ],
+)
+def test_prefecture_response_remains_strict(payload: dict[str, object]) -> None:
+    with pytest.raises(ValidationError):
+        PrefectureResponse.model_validate(payload)

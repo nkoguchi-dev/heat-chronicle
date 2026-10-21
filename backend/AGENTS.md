@@ -105,6 +105,9 @@ Domainに外部I/O Protocolを置かず、ApplicationのOutbound Portとして�
 
 ```text
 domain/
+├── prefecture/
+│   ├── model.py
+│   └── catalog.py
 ├── station/
 │   └── model.py
 └── temperature/

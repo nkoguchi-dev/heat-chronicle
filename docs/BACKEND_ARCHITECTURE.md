@@ -375,4 +375,10 @@ OutboundのDataSourceとGuard、試行前callbackは成功・上流不能・所�
 
 `backend/tests/result_rules.py`はApplication/Portと観測期間規則での独自業務例外・ValueError送出・広い例外捕捉、および対象HTTP endpointでのHTTPException送出/importと広い捕捉を検出する。aliasと修飾名を含む静的ASTの限定検査であり、全raise禁止や動的コードの完全証明ではない。SDK/client例外、外部DTO validator、構成違反、共通500、asyncio timeout、元の例外を保つcleanupは許容する。検査自体の正負例を`test_result_rule_guards.py`で維持する。
 
-実PortとDIのmypy strictに加え、Unionへ型を追加したときassert_neverで未処理型を検出する負例も実行する。API横断の成功/404/422/503/500・Retry-After/CORS、DB障害と上流障害、未知例外とcleanupの回帰をunit/integrationで検証する。frontend品質検査とBrowser Smokeも完了条件とし、本番デプロイ・実JMA負荷試験は含めない。地域固定カタログのDomain移送は#238で扱う。
+実PortとDIのmypy strictに加え、Unionへ型を追加したときassert_neverで未処理型を検出する負例も実行する。API横断の成功/404/422/503/500・Retry-After/CORS、DB障害と上流障害、未知例外とcleanupの回帰をunit/integrationで検証する。frontend品質検査とBrowser Smokeも完了条件とし、本番デプロイ・実JMA負荷試験は含めない。地域固定カタログは#238でDomainへ移送済み。
+
+## 地域カタログのDomain所有（#238）
+
+`domain/prefecture/model.py`のfrozen dataclass `Prefecture`が地域番号と名称を表し、`domain/prefecture/catalog.py`の`PREFECTURES`が`Final[tuple[Prefecture, ...]]`として固定知識を所有する。北海道の地方と南極を含む既存61件の番号・名称・表示順を維持し、47都道府県コードへの正規化は行わない。外部I/OやカタログRepositoryは設けない。
+
+`ListPrefectureUseCase`はDomainカタログから`PrefectureOutput`を毎回生成し、HTTP境界は従来の専用`PrefectureResponse`へ変換する。DomainモデルをPort/HTTP DTOとして公開しない。カタログのtupleとfrozenな各モデルによって共有データの変更を防ぎ、返却listの変更も次回の取得へ影響しない。移行前の全61件を固定したfixtureでDomainとAPIの番号・名称・順序を検証し、既存DTO/import境界検査も維持する。`backend/data/prefectures_20260222.txt`は過去の資料であり実行時に読み込まない。
