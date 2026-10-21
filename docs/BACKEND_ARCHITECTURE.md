@@ -251,6 +251,90 @@ ASTのimport検査に加え、DI外でのUse Case/Adapter生成を検出し、�
 開発用Linux/amd64 imageとLambda imageのsmoke、production静的配信のBrowser Smoke4件も確認した。
 実AWS・実気象庁への通信・本番デプロイは検証対象外であり、本番確認を代替しない。commit、環境、詳細な結果は[検証Issue][verification]に記録する。
 
+## 型付き結果の契約（#244）
+
+#245の設計基準は`523a290`。以下は#246〜#251で移行する契約であり、設計PRでは実装を変えない。
+内部の想定内失敗は原則frozen dataclassとUnionで返し、呼び出し側は`match`する。必要な網羅分岐は最後を`case unreachable: assert_never(unreachable)`とし、mypy strictで追加型の処理漏れを検出する。
+汎用Resultライブラリ・外部framework型は導入しない。単純なNone/bool/空配列で障害を表さず、成功と失敗の意味を型で区別する。
+
+### Port別の所有と結果
+
+| 所有する境界 | 操作 | 成功 | 想定内の失敗 |
+| --- | --- | --- | --- |
+| station Outbound Repository | get_all / get_by_prec_no | StationsRead(stations)。空も成功 | StationStorageUnavailable |
+| station Outbound Repository | get_by_id | StationFound(station) | StationMissing / StationStorageUnavailable |
+| temperature Outbound Repository | range read | TemperaturesRead(records)。空も成功 | TemperatureStorageUnavailable |
+| temperature Outbound Repository | fetched-month read | FetchedMonthsRead(months)。空も成功 | TemperatureStorageUnavailable |
+| temperature Outbound Repository | bulk write / fetch-log write | TemperatureWriteSucceeded | TemperatureStorageUnavailable |
+| station Inbound | list_stations | StationListResult(outputs)。全件空は成功 | ListStationNotFound / ListStationStorageUnavailable |
+| temperature取得 Inbound | get_temperature_data | GetTemperatureDataOutput | GetTemperatureNotFound / GetTemperatureInvalidPeriod(detail) / GetTemperatureStorageUnavailable |
+| Domain入力規則 | year / month validate | ObservationPeriodValid | InvalidObservationPeriod(detail) |
+| FetchGuard Outbound | acquire/check/before_attempt/release | GuardSucceeded | LeaseBusy / LeaseLost / GuardStorageUnavailable（操作ごとのUnionで必要な型だけ） |
+| Data Source Outbound | fetch_daily_temperatures | TemperaturesFetched(records)。空も成功 | TemperatureSourceUnavailable / TemperatureSourceStorageUnavailable |
+| 月別取得 Inbound | fetch_month | FetchMonthResult(outputs)。空も成功 | FetchMonthNotFound / FetchMonthInvalidPeriod(detail) / FetchMonthStorageUnavailable / FetchMonthUnavailable |
+
+結果型は利用するPortのモジュールが所有する。Repository同一Port内の障害型は共有できるが、Outboundの障害型をそのままInboundやHTTPへ公開しない。
+ApplicationでDomain/Outbound結果をユースケース専用Inbound結果へ明示変換する。成功OutputもDomainモデルとHTTP DTOから分離する。
+JMA client内部のページ結果とData Source結果も分け、HTTP本文・SDK例外・内部障害の詳細を外へ出さない。prefecture一覧とClockには想定内失敗を新設しない。
+
+### 外部互換性と優先順位
+
+| 内部の結果/事象 | HTTP応答 |
+| --- | --- |
+| 成功 | 既存200 body、並び順・null・metadata・50年窓を維持 |
+| station全件の成功空 | 200の空配列 |
+| 指定地域にstationがない | 404 `{"detail":"Prefecture not found"}` |
+| 指定station未検出 | 404 `{"detail":"Station <id> not found"}` |
+| Domain観測年不正 | 422 `{"detail":"year outside observation range"}` |
+| Domain観測月不正 | 422 `{"detail":"month outside observation range"}` |
+| DB/Guard永続化不能 | 500 `{"detail":"Internal server error"}` |
+| 上流取得不能、lease競合/喪失、月別取得予算超過 | 503 `{"detail":"Temporarily unavailable"}`、`Retry-After: 5` |
+| 想定外の例外 | 既存共通handlerの汎用500。ログの情報境界を維持 |
+
+HTTP Adapterは想定内失敗でHTTPExceptionをraiseせずJSONResponse等を返す。FastAPIのpath/query型検証（422のlist detail）とCORSのRetry-After公開は維持する。
+入力の優先順はHTTP型検証→station参照→Domain観測年→月→cache/外部取得。DBでstationを参照できなければ500を返し、未検出404や期間不正422へ読み替えない。
+metadata・空取得・cache鮮度を変更しない。全件空は成功、地域絞り込みの空は従来どおり404とする。
+
+### 外部例外の分類
+
+- Repository/GuardのDynamoDBではClientErrorの`ProvisionedThroughputExceededException`、`ThrottlingException`、`RequestLimitExceeded`、`InternalServerError`、`ServiceUnavailable`だけを永続化不能へ変換する。
+- botocoreの`EndpointConnectionError`、`ConnectTimeoutError`、`ReadTimeoutError`、`ConnectionClosedError`も永続化不能にする。エラーコード以外のSDK例外やClientError全体を丸めない。
+- `ResourceNotFoundException`、`AccessDeniedException`、認証/設定不備、ParamValidationErrorは想定外のまま共通500へ到達させる。未知のClientErrorも再送出する。
+- ConditionalCheckFailedExceptionはGuardの操作に応じた値へ変換する。acquire競合はLeaseBusy、所有者/期限/欠落はLeaseLost。release時の条件不一致はすでに所有していないので成功として扱い、別所有者のleaseを触らない。
+- 壊れたDynamoDB DTOやlease DTOのPydantic ValidationError、parserの契約違反は破損/不具合として例外を維持する。欠落leaseと破損leaseを区別する。
+- JMAのHTTP status失敗、httpxのRequestError、1試行TimeoutErrorは既存3試行のretry対象とし、試行上限で上流取得不能を返す。InvalidURL/UnsupportedProtocol等の設定・利用契約違反は業務結果にしない。
+- before_attemptはGuardの結果を返す。競合/喪失/DB失敗をmatchし、次の上流試行へ進まずData Sourceへ対応する値を返す。GuardのDB失敗は上流503へ丸めず500へ変換する。
+- 想定内I/O失敗はAdapterで安全なイベント名をログへ残す。内部例外/SDK payload/SQL等を結果やHTTP本文へ含めず、ユーザー入力・token等をログへ追加しない。
+
+### 取得保護とcleanup
+
+最大3試行・1試行8秒・試行間隔2秒以上・取得予算25秒を維持する。予算のasyncio TimeoutErrorだけを必要な境界で取得不能へ変換し、RuntimeErrorやException全体を取得不能へ丸めない。
+cache再確認→取得→所有確認→データ保存→所有確認→fetch-logの順序を維持する。途中のDB/Guard失敗では後続を止め、fetch-logを書かない。
+leaseを取得した経路は結果の成功/失敗・例外・キャンセルにかかわらずreleaseし、clientを生成した経路はcloseする。acquire未成功ではreleaseしない。
+
+cleanupの優先順は次で固定する。
+1. キャンセル/想定外例外が進行中なら、それを維持する。cleanupの二次障害は安全なログへ記録し、元の例外を隠さない。
+2. 主処理が型付き失敗でcleanupも想定内失敗なら、主処理の失敗を維持して二次障害をログへ記録する。
+3. 主処理が成功でreleaseが永続化不能なら500、closeが想定内I/O失敗なら上流503にする。
+4. 主処理が値で完了した後の予期しないcleanup例外は汎用500へ到達させる。cleanupのためだけの例外捕捉を通常の業務失敗判定へ転用しない。
+
+CancelledErrorを成功や業務エラーに変換しない。lease喪失後に新たな試行/書込みを開始せず、TTL削除に依存せず条件式で判定する。外部副作用の原子性やtransactionを新設する変更は含まない。
+
+### 段階移行と暫定変換の撤去
+
+| Issue | そのPRで動く中間状態と撤去担当 |
+| --- | --- |
+| #245 | 本契約だけを定義、実装変更なし |
+| #246 | Repository全メソッドを結果化し、全Use Case/HTTP/Fakeを追従。Inboundへ専用DB失敗値を加え500を直接返す。未検出・期間不正・上流の旧例外は残す |
+| #247 | station成功/未検出/DB失敗を直和型へ統一し、PrefectureNotFound例外とValueError/HTTPException変換を撤去 |
+| #248 | 参照APIとDomain年検証を結果化。月検証は必要なら年結果を旧例外へ戻す暫定変換を置き、#250で撤去 |
+| #249 | JMA/Guard/callbackを結果化。月別Applicationはmatchし、取得不能のみ旧Inbound例外へ戻す暫定変換を置き、#250で撤去。DB失敗はInbound DB失敗値へ変換 |
+| #250 | 月別Inbound/Domain月検証を結果化し、残る独自例外/暫定raise/catchと広いRuntimeError捕捉を撤去 |
+| #251 | API/保護/網羅性の回帰と、想定内例外の再混入を防ぐ限定検査。正当な外部境界・起動エラー・500 handler・timeout/cancel cleanupは許容 |
+
+各PRで型検査・unit・integrationと変更境界の障害注入を行う。最後の検査Issueへ実装テストを先送りしない。
+実装・HTTP変換では具体型のcaseを列挙し、型付き失敗の追加がassert_neverへ到達する負例も確認する。汎用catch-all・cast・type ignoreで分岐漏れを隠さない。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153
