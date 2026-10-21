@@ -35,7 +35,22 @@ class GetTemperatureStorageUnavailable:
     pass
 
 
+@dataclass(frozen=True)
+class GetTemperatureNotFound:
+    station_id: int
+
+
+@dataclass(frozen=True)
+class GetTemperatureInvalidPeriod:
+    detail: str
+
+
 class GetTemperaturePort(Protocol):
     def get_temperature_data(
         self, station_id: int, end_year: int | None
-    ) -> GetTemperatureDataOutput | GetTemperatureStorageUnavailable: ...
+    ) -> (
+        GetTemperatureDataOutput
+        | GetTemperatureStorageUnavailable
+        | GetTemperatureNotFound
+        | GetTemperatureInvalidPeriod
+    ): ...

@@ -1,13 +1,14 @@
 from datetime import date as Date
 from typing import Annotated, assert_never
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, Path, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
-from app.application.temperature.ports.inbound.errors import InvalidTemperatureInput
 from app.application.temperature.ports.inbound.get_temperature import (
     GetTemperatureDataOutput,
+    GetTemperatureInvalidPeriod,
+    GetTemperatureNotFound,
     GetTemperaturePort,
     GetTemperatureStorageUnavailable,
 )
@@ -53,38 +54,39 @@ def get_temperature(
     use_case: Annotated[GetTemperaturePort, Depends(get_temperature_port)],
     end_year: int | None = Query(default=None),
 ) -> TemperatureResponse | JSONResponse:
-    try:
-        match use_case.get_temperature_data(station_id, end_year):
-            case GetTemperatureStorageUnavailable():
-                return storage_error_response()
-            case GetTemperatureDataOutput() as output:
-                pass
-            case unreachable_1:
-                assert_never(unreachable_1)
-        metadata = output.metadata
-        return TemperatureResponse(
-            metadata=TemperatureMetadataResponse(
-                station_id=metadata.station_id,
-                station_name=metadata.station_name,
-                start_year=metadata.start_year,
-                end_year=metadata.end_year,
-                total_records=metadata.total_records,
-                fetched_months=metadata.fetched_months,
-                fetching_required=metadata.fetching_required,
-                has_older_data=metadata.has_older_data,
-                next_end_year=metadata.next_end_year,
-            ),
-            data=[
-                TemperatureRecordResponse(
-                    date=record.date,
-                    max_temp=record.max_temp,
-                    min_temp=record.min_temp,
-                    avg_temp=record.avg_temp,
-                )
-                for record in output.data
-            ],
-        )
-    except InvalidTemperatureInput as e:
-        raise HTTPException(status_code=422, detail=str(e))
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    match use_case.get_temperature_data(station_id, end_year):
+        case GetTemperatureStorageUnavailable():
+            return storage_error_response()
+        case GetTemperatureNotFound(station_id=missing_id):
+            return JSONResponse(
+                status_code=404, content={"detail": f"Station {missing_id} not found"}
+            )
+        case GetTemperatureInvalidPeriod(detail=detail):
+            return JSONResponse(status_code=422, content={"detail": detail})
+        case GetTemperatureDataOutput() as output:
+            pass
+        case unreachable_1:
+            assert_never(unreachable_1)
+    metadata = output.metadata
+    return TemperatureResponse(
+        metadata=TemperatureMetadataResponse(
+            station_id=metadata.station_id,
+            station_name=metadata.station_name,
+            start_year=metadata.start_year,
+            end_year=metadata.end_year,
+            total_records=metadata.total_records,
+            fetched_months=metadata.fetched_months,
+            fetching_required=metadata.fetching_required,
+            has_older_data=metadata.has_older_data,
+            next_end_year=metadata.next_end_year,
+        ),
+        data=[
+            TemperatureRecordResponse(
+                date=record.date,
+                max_temp=record.max_temp,
+                min_temp=record.min_temp,
+                avg_temp=record.avg_temp,
+            )
+            for record in output.data
+        ],
+    )

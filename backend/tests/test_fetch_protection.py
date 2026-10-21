@@ -23,6 +23,7 @@ from app.application.temperature.ports.inbound.errors import (
 )
 from app.application.temperature.ports.inbound.get_temperature import (
     GetTemperatureDataOutput,
+    GetTemperatureInvalidPeriod,
 )
 from app.application.temperature.ports.outbound.fetch_guard import FetchUnavailable
 from app.application.temperature.ports.outbound.repository import (
@@ -206,10 +207,11 @@ async def test_other_execution_rejected_for_same_or_different_station(
 def test_history_rejects_before_temperature_io(end_year: int) -> None:
     stations, repo = Mock(), Mock()
     stations.get_by_id.return_value = StationFound(STATION)
-    with pytest.raises(GetTemperatureInputError):
-        GetTemperatureUseCase(stations, repo, FixedClock()).get_temperature_data(
-            1, end_year
-        )
+    result = GetTemperatureUseCase(stations, repo, FixedClock()).get_temperature_data(
+        1, end_year
+    )
+    assert isinstance(result, GetTemperatureInvalidPeriod)
+    assert result.detail == "year outside observation range"
     repo.get_by_station_and_range.assert_not_called()
     repo.get_fetched_months.assert_not_called()
 

@@ -1,9 +1,21 @@
+from dataclasses import dataclass
 from datetime import datetime
+from typing import assert_never
 from zoneinfo import ZoneInfo
 
 from app.domain.station.model import Station
 
 FALLBACK_START_YEAR = 1975
+
+
+@dataclass(frozen=True)
+class ObservationPeriodValid:
+    pass
+
+
+@dataclass(frozen=True)
+class InvalidObservationPeriod:
+    detail: str
 
 
 class InvalidTemperatureInput(ValueError):
@@ -18,12 +30,22 @@ def earliest_year(station: Station) -> int:
     return station.earliest_year or FALLBACK_START_YEAR
 
 
-def validate_year(station: Station, year: int, now: datetime) -> None:
+def validate_year(
+    station: Station, year: int, now: datetime
+) -> ObservationPeriodValid | InvalidObservationPeriod:
     if not earliest_year(station) <= year <= now.year:
-        raise InvalidTemperatureInput("year outside observation range")
+        return InvalidObservationPeriod("year outside observation range")
+    return ObservationPeriodValid()
 
 
 def validate_month(station: Station, year: int, month: int, now: datetime) -> None:
-    validate_year(station, year, now)
+    # Temporary legacy bridge for fetch-month, removed in #250.
+    match validate_year(station, year, now):
+        case InvalidObservationPeriod(detail=detail):
+            raise InvalidTemperatureInput(detail)
+        case ObservationPeriodValid():
+            pass
+        case unreachable:
+            assert_never(unreachable)
     if not 1 <= month <= 12 or (year, month) > (now.year, now.month):
         raise InvalidTemperatureInput("month outside observation range")

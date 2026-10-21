@@ -355,3 +355,7 @@ HTTPは具体型をmatchして200/404/500を直接返す。全件空は成功、
 [verification]: https://github.com/nkoguchi-dev/heat-chronicle/issues/160
 [prefecture-domain]: https://github.com/nkoguchi-dev/heat-chronicle/issues/238
 <!-- /links -->
+
+### #248: キャッシュ気温参照の結果値
+
+キャッシュ参照は成功・地点未検出・観測期間不正・永続化不能をInboundの専用結果で返す。年検証は純粋なDomain結果を返す。月別取得は#250まで明示的な旧例外への暫定変換を持つ。想定外のValueErrorは共通500へ伝播する。metadata・50年範囲・地点確認後の期間判定は維持する。

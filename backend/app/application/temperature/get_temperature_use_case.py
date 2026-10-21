@@ -8,12 +8,10 @@ from app.application.station.ports.outbound.repository import (
     StationRepository,
     StationStorageUnavailable,
 )
-from app.application.temperature.ports.inbound.errors import (
-    InvalidTemperatureInput,
-    StationNotFound,
-)
 from app.application.temperature.ports.inbound.get_temperature import (
     GetTemperatureDataOutput,
+    GetTemperatureInvalidPeriod,
+    GetTemperatureNotFound,
     GetTemperatureStorageUnavailable,
     TemperatureMetadataOutput,
     TemperatureRecordOutput,
@@ -26,9 +24,8 @@ from app.application.temperature.ports.outbound.repository import (
 )
 from app.domain.temperature.fetch_freshness import FetchFreshnessPolicy, FetchStatus
 from app.domain.temperature.input_policy import (
-    InvalidTemperatureInput as DomainInvalidTemperatureInput,
-)
-from app.domain.temperature.input_policy import (
+    InvalidObservationPeriod,
+    ObservationPeriodValid,
     earliest_year,
     observation_time,
     validate_year,
@@ -73,24 +70,32 @@ class GetTemperatureUseCase:
 
     def get_temperature_data(
         self, station_id: int, end_year: int | None
-    ) -> GetTemperatureDataOutput | GetTemperatureStorageUnavailable:
+    ) -> (
+        GetTemperatureDataOutput
+        | GetTemperatureStorageUnavailable
+        | GetTemperatureNotFound
+        | GetTemperatureInvalidPeriod
+    ):
         now = self.clock.now()
         now_jst = observation_time(now)
         match self.station_repo.get_by_id(station_id):
             case StationFound(station=station):
                 pass
             case StationMissing():
-                raise StationNotFound(f"Station {station_id} not found")
+                return GetTemperatureNotFound(station_id)
             case StationStorageUnavailable():
                 return GetTemperatureStorageUnavailable()
             case unreachable_1:
                 assert_never(unreachable_1)
 
         end_year = now_jst.year if end_year is None else end_year
-        try:
-            validate_year(station, end_year, now_jst)
-        except DomainInvalidTemperatureInput as exc:
-            raise InvalidTemperatureInput(str(exc)) from exc
+        match validate_year(station, end_year, now_jst):
+            case InvalidObservationPeriod(detail=detail):
+                return GetTemperatureInvalidPeriod(detail)
+            case ObservationPeriodValid():
+                pass
+            case unreachable_period:
+                assert_never(unreachable_period)
         effective_earliest = earliest_year(station)
         start_year = max(effective_earliest, end_year - CHUNK_SIZE + 1)
 
