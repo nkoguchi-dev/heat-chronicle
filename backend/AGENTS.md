@@ -85,11 +85,11 @@ application/
 ├── shared/
 │   └── ports/outbound/clock.py         # 実時計の契約
 ├── station/
-│   ├── ports/inbound/list_station.py    # Port・専用Output・未検出例外
+│   ├── ports/inbound/list_station.py    # Port・専用Output・結果型
 │   ├── ports/outbound/repository.py     # StationRepository
 │   └── list_station_use_case.py
 └── temperature/
-    ├── ports/inbound/                  # Port・専用Output・例外
+    ├── ports/inbound/                  # Port・専用Output・結果型
     ├── ports/outbound/                 # Repository・Data Source・Guard
     ├── get_temperature_use_case.py
     └── fetch_month_use_case.py
@@ -154,9 +154,11 @@ presentation/api/temperature/
 
 ## エラーハンドリング方針
 
-- 気象庁へのリクエスト失敗は `JmaClient` 内でリトライ後、例外を上位に伝播
-- API レスポンスでは FastAPI の `HTTPException` を使用
-- バリデーションエラーは Pydantic の自動バリデーションに委譲
+- 想定内の失敗はPort所有のfrozen dataclassとUnionで返し、呼び出し側はmatchで成功・失敗を明示変換する
+- HTTP境界は想定内失敗でResponseを直接返す。HTTPExceptionや広いValueError/RuntimeError捕捉で業務結果へ変換しない
+- SDK/clientの既知I/O例外だけをAdapterで結果へ変換する。破損DTO・設定不備・プログラム不具合は共通500へ伝播する
+- HTTP入力の形式検証はFastAPI/Pydanticに委譲し、Domainの観測期間検証は純粋な結果値を返す
+- asyncio timeoutは取得予算の境界で変換し、キャンセル/想定外例外とcleanupの優先順位を維持する
 
 ## 環境変数
 
@@ -176,5 +178,7 @@ presentation/api/temperature/
 
 ## 型付きの失敗結果
 
-Issue #245で[結果契約](../docs/BACKEND_ARCHITECTURE.md)を定義し、#246〜#251で段階移行します。想定内失敗は原則frozen dataclassとUnionで返し、呼び出し側はmatchで明示変換します。Outbound/Inbound/HTTPで失敗型を共有しません。
+Issue #244〜#251で[結果契約](../docs/BACKEND_ARCHITECTURE.md)への移行を完了しました。想定内失敗は原則frozen dataclassとUnionで返し、呼び出し側はmatchで明示変換します。Outbound/Inbound/HTTPで失敗型を共有しません。
 網羅分岐はassert_neverとmypy strictで確認し、HTTPは想定内失敗でResponseを返します。外部SDK/clientの必要な例外捕捉、起動時の構成エラー、想定外500、asyncio timeout/cancel cleanupは維持します。全Exception/RuntimeErrorを業務結果へ丸めません。
+
+`tests/result_rules.py`がApplication/Port/対象HTTP境界への想定内例外制御の再混入を限定的に検査します。SDK例外、外部DTO validator、起動時構成エラー、共通500 handler、timeout/cancel cleanupは許容します。`test_result_rule_guards.py`で違反/正当な例外の正負例と、結果型追加時のmypy網羅性エラーを確認します。動的な例外名やすべての意味上の誤変換までは検査しないため、API・保護の回帰テストとレビューも必須です。

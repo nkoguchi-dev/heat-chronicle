@@ -2,7 +2,7 @@
 
 エンジニア向けに、APIを維持してApplication所有のPortへ段階移行する設計を定義する。
 設計の基準は2026-10-21の`eb5d792`、親Issueは[#137][parent]、設計Issueは[#153][design]。
-設計追加後に#154〜#159で全経路を移行した。現在の配置と規則は以下の完成形を正本とし、移行前の棚卸しは当時の基準として残す。最終統合確認は#160で行う。
+設計追加後に#154〜#159で全経路を移行した。現在の配置と規則は以下の完成形を正本とし、移行前の棚卸しは当時の基準として残す。Port/Adapterの最終統合確認は#160で完了し、#244〜#251で想定内失敗も型付き結果へ移行した。
 利用者向け仕様は[プロダクト仕様][product]、検証層は[テスト戦略][testing]を正本とする。
 
 ## 移行前の経路と依存（#153時点）
@@ -86,10 +86,9 @@ app/
     temperature/
       ports/inbound/get_temperature.py  # GetTemperaturePort, 取得専用Output群
       ports/inbound/fetch_month.py      # FetchMonthPort, 月別専用Output
-      ports/inbound/errors.py           # 利用される入力不正・未検出・取得不可の契約
       ports/outbound/repository.py      # TemperatureRepository
       ports/outbound/data_source.py     # TemperatureDataSource
-      ports/outbound/fetch_guard.py     # FetchGuard, FetchUnavailable
+      ports/outbound/fetch_guard.py     # FetchGuard, 成功・競合・喪失・DB障害の結果型
       get_temperature_use_case.py
       fetch_month_use_case.py
     shared/ports/outbound/clock.py      # Clock
@@ -113,7 +112,7 @@ Inbound Portのメソッド名・同期／非同期・引数は現行Use Caseの
 | --- | --- | --- |
 | Domain | Domain、標準ライブラリ | Application、Presentation、Infrastructure、DI、設定、外部framework、外部I/O Protocol |
 | Application | Application、Domain、標準ライブラリ（`asyncio`を含む） | Presentation、Infrastructure、DI、設定、FastAPI、Pydantic、boto3、httpx |
-| Presentation | Application Inbound Portと公開入出力・例外 | Use Case具象、Outbound Port、Domain、Infrastructure、DI、設定 |
+| Presentation | Application Inbound Portと公開入出力・結果型 | Use Case具象、Outbound Port、Domain、Infrastructure、DI、設定 |
 | Infrastructure | Application Outbound Port、Domain、Infrastructure、外部SDKと設定 | Inbound Port、Use Case具象、Presentation、DI |
 | DI | Port、Use Case具象、Adapter、設定、Presentation依存関数 | 業務判断・HTTP応答への変換 |
 
@@ -126,13 +125,13 @@ Infrastructure内のparser・DTO変換などの部品利用は許可する。外
 #154で例外を具体的なファイル／import単位で固定し、移行PRで削減する。新規違反をディレクトリ単位で免除しない。
 移行前のAST検査の相対import解決とProtocol配置の不足は#154で解消した。現在は全import移行例外・Domain Protocol例外が0である。
 
-### 入出力と例外の変換
+### 入出力と結果の変換
 
 - Inbound AdapterはHTTPのpath/queryを標準型へ検証し、Portへ渡す。ApplicationにFastAPIやPydanticを持ち込まない。
 - Outbound AdapterはDynamoDB Item、HTMLなどをInfrastructure専用DTOで検証し、Domainモデルへ変換して返す。Portへ外部DTOを返さない。
 - Use CaseはDomainモデルをユースケース専用Output dataclassへ明示変換する。OutputフィールドにもDomainモデルを公開しない。
 - Inbound AdapterはOutputをendpoint専用のstrict Pydantic Responseへ明示変換する。日付、null、フィールド名、HTTP応答は維持する。
-- 入力規則のDomain例外はUse CaseでInbound入力エラーへ変換し、未検出と区別する。取得制御のOutbound例外もInbound取得不可へ変換する。公開エラーのメッセージを保持する。
+- Domain/Outboundの結果値はUse Caseで専用のInbound結果へ明示変換し、未検出・期間不正・DB障害・上流不能を区別する。旧独自例外と暫定変換は存在しない。
 - HTTPへの対応はAdapterが行い、入力不正422、未検出404、取得不可503と`Retry-After: 5`、予期しない失敗500の既存契約を維持する。内部例外の詳細を新たに公開しない。
 
 ### Composition Rootとテスト差し替え
@@ -253,7 +252,7 @@ ASTのimport検査に加え、DI外でのUse Case/Adapter生成を検出し、�
 
 ## 型付き結果の契約（#244）
 
-#245の設計基準は`523a290`。以下は#246〜#251で移行する契約であり、設計PRでは実装を変えない。
+#245の設計基準は`523a290`。以下は#246〜#251で移行を完了した現在の契約である。#153〜#160の経緯に残る例外方式は当時の記録であり、現在の実装方針ではない。
 内部の想定内失敗は原則frozen dataclassとUnionで返し、呼び出し側は`match`する。必要な網羅分岐は最後を`case unreachable: assert_never(unreachable)`とし、mypy strictで追加型の処理漏れを検出する。
 汎用Resultライブラリ・外部framework型は導入しない。単純なNone/bool/空配列で障害を表さず、成功と失敗の意味を型で区別する。
 
@@ -266,12 +265,12 @@ ASTのimport検査に加え、DI外でのUse Case/Adapter生成を検出し、�
 | temperature Outbound Repository | range read | TemperaturesRead(records)。空も成功 | TemperatureStorageUnavailable |
 | temperature Outbound Repository | fetched-month read | FetchedMonthsRead(months)。空も成功 | TemperatureStorageUnavailable |
 | temperature Outbound Repository | bulk write / fetch-log write | TemperatureWriteSucceeded | TemperatureStorageUnavailable |
-| station Inbound | list_stations | StationListResult(outputs)。全件空は成功 | ListStationNotFound / ListStationStorageUnavailable |
+| station Inbound | list_stations | StationListResult(stations)。全件空は成功 | ListStationNotFound / ListStationStorageUnavailable |
 | temperature取得 Inbound | get_temperature_data | GetTemperatureDataOutput | GetTemperatureNotFound / GetTemperatureInvalidPeriod(detail) / GetTemperatureStorageUnavailable |
 | Domain入力規則 | year / month validate | ObservationPeriodValid | InvalidObservationPeriod(detail) |
 | FetchGuard Outbound | acquire/check/before_attempt/release | GuardSucceeded | LeaseBusy / LeaseLost / GuardStorageUnavailable（操作ごとのUnionで必要な型だけ） |
 | Data Source Outbound | fetch_daily_temperatures | TemperaturesFetched(records)。空も成功 | TemperatureSourceUnavailable / TemperatureSourceStorageUnavailable |
-| 月別取得 Inbound | fetch_month | FetchMonthResult(outputs)。空も成功 | FetchMonthNotFound / FetchMonthInvalidPeriod(detail) / FetchMonthStorageUnavailable / FetchMonthUnavailable |
+| 月別取得 Inbound | fetch_month | FetchMonthResult(records)。空も成功 | FetchMonthNotFound / FetchMonthInvalidPeriod(detail) / FetchMonthStorageUnavailable / FetchMonthUnavailable |
 
 結果型は利用するPortのモジュールが所有する。Repository同一Port内の障害型は共有できるが、Outboundの障害型をそのままInboundやHTTPへ公開しない。
 ApplicationでDomain/Outbound結果をユースケース専用Inbound結果へ明示変換する。成功OutputもDomainモデルとHTTP DTOから分離する。
@@ -339,7 +338,7 @@ CancelledErrorを成功や業務エラーに変換しない。lease喪失後に�
 
 Station/Temperature Repositoryの全操作は成功・未検出・想定内I/O障害を型付き値で返す。
 各Use Caseはmatch/assert_neverで処理し、ユースケース専用の永続化不能を返す。HTTPはその値を直接汎用500へ変換する。
-未検出・観測期間・上流の旧例外は#247〜#250まで維持する。失敗コードの限定・全操作の障害注入と、月別途中失敗後の停止/lease解放を検証した。
+未検出・観測期間・上流の旧例外は#247〜#250で撤去済み。失敗コードの限定・全操作の障害注入と、月別途中失敗後の停止/lease解放を検証した。
 
 ### station結果の移行状態（#247）
 
@@ -358,11 +357,11 @@ HTTPは具体型をmatchして200/404/500を直接返す。全件空は成功、
 
 ### #248: キャッシュ気温参照の結果値
 
-キャッシュ参照は成功・地点未検出・観測期間不正・永続化不能をInboundの専用結果で返す。年検証は純粋なDomain結果を返す。月別取得は#250まで明示的な旧例外への暫定変換を持つ。想定外のValueErrorは共通500へ伝播する。metadata・50年範囲・地点確認後の期間判定は維持する。
+キャッシュ参照は成功・地点未検出・観測期間不正・永続化不能をInboundの専用結果で返す。年検証は純粋なDomain結果を返す。月別取得の旧例外への暫定変換は#250で撤去済み。想定外のValueErrorは共通500へ伝播する。metadata・50年範囲・地点確認後の期間判定は維持する。
 
 ### #249: JMA取得・共有lease・callbackの結果値
 
-OutboundのDataSourceとGuard、試行前callbackは成功・上流不能・所有権喪失・競合・DB障害を専用結果で返す。JMA内部のHTML取得結果も明示的に変換する。DB障害を競合503へ変換せず、破損DTO・設定不備・想定外RuntimeErrorは例外のまま共通500へ伝播する。月別Inboundの上流不能例外への暫定変換は#250で撤去する。
+OutboundのDataSourceとGuard、試行前callbackは成功・上流不能・所有権喪失・競合・DB障害を専用結果で返す。JMA内部のHTML取得結果も明示的に変換する。DB障害を競合503へ変換せず、破損DTO・設定不備・想定外RuntimeErrorは例外のまま共通500へ伝播する。月別Inboundの上流不能例外への暫定変換は#250で撤去済み。
 
 3試行・8秒・2秒以上の間隔・25秒予算・30秒leaseを維持する。解放/closeの想定内失敗は先行する失敗結果を保ち、成功後なら対応する失敗へ変える。想定外cleanupは通常500へ伝播するが、既に伝播中の例外・キャンセルを上書きしない。安全な操作名だけをログに残す。
 
@@ -371,3 +370,9 @@ OutboundのDataSourceとGuard、試行前callbackは成功・上流不能・所�
 月別InboundはFetchMonthResult・地点未検出・期間不正・永続化不能・取得不能のUnionを返し、HTTPはmatchからResponseを返す。Domainの年月検証も純粋な結果値とし、旧Inbound/Outbound/Domainの独自例外と暫定変換をすべて撤去した。asyncio timeoutだけを取得不能へ変換し、想定外RuntimeError/ValueErrorは共通500へ届く。
 
 共有lease確保後の鮮度再確認、取得→所有権→保存→所有権→取得ログの順序を保持する。cleanupはその呼び出し自身で伝播中の例外/キャンセルだけを優先し、呼び出し元が処理中の例外に影響されない。取得失敗と解放失敗が重なった場合は一次結果を維持する。
+
+### #251: 結果契約の回帰検査
+
+`backend/tests/result_rules.py`はApplication/Portと観測期間規則での独自業務例外・ValueError送出・広い例外捕捉、および対象HTTP endpointでのHTTPException送出/importと広い捕捉を検出する。aliasと修飾名を含む静的ASTの限定検査であり、全raise禁止や動的コードの完全証明ではない。SDK/client例外、外部DTO validator、構成違反、共通500、asyncio timeout、元の例外を保つcleanupは許容する。検査自体の正負例を`test_result_rule_guards.py`で維持する。
+
+実PortとDIのmypy strictに加え、Unionへ型を追加したときassert_neverで未処理型を検出する負例も実行する。API横断の成功/404/422/503/500・Retry-After/CORS、DB障害と上流障害、未知例外とcleanupの回帰をunit/integrationで検証する。frontend品質検査とBrowser Smokeも完了条件とし、本番デプロイ・実JMA負荷試験は含めない。地域固定カタログのDomain移送は#238で扱う。

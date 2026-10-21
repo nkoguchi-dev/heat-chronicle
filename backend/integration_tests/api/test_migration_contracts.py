@@ -228,3 +228,74 @@ async def test_upstream_failure_contract_and_no_fetch_log(
         "/api/temperature/47662/fetch-month", params={"year": 2024, "month": 8}
     )
     assert retry.status_code == 200
+
+
+@pytest.mark.parametrize("storage", [False, True])
+async def test_typed_upstream_failure_with_real_use_case_and_local_db(
+    client: AsyncClient,
+    mock_temperature_data_source: MockTemperatureDataSource,
+    dynamodb_resource: Any,
+    test_settings: Settings,
+    storage: bool,
+) -> None:
+    from app.application.temperature.ports.outbound.data_source import (
+        TemperatureSourceStorageUnavailable,
+        TemperatureSourceUnavailable,
+    )
+
+    outcome = (
+        TemperatureSourceStorageUnavailable()
+        if storage
+        else TemperatureSourceUnavailable()
+    )
+    with patch.object(
+        mock_temperature_data_source, "fetch_daily_temperatures", return_value=outcome
+    ):
+        response = await client.get(
+            "/api/temperature/47662/fetch-month",
+            params={"year": 2024, "month": 8},
+            headers={"Origin": "http://localhost:3000"},
+        )
+    assert response.status_code == (500 if storage else 503)
+    assert response.json() == {
+        "detail": "Internal server error" if storage else "Temporarily unavailable"
+    }
+    assert response.headers.get("Retry-After") == (None if storage else "5")
+    assert "Retry-After" in response.headers["Access-Control-Expose-Headers"]
+    table = dynamodb_resource.Table(test_settings.table_name("fetch-log"))
+    assert "Item" not in table.get_item(
+        Key={"station_id": 47662, "year_month": "2024-08"}
+    )
+    mock_temperature_data_source.set_response(2024, 8, SAMPLE_JMA_HTML)
+    retry = await client.get(
+        "/api/temperature/47662/fetch-month", params={"year": 2024, "month": 8}
+    )
+    assert retry.status_code == 200
+
+
+async def test_guard_db_failure_is_500_without_upstream_or_release(
+    client: AsyncClient,
+    mock_temperature_data_source: MockTemperatureDataSource,
+) -> None:
+    from app.application.temperature.ports.outbound.fetch_guard import (
+        GuardStorageUnavailable,
+    )
+    from app.infrastructure.repositories.fetch_guard import DynamoDBFetchGuard
+
+    with (
+        patch.object(
+            DynamoDBFetchGuard, "acquire", return_value=GuardStorageUnavailable()
+        ),
+        patch.object(DynamoDBFetchGuard, "release") as release,
+        patch.object(
+            mock_temperature_data_source, "fetch_daily_temperatures"
+        ) as upstream,
+    ):
+        response = await client.get(
+            "/api/temperature/47662/fetch-month", params={"year": 2024, "month": 8}
+        )
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Internal server error"}
+    assert "Retry-After" not in response.headers
+    upstream.assert_not_called()
+    release.assert_not_called()
