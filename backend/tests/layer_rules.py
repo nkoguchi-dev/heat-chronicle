@@ -122,10 +122,6 @@ MIGRATION_EXCEPTIONS: set[ImportEdge] = {
     ImportEdge("main.py", "app.infrastructure.init_tables.ensure_tables_exist"),
     ImportEdge("main.py", "app.infrastructure.seed.seed_and_migrate"),
     ImportEdge(
-        "presentation/api/prefectures/get_prefectures.py",
-        "app.di.container.ListPrefectureUseCaseDep",
-    ),
-    ImportEdge(
         "presentation/api/stations/get_stations.py",
         "app.di.container.ListStationUseCaseDep",
     ),

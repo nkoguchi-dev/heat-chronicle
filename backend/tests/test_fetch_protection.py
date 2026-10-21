@@ -197,6 +197,7 @@ async def test_http_invalid_station_has_no_upstream(
 ) -> None:
     use_case, stations, repo, source = make_use_case()
     stations.get_by_id.return_value = None
+    original_overrides = app.dependency_overrides.copy()
     app.dependency_overrides[get_fetch_month_use_case] = lambda: use_case
     try:
         async with AsyncClient(
@@ -210,11 +211,13 @@ async def test_http_invalid_station_has_no_upstream(
         repo.insert_fetch_log.assert_not_called()
     finally:
         app.dependency_overrides.clear()
+        app.dependency_overrides.update(original_overrides)
 
 
 async def test_http_busy_is_safe_retryable_response() -> None:
     use_case = Mock()
     use_case.fetch_month = AsyncMock(side_effect=FetchUnavailable("private detail"))
+    original_overrides = app.dependency_overrides.copy()
     app.dependency_overrides[get_fetch_month_use_case] = lambda: use_case
     try:
         async with AsyncClient(
@@ -230,6 +233,7 @@ async def test_http_busy_is_safe_retryable_response() -> None:
         assert "Retry-After" in response.headers["Access-Control-Expose-Headers"]
     finally:
         app.dependency_overrides.clear()
+        app.dependency_overrides.update(original_overrides)
 
 
 async def test_budget_timeout_releases_lease_without_success_log() -> None:

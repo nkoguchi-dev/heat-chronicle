@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from app.application.prefecture.ports.inbound.list_prefecture import PrefectureOutput
 
 PREFECTURES: dict[int, str] = {
     11: "宗谷地方",
@@ -63,12 +63,6 @@ PREFECTURES: dict[int, str] = {
     91: "沖縄県",
     99: "南極",
 }
-
-
-@dataclass(frozen=True)
-class PrefectureOutput:
-    prec_no: int
-    name: str
 
 
 class ListPrefectureUseCase:

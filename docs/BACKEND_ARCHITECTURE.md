@@ -175,7 +175,7 @@ Browser Smokeは固定API応答による画面回帰、host/image smokeは実行
 絶対import、兄弟層への相対import、`from . import ...`、`__init__.py`、alias、TYPE_CHECKING内を含む静的importをASTで解決する。
 動的importや実行時の具象生成までは保証しない。具象接続とlifecycleは移行PRのレビュー・#159の検索・#160の起動検証で確認する。
 
-- `MIGRATION_EXCEPTIONS`は設計時点の既存違反15組を「ファイルとimport先」で固定する。新規違反と、解消済みなのに残った例外の両方を失敗にする。
+- `MIGRATION_EXCEPTIONS`は#154開始時の既存違反15組を「ファイルとimport先」で固定する。新規違反と、解消済みなのに残った例外の両方を失敗にする。
 - `DOMAIN_PROTOCOL_EXCEPTIONS`は残る5つのDomain Protocol定義を固定し、別名や修飾名でのProtocol追加も検出する。
 - 各移行PRでは経路のコード・テストと同時に対応する例外だけを削除する。例外一覧を現物から再生成して新規違反を容認しない。
 - `application/<feature>/ports/`の契約クラスはUse Case/Service命名検査の対象外とし、Port配置と依存方向で検査する。Use Case自身の単一公開メソッド検査は維持する。
@@ -193,6 +193,21 @@ API回帰の基準は`backend/integration_tests/api/`に置く。外部気象取
 
 上流失敗時は内部メッセージを応答へ出さず、取得済みログを残さず、lease解放後に再試行が成功することも検査する。
 既存のunit・DTO・lease検査を維持し、#154はアプリケーションコードやAPI仕様を変更しない。
+
+## prefecture移行の最小パターン（#155）
+
+prefecture一覧では以下の構成を実装した。station・temperatureは移行前の経路を維持する。
+
+1. `application/prefecture/ports/inbound/list_prefecture.py`が`ListPrefecturePort`と`PrefectureOutput`を所有する。メソッドは引数なしの`list_prefectures()`で、未使用のInput DTOやOutbound Portは作らない。
+2. `ListPrefectureUseCase`は契約モジュールのOutputを返す。構造的Protocolへの適合はDI providerの`ListPrefecturePort`戻り値型とmypy strictで確認する。
+3. `presentation/api/shared/dependencies.py`の`get_prefecture_port()`はPortを返す依存関数で、未登録なら構成エラーを送出する。
+4. endpointは`Annotated[ListPrefecturePort, Depends(get_prefecture_port)]`で受け、専用のstrict `PrefectureResponse`へ明示変換する。具象Use Case・DIをimportしない。
+5. `di/container.py`の`register_dependencies(app)`が依存関数とproviderを登録する。mainはapp作成直後に呼ぶので、lifespanを使わないLambda/Mangumにも同じ配線が適用される。
+6. テストはPresentationの依存関数をPort準拠fakeへ差し替える。共有appのoverrideとlifespanを変更するfixture・テストは、終了時に保存した元の状態を復元する。登録全体の消去で本来のDI配線を失わない。
+
+prefectureの旧具象型aliasを削除し、対応するimport移行例外1組を除去した。残る例外はほかの経路を移行するときに減らす。
+unitではカタログ・順序、空／複数要素のPort差し替え、実provider登録、未登録エラー、Lambdaのlifespan off経路を検証する。
+integrationでは既存の61件・フィールド・東京都の応答契約を維持する。
 
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137

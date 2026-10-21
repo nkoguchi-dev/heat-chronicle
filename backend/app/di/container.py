@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, FastAPI
 
 from app.application.prefecture.list_prefecture_use_case import ListPrefectureUseCase
+from app.application.prefecture.ports.inbound.list_prefecture import ListPrefecturePort
 from app.application.station.list_station_use_case import ListStationUseCase
 from app.application.temperature.fetch_month_use_case import FetchMonthUseCase
 from app.application.temperature.get_temperature_use_case import GetTemperatureUseCase
@@ -21,6 +22,7 @@ from app.infrastructure.scraper.jma_temperature_data_source import (
     JmaTemperatureDataSource,
 )
 from app.infrastructure.time.system_clock import SystemClock
+from app.presentation.api.shared.dependencies import get_prefecture_port
 
 
 def get_clock() -> Clock:
@@ -56,7 +58,7 @@ TemperatureDataSourceDep = Annotated[
 ]
 
 
-def get_prefecture_use_case() -> ListPrefectureUseCase:
+def get_prefecture_use_case() -> ListPrefecturePort:
     return ListPrefectureUseCase()
 
 
@@ -84,11 +86,13 @@ def get_fetch_month_use_case(
     )
 
 
-ListPrefectureUseCaseDep = Annotated[
-    ListPrefectureUseCase, Depends(get_prefecture_use_case)
-]
 ListStationUseCaseDep = Annotated[ListStationUseCase, Depends(get_station_use_case)]
 GetTemperatureUseCaseDep = Annotated[
     GetTemperatureUseCase, Depends(get_temperature_use_case)
 ]
 FetchMonthUseCaseDep = Annotated[FetchMonthUseCase, Depends(get_fetch_month_use_case)]
+
+
+def register_dependencies(app: FastAPI) -> None:
+    """Connect migrated Inbound Ports without exposing concrete types to routes."""
+    app.dependency_overrides[get_prefecture_port] = get_prefecture_use_case
