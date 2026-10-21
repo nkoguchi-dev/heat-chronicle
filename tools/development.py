@@ -97,11 +97,25 @@ def exit_code(code: int) -> int:
     return 128 - code if code < 0 else code
 
 
+def group_has_live_members(group_id: int) -> bool:
+    # Darwin may report EPERM for a group containing only unreaped zombies.
+    # Confirm actual state before treating that as a genuine permission failure.
+    output = subprocess.check_output(["ps", "-axo", "pgid=,stat="], text=True)
+    for line in output.splitlines():
+        group, state = line.split()
+        if int(group) == group_id and not state.startswith("Z"):
+            return True
+    return False
+
+
 def signal_group(process: subprocess.Popen[bytes], signum: int) -> None:
     try:
         os.killpg(process.pid, signum)
     except ProcessLookupError:
         pass
+    except PermissionError:
+        if group_has_live_members(process.pid):
+            raise
 
 
 def group_exists(process: subprocess.Popen[bytes]) -> bool:
@@ -110,6 +124,10 @@ def group_exists(process: subprocess.Popen[bytes]) -> bool:
         os.killpg(process.pid, 0)
         return True
     except ProcessLookupError:
+        return False
+    except PermissionError:
+        if group_has_live_members(process.pid):
+            raise
         return False
 
 
@@ -249,11 +267,12 @@ def develop(runner: Runner) -> None:
 def check(runner: Runner) -> None:
     endpoint = local_database()
     for arguments in [
-        ["black", "--check", "."],
-        ["isort", "--check-only", "."],
-        ["flake8", "."],
-        ["mypy", "."],
+        ["black", "--check", ".", "../tools/development.py", "../tools/tests"],
+        ["isort", "--check-only", ".", "../tools/development.py", "../tools/tests"],
+        ["flake8", ".", "../tools/development.py", "../tools/tests"],
+        ["mypy", ".", "../tools/development.py", "../tools/tests"],
         ["pytest", "tests/"],
+        ["pytest", "../tools/tests/"],
     ]:
         runner.run(["uv", "run", "--locked", "--no-sync", *arguments], ROOT / "backend")
     start_database(runner)

@@ -4,6 +4,8 @@
 
 ## 開発コマンド
 
+rootのMake targetは[ローカル開発契約](../docs/LOCAL_DEVELOPMENT.md)を正本とします。setup/dev/stop/check/browser-smokeへ集約し、以下の個別コマンドもデバッグ用に維持します。
+
 `backend/` ディレクトリで実行してください。
 
 ```bash

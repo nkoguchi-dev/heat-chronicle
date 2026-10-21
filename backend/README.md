@@ -83,6 +83,9 @@ Python・ホスト・DB・Docker・CIの責務と段階的な移行順は[バッ
 
 ## ホストの依存環境
 
+rootの`make setup`/`make dev`/`make stop`で日常操作、`make check`でbackend・frontend・Make契約の品質検査を実行できます。
+失敗時は表示された個別コマンドをbackendカレントで再実行します。[入力・終了・データ保持](../docs/LOCAL_DEVELOPMENT.md)を参照してください。
+
 uv 0.12.0を導入し、backendをカレントとして実行します。
 
 ```sh

@@ -15,10 +15,16 @@ Vite + Reactによる静的SPAです。バックエンドAPIから取得した�
 
 ## ホストでの開発
 
-ComposeはDynamoDB LocalとFastAPIを起動します。frontendはホストで実行してください。
+rootの`make setup`で初回準備し、`make dev`でDB・ホストFastAPI・Viteを起動します。Ctrl+Cでホストを止め、`make stop`でDBだけを停止します。
+`make check`はfrontendの全品質検査も実行し、`make browser-smoke`は既存production smokeへ委譲します。
+[開発コマンドの契約](../docs/LOCAL_DEVELOPMENT.md)を参照してください。
+
+個別に調査する場合は、ComposeでDynamoDB Localだけを起動し、FastAPIとfrontendはホストで実行します。
 
 ```bash
-docker compose up
+docker compose up -d --wait dynamodb-local
+cd backend
+uv run --locked uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 別のターミナルで:
