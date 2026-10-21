@@ -236,6 +236,13 @@ Use Caseの公開境界で純粋な入力例外とOutboundの取得不可をInbo
 JMA AdapterはDIからclient factoryを受け、取得ごとに生成してfinallyでcloseする。Guardは同一リクエストのDIキャッシュでUse Caseとclientに共有する。
 HTTP試行間隔・retry・25秒の取得予算・lease・取得ログの順序は変更していない。失敗・キャンセル時のcloseと既存API回帰を検証した。
 
+## Composition Rootの整理（#159）
+
+全Inbound PortはDIでproviderへ接続し、起動時に登録する。具象Use Case・Adapter・JMA clientの生成は`di/container.py`へ集約した。
+`di/lifecycle.py`はホストのtable初期化→seedと、Lambdaのcold start seedを所有する。初期化の回数・順序とLambdaのlifespan offを維持する。
+500応答のDTO変換はPresentationの例外ハンドラへ移し、mainは登録だけを行う。main/handlerのInfrastructure直参照と移行例外を解消した。
+ASTのimport検査に加え、DI外でのUse Case/Adapter生成を検出し、絶対・相対・別名の負例を確認する。動的生成は静的検査の対象外であり、レビューと実行経路検査を併用する。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153

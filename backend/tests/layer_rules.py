@@ -112,11 +112,7 @@ def violations(app_dir: Path) -> set[ImportEdge]:
 
 # Baseline at #154. Remove each pair in its migration PR; never regenerate to
 # accept new violations. Stale exceptions also fail the boundary test.
-MIGRATION_EXCEPTIONS: set[ImportEdge] = {
-    ImportEdge("handler.py", "app.infrastructure.seed.seed_and_migrate"),
-    ImportEdge("main.py", "app.infrastructure.init_tables.ensure_tables_exist"),
-    ImportEdge("main.py", "app.infrastructure.seed.seed_and_migrate"),
-}
+MIGRATION_EXCEPTIONS: set[ImportEdge] = set()
 
 
 def domain_protocols(app_dir: Path) -> set[tuple[str, str]]:
@@ -147,3 +143,39 @@ def domain_protocols(app_dir: Path) -> set[tuple[str, str]]:
 
 # Delete these definitions and entries together in #156 / #157 / #158.
 DOMAIN_PROTOCOL_EXCEPTIONS: set[tuple[str, str]] = set()
+
+
+def concrete_connections(app_dir: Path) -> set[ImportEdge]:
+    """Use Case and Adapter construction belongs to the Composition Root."""
+    result: set[ImportEdge] = set()
+    adapter_names = {
+        "DynamoDBStationRepository",
+        "DynamoDBTemperatureRepository",
+        "DynamoDBFetchGuard",
+        "JmaTemperatureDataSource",
+        "JmaClient",
+        "SystemClock",
+    }
+    for path in app_dir.rglob("*.py"):
+        source = path.relative_to(app_dir).as_posix()
+        if source.startswith("di/"):
+            continue
+        tree = ast.parse(path.read_text())
+        names: dict[str, str] = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module:
+                for alias in node.names:
+                    names[alias.asname or alias.name] = f"{node.module}.{alias.name}"
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    names[alias.asname or alias.name] = alias.name
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            name = ast.unparse(node.func)
+            head, *tail = name.split(".")
+            resolved = ".".join([names.get(head, head), *tail])
+            leaf = resolved.split(".")[-1]
+            if leaf.endswith("UseCase") or leaf in adapter_names:
+                result.add(ImportEdge(source, resolved))
+    return result

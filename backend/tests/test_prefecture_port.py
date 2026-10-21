@@ -81,7 +81,7 @@ async def test_missing_provider_fails_explicitly() -> None:
 
 def test_lambda_import_registers_prefecture_port_without_lifespan() -> None:
     # Lambda uses lifespan=off, so wiring must happen at app construction.
-    with patch("app.infrastructure.seed.seed_and_migrate"):
+    with patch("app.di.lifecycle.seed_and_migrate"):
         from app.handler import handler
 
     response = handler(

@@ -9,7 +9,7 @@ for name in ("uv", "poetry", "pytest", "black", "mypy", "flake8"):
     assert importlib.util.find_spec(name) is None, name
 assert importlib.util.find_spec("pip") is None
 assert importlib.util.find_spec("ensurepip") is None
-with patch("app.infrastructure.seed.seed_and_migrate"):
+with patch("app.di.lifecycle.seed_and_migrate"):
     from app.handler import handler
 
 response = handler(

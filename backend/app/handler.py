@@ -1,12 +1,12 @@
 from mangum import Mangum
 from mangum.types import LambdaContext
 
-from app.infrastructure.seed import seed_and_migrate
+from app.di.lifecycle import initialize_lambda
 from app.main import app
 
 LambdaEvent = dict[str, object]
 
-seed_and_migrate()
+initialize_lambda()
 
 mangum_handler = Mangum(app, lifespan="off")
 
