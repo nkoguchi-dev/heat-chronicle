@@ -169,6 +169,31 @@ Domain Portの旧パスを全利用元・テストと同時に移送し、旧パ
 Browser Smokeは固定API応答による画面回帰、host/image smokeは実行経路の確認として別々に扱う。
 最終検証で対象commit、環境、結果と未確認範囲を#160へ記録する。本番デプロイは対象外である。
 
+## 移行中の検査の運用（#154）
+
+`backend/tests/layer_rules.py`は目標構成のimport規則を定義し、`test_layer_boundaries.py`が実appツリーへ適用する。
+絶対import、兄弟層への相対import、`from . import ...`、`__init__.py`、alias、TYPE_CHECKING内を含む静的importをASTで解決する。
+動的importや実行時の具象生成までは保証しない。具象接続とlifecycleは移行PRのレビュー・#159の検索・#160の起動検証で確認する。
+
+- `MIGRATION_EXCEPTIONS`は設計時点の既存違反15組を「ファイルとimport先」で固定する。新規違反と、解消済みなのに残った例外の両方を失敗にする。
+- `DOMAIN_PROTOCOL_EXCEPTIONS`は残る5つのDomain Protocol定義を固定し、別名や修飾名でのProtocol追加も検出する。
+- 各移行PRでは経路のコード・テストと同時に対応する例外だけを削除する。例外一覧を現物から再生成して新規違反を容認しない。
+- `application/<feature>/ports/`の契約クラスはUse Case/Service命名検査の対象外とし、Port配置と依存方向で検査する。Use Case自身の単一公開メソッド検査は維持する。
+- `test_layer_rule_guards.py`は一時Pythonファイルへの禁止import配置と正例を自動検証する。appツリーへの絶対／相対禁止import配置でも境界pytestが終了コード1となり、除去後に成功することを#154で確認した。
+
+API回帰の基準は`backend/integration_tests/api/`に置く。外部気象取得だけをfakeへ置換し、FastAPI、Use Case、DynamoDB RepositoryとDynamoDB Localを通す。
+
+| 経路 | 現行テストと#154で固定する契約 |
+| --- | --- |
+| health / hello | 成功時の正確な本文 |
+| prefectures | 61件、公開フィールド、型、東京都の名称 |
+| stations | 全件と絞り込み、正確な公開フィールド・値、未検出404、型不正422 |
+| temperature | 空・保存済みデータ、50年窓、最古年と次区間なし、日付・null、未検出404、観測年／HTTP入力不正422 |
+| fetch-month | 正確な取得応答、キャッシュ、保存副作用、入力不正／未検出、上流RuntimeError/TimeoutErrorの503・Retry-After、予期しないOSErrorの500 |
+
+上流失敗時は内部メッセージを応答へ出さず、取得済みログを残さず、lease解放後に再試行が成功することも検査する。
+既存のunit・DTO・lease検査を維持し、#154はアプリケーションコードやAPI仕様を変更しない。
+
 <!-- links -->
 [parent]: https://github.com/nkoguchi-dev/heat-chronicle/issues/137
 [design]: https://github.com/nkoguchi-dev/heat-chronicle/issues/153

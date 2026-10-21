@@ -2,19 +2,17 @@ import ast
 import re
 from pathlib import Path
 
+from tests.layer_rules import MIGRATION_EXCEPTIONS, imports_in, violations
+
 APP_DIR = Path(__file__).resolve().parents[1] / "app"
 
 
 def _imports_under(directory: Path) -> set[str]:
-    imports: set[str] = set()
-    for path in directory.rglob("*.py"):
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                imports.update(alias.name for alias in node.names)
-            elif isinstance(node, ast.ImportFrom) and node.module is not None:
-                imports.add(node.module)
-    return imports
+    return {
+        edge.target
+        for path in directory.rglob("*.py")
+        for edge in imports_in(path, APP_DIR)
+    }
 
 
 def _is_dataclass(node: ast.ClassDef) -> bool:
@@ -63,7 +61,11 @@ def test_application_behavior_classes_follow_naming_rules() -> None:
         expected_suffix = "Service" if is_shared else "UseCase"
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in tree.body:
-            if not isinstance(node, ast.ClassDef) or _is_dataclass(node):
+            if (
+                not isinstance(node, ast.ClassDef)
+                or _is_dataclass(node)
+                or "ports" in relative_path.parts
+            ):
                 continue
             expected_file = f"{_to_snake_case(node.name)}.py"
             if not node.name.endswith(expected_suffix) or path.name != expected_file:
@@ -138,41 +140,12 @@ def test_application_outputs_do_not_reference_domain_types() -> None:
     assert violations == {}
 
 
-def test_application_only_depends_on_domain_layer() -> None:
-    imports = _imports_under(APP_DIR / "application")
-    project_imports = {name for name in imports if name.startswith("app.")}
-
-    assert all(name.startswith("app.domain") for name in project_imports)
-
-
-def test_domain_does_not_depend_on_outer_layers() -> None:
-    imports = _imports_under(APP_DIR / "domain")
-    project_imports = {name for name in imports if name.startswith("app.")}
-
-    assert all(name.startswith("app.domain") for name in project_imports)
-
-
-def test_infrastructure_does_not_depend_on_outer_layers() -> None:
-    imports = _imports_under(APP_DIR / "infrastructure")
-    forbidden_prefixes = (
-        "app.application",
-        "app.presentation",
-        "app.di",
-    )
-
-    assert not any(name.startswith(forbidden_prefixes) for name in imports)
-
-
-def test_presentation_does_not_depend_on_infrastructure() -> None:
-    imports = _imports_under(APP_DIR / "presentation")
-
-    assert not any(name.startswith("app.infrastructure") for name in imports)
-
-
-def test_presentation_does_not_call_application_shared_directly() -> None:
-    imports = _imports_under(APP_DIR / "presentation")
-
-    assert not any(name.startswith("app.application.shared") for name in imports)
+def test_target_import_boundaries_with_exact_migration_exceptions() -> None:
+    current = violations(APP_DIR)
+    assert current - MIGRATION_EXCEPTIONS == set(), "New forbidden imports"
+    assert (
+        MIGRATION_EXCEPTIONS - current == set()
+    ), "Remove resolved migration exceptions"
 
 
 def test_infrastructure_dto_does_not_leak_to_upper_layers() -> None:
@@ -193,3 +166,9 @@ def test_presentation_dto_does_not_leak_to_other_layers() -> None:
     )
 
     assert not any(name.startswith("app.presentation") for name in imports)
+
+
+def test_domain_has_only_known_unmigrated_protocols() -> None:
+    from tests.layer_rules import DOMAIN_PROTOCOL_EXCEPTIONS, domain_protocols
+
+    assert domain_protocols(APP_DIR) == DOMAIN_PROTOCOL_EXCEPTIONS
