@@ -3,8 +3,9 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from app.application.station.ports.inbound.list_station import (
+    ListStationNotFound,
     ListStationPort,
-    PrefectureNotFound,
+    StationListResult,
     StationOutput,
 )
 from app.application.station.ports.outbound.repository import (
@@ -21,11 +22,13 @@ class FakeStationPort:
     def __init__(self) -> None:
         self.received: list[int | None] = []
 
-    def list_stations(self, prec_no: int | None = None) -> list[StationOutput]:
+    def list_stations(
+        self, prec_no: int | None = None
+    ) -> StationListResult | ListStationNotFound:
         self.received.append(prec_no)
         if prec_no == 99999:
-            raise PrefectureNotFound("Prefecture not found")
-        return [StationOutput(1, "地点", 44, "0001", "a")]
+            return ListStationNotFound()
+        return StationListResult([StationOutput(1, "地点", 44, "0001", "a")])
 
 
 def routed_app() -> FastAPI:
@@ -97,3 +100,22 @@ async def test_real_di_connects_use_case_to_outbound_port() -> None:
         response = await client.get("/api/stations/")
     assert response.status_code == 200
     assert response.json() == []
+
+
+async def test_unexpected_value_error_is_not_misclassified_as_404(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.main import app
+
+    class BrokenPort:
+        def list_stations(self, prec_no: int | None = None) -> StationListResult:
+            raise ValueError("private programmer error")
+
+    monkeypatch.setitem(app.dependency_overrides, get_station_port, BrokenPort)
+    async with AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/stations/")
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Internal server error"}

@@ -1,12 +1,14 @@
 from typing import Annotated, Literal, assert_never
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
 from app.application.station.ports.inbound.list_station import (
+    ListStationNotFound,
     ListStationPort,
     ListStationStorageUnavailable,
+    StationListResult,
 )
 from app.presentation.api.shared.dependencies import get_station_port
 from app.presentation.api.shared.internal_server_error import storage_error_response
@@ -32,16 +34,17 @@ def get_stations(
     use_case: Annotated[ListStationPort, Depends(get_station_port)],
     prec_no: int | None = None,
 ) -> list[StationResponse] | JSONResponse:
-    try:
-        match use_case.list_stations(prec_no):
-            case ListStationStorageUnavailable():
-                return storage_error_response()
-            case list() as stations:
-                pass
-            case unreachable_1:
-                assert_never(unreachable_1)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
+    match use_case.list_stations(prec_no):
+        case ListStationStorageUnavailable():
+            return storage_error_response()
+        case ListStationNotFound():
+            return JSONResponse(
+                status_code=404, content={"detail": "Prefecture not found"}
+            )
+        case StationListResult(stations=stations):
+            pass
+        case unreachable:
+            assert_never(unreachable)
     return [
         StationResponse(
             id=station.id,

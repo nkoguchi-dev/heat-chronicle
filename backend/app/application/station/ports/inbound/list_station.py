@@ -14,18 +14,24 @@ class StationOutput:
     earliest_year: int | None = None
 
 
-class PrefectureNotFound(ValueError):
-    """The requested region has no stations; preserve the public 404 message."""
+@dataclass(frozen=True)
+class ListStationStorageUnavailable:
+    pass
 
 
 @dataclass(frozen=True)
-class ListStationStorageUnavailable:
+class StationListResult:
+    stations: list[StationOutput]
+
+
+@dataclass(frozen=True)
+class ListStationNotFound:
     pass
 
 
 class ListStationPort(Protocol):
     def list_stations(
         self, prec_no: int | None = None
-    ) -> list[StationOutput] | ListStationStorageUnavailable:
-        """Return station outputs; raise PrefectureNotFound for an empty region."""
+    ) -> StationListResult | ListStationNotFound | ListStationStorageUnavailable:
+        """Return a successful catalog, missing region, or storage failure."""
         ...
