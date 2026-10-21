@@ -94,11 +94,11 @@ Codex による実装・レビューで使用します。
 以下のコマンドが全て通ることを確認する:
 
 ```bash
-black --check .
-isort --check-only .
-flake8 .
-mypy .
-pytest
+uv run --locked black --check .
+uv run --locked isort --check-only .
+uv run --locked flake8 .
+uv run --locked mypy .
+uv run --locked pytest
 ```
 
 - [ ] `black` のフォーマットが適用されているか

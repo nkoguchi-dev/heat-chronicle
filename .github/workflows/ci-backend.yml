@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
 
 concurrency:
   group: ci-backend-${{ github.event.pull_request.number || github.ref }}
@@ -13,119 +15,82 @@ permissions:
   contents: read
 
 jobs:
-  # ────────────────────────────────────────────
-  # Job 1: 静的解析 + ユニットテスト
-  # ────────────────────────────────────────────
   lint-and-unit-test:
     name: Backend lint and unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Set up uv and Python 3.14
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
+          version: "0.12.0"
           python-version: "3.14"
-
-      - name: Install Poetry
-        run: pip install poetry
-
-      - name: Configure Poetry
-        run: poetry config virtualenvs.in-project true
-
-      - name: Cache Poetry dependencies
-        uses: actions/cache@v6
-        with:
-          path: backend/.venv
-          key: ${{ runner.os }}-poetry-${{ hashFiles('backend/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Install dependencies
+          working-directory: backend
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Install locked dependencies
         working-directory: backend
-        run: poetry install --no-interaction
-
-      - name: Check formatting (black)
+        run: uv sync --locked
+      - name: Check formatting
         working-directory: backend
-        run: poetry run black --check .
-
-      - name: Check import order (isort)
+        run: uv run --locked black --check .
+      - name: Check import order
         working-directory: backend
-        run: poetry run isort --check-only .
-
-      - name: Lint (flake8)
+        run: uv run --locked isort --check-only .
+      - name: Lint
         working-directory: backend
-        run: poetry run flake8 .
-
-      - name: Type check (mypy)
+        run: uv run --locked flake8 .
+      - name: Type check
         working-directory: backend
-        run: poetry run mypy .
-
+        run: uv run --locked mypy .
       - name: Run unit tests
         working-directory: backend
-        run: poetry run pytest tests/ -v
+        run: uv run --locked pytest tests/ -v
 
-  # ────────────────────────────────────────────
-  # Job 2: 統合テスト（DynamoDB Local 必要）
-  # ────────────────────────────────────────────
   integration-test:
     name: Backend integration tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: lint-and-unit-test
-
     services:
       dynamodb-local:
         image: amazon/dynamodb-local:latest
         ports:
           - 8000:8000
         options: >-
-          --health-cmd "curl -s http://localhost:8000/shell/ || exit 1"
+          --health-cmd "curl -s http://localhost:8000/ || exit 1"
           --health-interval 5s
           --health-timeout 3s
-          --health-retries 5
-
+          --health-retries 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-
-      - name: Setup Python
-        uses: actions/setup-python@v7
+      - name: Set up uv and Python 3.14
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
+          version: "0.12.0"
           python-version: "3.14"
-
-      - name: Install Poetry
-        run: pip install poetry
-
-      - name: Configure Poetry
-        run: poetry config virtualenvs.in-project true
-
-      - name: Cache Poetry dependencies
-        uses: actions/cache@v6
-        with:
-          path: backend/.venv
-          key: ${{ runner.os }}-poetry-${{ hashFiles('backend/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Install dependencies
+          working-directory: backend
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Install locked dependencies
         working-directory: backend
-        run: poetry install --no-interaction
-
-      - name: Wait for DynamoDB Local
-        run: |
-          for i in $(seq 1 10); do
-            curl -s http://localhost:8000/shell/ > /dev/null && break
-            echo "Waiting for DynamoDB Local... ($i)"
-            sleep 2
-          done
-
+        run: uv sync --locked
       - name: Run integration tests
         working-directory: backend
-        run: poetry run pytest integration_tests/ -v
+        run: uv run --locked pytest integration_tests/ -v
         env:
           DYNAMODB_ENDPOINT_URL: http://localhost:8000
-          DYNAMODB_TABLE_PREFIX: test
+          DYNAMODB_TABLE_PREFIX: test-ci
+
+  development-image:
+    name: Backend development image smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Build and smoke test with an isolated DynamoDB Local
+        run: sh tools/run-backend-development-smoke.sh

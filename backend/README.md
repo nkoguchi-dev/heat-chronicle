@@ -96,8 +96,8 @@ uv run --locked pytest tests/
 ```
 
 .python-versionは3.14を選択し、パッチ版は固定しません。runtime依存とdev groupは標準pyproject、解決版はuv.lockが正本です。
-既存CI/Dockerを順に切り替える間だけ最小Poetry互換設定とlockを維持し、#150で撤去します。
-ホスト接続と初期化の検証は#148、imageのuv化は#149で行います。既存ローカルDBのデータは変更しません。
+ホスト・CI・両imageは標準metadataとuv.lockを使用し、Poetry互換資源はありません。
+既存ローカルDBのデータは変更しません。
 
 ## ホストFastAPIとDynamoDB Local
 
@@ -140,3 +140,10 @@ rootのtools/containers/smoke.pyを最終image内で実行して、AWS接続な�
 imageのbuild・検査は本番配備を意味しません。
 
 rootで`sh tools/run-backend-development-smoke.sh`を実行すると、専用のin-memory DB・networkで開発imageを検証し、自分の一時containerを終了時に削除します。既存DBのvolumeには触れません。
+
+## CIと依存更新
+
+backendのPR/main CIは固定版setup-uv Actionとuv 0.12.0でPython 3.14を選択し、locked環境から既存の静的検査・unit/integrationを実行します。
+required check名とRulesetを維持し、開発imageの専用DB smokeも実行します。
+Lambda imageは既存Container Securityでbuild・隔離handler・脆弱性/秘密検査を継続します。
+Dependabotのbackendはuv ecosystemへ切り替えます。CI成功や候補buildを本番配備と扱いません。
