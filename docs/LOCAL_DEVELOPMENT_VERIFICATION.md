@@ -30,6 +30,12 @@ Make契約34件はDocker/実AWS/気象庁を使わず、所有するfixture内�
 修正後の全34件は、全体checkに続く追加2回の反復でも成功しました。
 同じ検査を既存のBackend lint and unit testsジョブへ組み込み、required check名とRulesetを維持しています。
 
+## 並行更新との統合確認
+
+PR作成時にmainへ取り込まれた依存更新（FastAPI 0.143.3とfrontendの更新）を含むc14ad885で、make setupから環境を再同期しました。
+make checkの全品質検査と同じ116/25/34/119件、make browser-smokeの4件を再実行して成功しました。
+実make devでもReady、health・Vite proxyの200、既存sentinelの保持、Ctrl+C後の記録済み全PID消滅を再確認しました。
+
 ## 検証で修正した不具合
 
 実行中のホストを異常終了させた反復試験で、macOSのkillpg(group, 0)がPermissionErrorとなり、元のexit23がcleanupの例外で上書きされました（Issue #230）。
