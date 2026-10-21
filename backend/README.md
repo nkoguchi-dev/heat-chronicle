@@ -24,7 +24,8 @@ backend/
 │   │   ├── prefectures/             … 都道府県一覧
 │   │   │   └── get_prefectures.py
 │   │   ├── shared/                 … Presentation 共通コード
-│   │   │   └── internal_server_error.py
+│   │   │   ├── dependencies.py        … Inbound Port型の依存関数
+│   │   │   └── exception_handlers.py  … HTTP例外変換
 │   │   ├── stations/                … 観測地点一覧
 │   │   │   └── get_stations.py
 │   │   └── temperature/             … 気温データ取得
@@ -32,22 +33,26 @@ backend/
 │   │       └── get_temperature.py   … キャッシュ済みデータ取得
 │   ├── application/                 … ユースケース層
 │   │   ├── prefecture/
+│   │   │   ├── ports/inbound/list_prefecture.py … Inbound契約
 │   │   │   └── list_prefecture_use_case.py … 都道府県一覧の取得
 │   │   ├── station/
 │   │   │   ├── ports/inbound/list_station.py … Inbound Portと専用Output
 │   │   │   ├── ports/outbound/repository.py  … Station Repository Port
 │   │   │   └── list_station_use_case.py   … 観測地点一覧の取得
+│   │   ├── shared/ports/outbound/clock.py … 時計契約
 │   │   └── temperature/
+│   │       ├── ports/inbound/             … Port・専用Output・例外
+│   │       ├── ports/outbound/            … Repository・Data Source・Guard
 │   │       ├── fetch_month_use_case.py     … 気象庁からの月別データ取得
 │   │       └── get_temperature_use_case.py … キャッシュ済みデータのクエリ
-│   ├── domain/                      … ドメインモデル、業務ルール、I/O Port
+│   ├── domain/                      … ドメインモデル、純粋な業務ルール
 │   │   ├── station/                … 観測地点ドメイン
 │   │   │   └── model.py            … 観測地点モデル
 │   │   └── temperature/            … 気温ドメイン
-│   │       ├── data_source.py      … 気象データ取得 Port
 │   │       ├── fetch_freshness.py  … 取得鮮度の業務ルール
 │   │       ├── model.py            … 日別気温モデル
-│   │       └── repository.py       … 気温 Repository Port
+│   │       └── input_policy.py     … 観測年月の規則
+│   ├── di/                         … provider登録・起動初期化・具象接続
 │   └── infrastructure/              … DB / 外部サービス
 │       ├── database.py              … DynamoDB クライアント初期化
 │       ├── dto/                     … 外部ペイロードの Pydantic DTO
@@ -67,7 +72,7 @@ backend/
 └── Dockerfile.prod                  … 本番用（Lambda コンテナ）
 ```
 
-コーディング規約・開発コマンドは[AGENTS.md](./AGENTS.md)、Portの所有と段階移行は[バックエンド設計](../docs/BACKEND_ARCHITECTURE.md)を参照してください。Domainに残るtemperature等のI/O Portは後続段階でApplicationへ移します。
+コーディング規約・開発コマンドは[AGENTS.md](./AGENTS.md)、Portの所有と段階移行は[バックエンド設計](../docs/BACKEND_ARCHITECTURE.md)を参照してください。全API経路はApplication所有のPortへ移行済みです。Domainに外部I/O Portは残していません。
 
 ## 気象庁データ取得仕様
 

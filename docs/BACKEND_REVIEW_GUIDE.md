@@ -11,14 +11,14 @@ Codex による実装・レビューで使用します。
 
 ## 1. Port／Adapterアーキテクチャ
 
-[バックエンド設計](./BACKEND_ARCHITECTURE.md)の目標構成と移行表を基準にする。#153は文書のみ、#154は検査準備、#155〜#159は経路ごとの移行である。未移行経路の既存依存は例外として確認し、移行済み経路へ持ち込まない。
+[バックエンド設計](./BACKEND_ARCHITECTURE.md)の現在の構成を基準にする。全経路の移行が完了しており、旧Domain Port・DI具象型aliasへの例外を追加しない。
 
 ### レイヤーの依存方向
 
 - [ ] 依存の方向が内側に向かっているか（Inbound Adapter → Inbound Port ← Use Case → Outbound Port ← Outbound Adapter）
 - [ ] ApplicationがApplication内とDomain以外のプロジェクト内モジュールや外部frameworkをimportしていないか
 - [ ] InfrastructureがApplicationのOutbound PortとDomainだけを内側の契約として参照し、Inbound Port / Use Case / Presentation / DIをimportしていないか
-- [ ] 移行済みPresentationがApplicationのInbound Portだけを参照し、Use Case具象 / Outbound Port / Domain / Infrastructure / DIに依存していないか
+- [ ] PresentationがApplicationのInbound Portだけを参照し、Use Case具象 / Outbound Port / Domain / Infrastructure / DIに依存していないか
 - [ ] Domain 層が外部ライブラリや他レイヤーに依存していないか
 - [ ] Domain Modelと純粋な業務ルールがリソース単位に整理され、I/O PortはApplicationへ移されているか（Clock、FetchGuardを含む）
 - [ ] Presentation 層の知識（HTTP ステータスコード、`Request`/`Response` オブジェクト等）が Application 層に漏れていないか
