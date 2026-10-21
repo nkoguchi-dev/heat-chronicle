@@ -58,6 +58,11 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "Asia/Tokyo"
+    ignore:
+      # Keep Python aligned with backend/.python-version and requires-python.
+      # Other images, including uv, continue to receive version updates.
+      - dependency-name: "python"
+        versions: [">=3.15"]
     groups:
       docker-images:
         patterns:
