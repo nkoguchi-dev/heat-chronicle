@@ -115,7 +115,8 @@ curl --fail 'http://127.0.0.1:8000/api/stations?prec_no=44'
 ```
 
 起動時lifespanがtableを初期化し、既存のstation seed/migrationを実行します。
-ホストは127.0.0.1:8001、Compose backendはdynamodb-local:8000を明示します。
+ホストは127.0.0.1:8001、独立したimage検証では専用networkのdynamodb-local:8000を明示します。
+ComposeはDynamoDB Localだけを提供し、backend/frontendはホスト上で実行します。
 本番はendpointを設定せずSDKの通常解決を維持します。
 
 integrationは専用のtestまたはtest-で始まるprefixを環境変数で明示します。
@@ -147,3 +148,5 @@ backendのPR/main CIは固定版setup-uv Actionとuv 0.12.0でPython 3.14を選�
 required check名とRulesetを維持し、開発imageの専用DB smokeも実行します。
 Lambda imageは既存Container Securityでbuild・隔離handler・脆弱性/秘密検査を継続します。
 Dependabotのbackendはuv ecosystemへ切り替えます。CI成功や候補buildを本番配備と扱いません。
+
+専用portで確認する場合は、frontendのoriginをCORS_ALLOW_ORIGINSへ明示し、frontendのHEAT_CHRONICLE_API_PROXY_TARGETをホストAPIのportへ合わせます。既定手順はfrontend localhost:3000、API 127.0.0.1:8000です。

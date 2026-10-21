@@ -45,12 +45,17 @@ heat-chronicle は気象庁が公開している過去の気象観測データ�
 ## ローカル起動
 
 ```bash
-docker compose up                   # DynamoDB Local + Backend起動
-docker compose up dynamodb-local    # DynamoDB Local のみ起動
+docker compose up -d --wait dynamodb-local  # 永続DBだけを起動
+cd backend
+uv sync --locked
+# 初回は .env.example を .env.local へコピー。既存設定を上書きしない。
+uv run --locked uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 ```
 
 別のターミナルで`frontend/`から`npm ci`、`npm run dev`を実行する。
+終了はFastAPI/frontendをCtrl-C、rootで`docker compose stop dynamodb-local`。`database/data`やvolumeは削除しない。
+開発用backend imageは独立したLinux互換性検証用として維持し、Composeのserviceには含めない。
 
 ## データベース（DynamoDB）
 

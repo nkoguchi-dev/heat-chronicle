@@ -130,14 +130,23 @@ heat-chronicle/
 前提: Docker / Docker Compose、Python 3.14 + uv 0.12.0、Node.js 24 + npm
 
 ```bash
-# DynamoDB Localとバックエンドを起動
-docker compose up
+# rootで永続DynamoDB Localだけを起動
+docker compose up -d --wait dynamodb-local
+
+# 別ターミナルでバックエンドをホスト上で起動
+cd backend
+uv sync --locked
+# 初回だけ .env.example を .env.local へコピー（既存ファイルは上書きしない）
+uv run --locked uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 # 別ターミナルでフロントエンドをホスト上で起動
 cd frontend
 npm ci
 npm run dev
 ```
+
+停止時はFastAPIとfrontendをCtrl-Cで止め、rootで`docker compose stop dynamodb-local`を実行します。
+`database/data`のbind mountを維持し、volumeや既存データを削除しません。開発用backend imageは独立build・smoke用に残します。
 
 個別の開発コマンドと設計ルールは、[`backend/AGENTS.md`](./backend/AGENTS.md) と
 [`frontend/AGENTS.md`](./frontend/AGENTS.md) を参照してください。
