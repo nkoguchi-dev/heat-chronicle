@@ -1,5 +1,6 @@
 from datetime import date
 
+import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
@@ -45,3 +46,24 @@ async def test_temperature_port_override_keeps_query_and_response_boundary() -> 
     assert response.json()["data"] == [
         {"date": "2024-01-01", "max_temp": None, "min_temp": None, "avg_temp": None}
     ]
+
+
+async def test_unexpected_value_error_uses_common_500(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.main import app
+
+    class BrokenPort:
+        def get_temperature_data(
+            self, station_id: int, end_year: int | None
+        ) -> GetTemperatureDataOutput:
+            raise ValueError("private programmer error")
+
+    monkeypatch.setitem(app.dependency_overrides, get_temperature_port, BrokenPort)
+    async with AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/api/temperature/4")
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Internal server error"}
