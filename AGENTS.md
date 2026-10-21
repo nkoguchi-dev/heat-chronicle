@@ -44,6 +44,10 @@ heat-chronicle は気象庁が公開している過去の気象観測データ�
 
 ## ローカル起動
 
+rootの`make setup`で初回依存・設定を準備し、`make dev`で起動します。Ctrl+Cでホストを回収し、`make stop`でDBを停止します。
+`make check`はbackend/frontendとtoolsの契約・ライフサイクル検査、`make browser-smoke`は既存production smokeへ委譲します。
+入力・失敗時の状態・データ保持は[開発コマンド契約](./docs/LOCAL_DEVELOPMENT.md)を参照してください。以下の個別コマンドも維持します。
+
 ```bash
 docker compose up -d --wait dynamodb-local  # 永続DBだけを起動
 cd backend

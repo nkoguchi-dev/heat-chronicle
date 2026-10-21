@@ -127,7 +127,19 @@ heat-chronicle/
 
 ## ローカル開発
 
-前提: Docker / Docker Compose、Python 3.14 + uv 0.12.0、Node.js 24 + npm
+前提: GNU Make、Docker / Docker Compose、uv 0.12.0、Node.js 24 + npm（Python 3.14はuvが選択）
+
+```bash
+make setup          # locked依存と初回設定を準備。既存.env.localは保持
+make dev            # DBを待ち、ホストFastAPIとViteを起動
+# Ctrl+Cで両ホストを停止
+make stop           # DBを停止。永続データは保持
+make check          # backend/frontend品質検査とMake契約検査
+make browser-smoke  # production Docker/NginxとPlaywright
+```
+
+入力、異常終了、ログ、専用port、初回から再起動までの手順は[ローカル開発契約](./docs/LOCAL_DEVELOPMENT.md)を参照してください。
+個別コマンドもデバッグ用の正規手順として維持します。
 
 ```bash
 # rootで永続DynamoDB Localだけを起動

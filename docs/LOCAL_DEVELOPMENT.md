@@ -34,6 +34,7 @@ Makeは入口であり、個別コマンドもデバッグの正規経路とし�
 
 `database/data`の既存bind mountを維持します。stopや失敗cleanupへvolume削除、データ削除、pruneを含めません。
 integrationは既存ガードに従う専用test-prefixを強制し、開発用local prefixをcleanup対象にしません。
+make checkとbackend CIではtoolsのformat/import/lint/typecheckと契約・POSIXライフサイクル検査も実行します。
 frontendの検査buildはCI同様の固定ローカルAPI originを渡し、AWSや本番への接続を必要としません。
 
 #163ではMakeのtarget・委譲・危険な削除操作を検査します。専用fixtureで既存設定保護、正常起動、Ctrl+C、各ホストの起動失敗・実行中終了、待機失敗、終了コード、孫プロセス回収を検証します。
@@ -48,3 +49,26 @@ frontendの検査buildはCI同様の固定ローカルAPI originを渡し、AWS�
 DBの設定はbackendの.env.localと通常の環境変数優先順位をそのまま使います。Composeの標準入力`COMPOSE_FILE`/`COMPOSE_PROJECT_NAME`も利用可能ですが、DB endpointはComposeの公開portと一致させてください。
 `make check`のintegrationは`test-make`prefixを使用します。同じDBへ複数worktreeから同時にcheckを実行しないでください。
 `make browser-smoke`のportは既存の`E2E_PORT`で変更できます。失敗時はfrontend/test-resultsとfrontend/playwright-reportを確認します。
+
+## 初回構築から日常操作
+
+1. rootで`make setup`を実行します。backend/.env.localが既にある場合は上書きしないため、endpointがhttp://127.0.0.1:8001、prefixがlocalまたはlocal-*であることを確認します。
+2. `make dev`を実行し、Readyの表示を待ちます。http://localhost:3000へアクセスします。APIだけなら`curl --fail http://127.0.0.1:8000/health`で確認できます。
+3. Ctrl+CでFastAPI・Viteを停止します。DBを止めるなら`make stop`を実行します。もう一度stopしてもデータは消えません。再開は`make dev`です。
+4. 変更後は`make check`、配信確認は`make browser-smoke`を実行します。後者はChromium導入済みを前提とし、未導入ならfrontendで`npx playwright install chromium`を実行します。
+
+各コマンドは前景のstdout/stderrへログを出します。必要ならターミナルのログ保存を使い、pipeを使う場合は元コマンドの終了コードを保持してください。
+失敗した品質検査は表示されたcwdとコマンドをそのまま再実行できます。Makeは最初の失敗で止まります。
+起動失敗では、DBの状況を`docker compose ps`/`docker compose logs dynamodb-local`で確認します。FastAPIのtable/seed失敗はbackendの起動ログ、Viteの失敗はfrontendの起動ログへ出ます。ポート占有時は利用中のプロセスを確認し、自分の環境だけを停止するか専用portを選んでください。
+
+```sh
+HEAT_DEV_API_PORT=18000 HEAT_DEV_FRONTEND_PORT=13000 make dev
+# 個別にbackendを調べる場合（backendカレント）
+uv run --locked uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+# 個別にfrontendを調べる場合（frontendカレント）
+npm run dev
+# Make契約の検査だけを実行する場合（backendカレント）
+uv run --locked pytest ../tools/tests/ -v
+```
+
+手動で起動したホストプロセスの停止は、そのターミナルのCtrl+Cで行います。make stopは他のターミナルのプロセスを探して終了しません。

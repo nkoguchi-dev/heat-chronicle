@@ -45,6 +45,14 @@ jobs:
       - name: Type check
         working-directory: backend
         run: uv run --locked mypy .
+      - name: Check local development command contract and lifecycle
+        working-directory: backend
+        run: |
+          uv run --locked black --check ../tools/development.py ../tools/tests
+          uv run --locked isort --check-only ../tools/development.py ../tools/tests
+          uv run --locked flake8 ../tools/development.py ../tools/tests
+          uv run --locked mypy ../tools/development.py ../tools/tests
+          uv run --locked pytest ../tools/tests/ -v
       - name: Run unit tests
         working-directory: backend
         run: uv run --locked pytest tests/ -v
