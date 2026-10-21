@@ -9,16 +9,18 @@ Codex による実装・レビューで使用します。
 
 ---
 
-## 1. レイヤードアーキテクチャ
+## 1. Port／Adapterアーキテクチャ
+
+[バックエンド設計](./BACKEND_ARCHITECTURE.md)の目標構成と移行表を基準にする。#153は文書のみ、#154は検査準備、#155〜#159は経路ごとの移行である。未移行経路の既存依存は例外として確認し、移行済み経路へ持ち込まない。
 
 ### レイヤーの依存方向
 
-- [ ] 依存の方向が内側に向かっているか（Presentation → Application → Domain ← Infrastructure）
-- [ ] Application 層が Domain 層以外のプロジェク内レイヤーを import していないか
-- [ ] Infrastructure 層が Application / Presentation / DI を import していないか
-- [ ] Presentation 層が Infrastructure を直接呼び出していないか
+- [ ] 依存の方向が内側に向かっているか（Inbound Adapter → Inbound Port ← Use Case → Outbound Port ← Outbound Adapter）
+- [ ] ApplicationがApplication内とDomain以外のプロジェクト内モジュールや外部frameworkをimportしていないか
+- [ ] InfrastructureがApplicationのOutbound PortとDomainだけを内側の契約として参照し、Inbound Port / Use Case / Presentation / DIをimportしていないか
+- [ ] 移行済みPresentationがApplicationのInbound Portだけを参照し、Use Case具象 / Outbound Port / Domain / Infrastructure / DIに依存していないか
 - [ ] Domain 層が外部ライブラリや他レイヤーに依存していないか
-- [ ] Domain Model、業務ルール、Repository / Port がドメインリソース単位のディレクトリに整理されているか
+- [ ] Domain Modelと純粋な業務ルールがリソース単位に整理され、I/O PortはApplicationへ移されているか（Clock、FetchGuardを含む）
 - [ ] Presentation 層の知識（HTTP ステータスコード、`Request`/`Response` オブジェクト等）が Application 層に漏れていないか
 - [ ] Domain 層に Presentation / Infrastructure の DTO が置かれていないか
 - [ ] UseCase が Presentation 層へ Domain Model を直接返さず、ユースケース専用の Output DTO に変換しているか
@@ -38,13 +40,15 @@ Codex による実装・レビューで使用します。
 ### リポジトリパターン
 
 - [ ] DynamoDB へのアクセスが Infrastructure 層（Repository）に閉じているか
-- [ ] Repository / 外部 I/O のインターフェースが Domain 層に `Protocol` として定義されているか
+- [ ] Repository / Data Source / Clock / FetchGuardの契約がApplicationのOutbound Portに`Protocol`として定義されているか
 - [ ] Application 層や Presentation 層から DynamoDB クライアントを直接操作していないか
 
 ### 依存性注入（DI）
 
-- [ ] FastAPI の `Depends` を使った DI になっているか（Presentation には UseCase の型エイリアスを注入）
-- [ ] コンストラクタや関数内で外部依存を直接生成（インスタンス化）していないか
+- [ ] FastAPIの`Depends`がPresentation内のInbound Port型付き依存関数を指し、DIがproviderを登録しているか（具象型aliasのimportが残っていないか）
+- [ ] Use Caseと具体Adapterの接続、外部client生成・終了の配線がComposition Rootに集約されているか
+- [ ] main / Lambda handlerに業務処理や外部DTO変換がなく、ホストとLambdaの初期化契約が維持されているか
+- [ ] 境界検査が絶対／相対importを検出し、移行の例外を増やしていないか
 
 ## 2. FastAPI 固有
 
