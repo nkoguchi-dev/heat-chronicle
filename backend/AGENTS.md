@@ -173,3 +173,8 @@ presentation/api/temperature/
 - `datetime.now()`・`date.today()`・`time.time()`・`time.monotonic()`の実時計参照はInfrastructureの`SystemClock`へ集約する。日時値の構築・変換・比較は各層で行ってよい。
 - `Clock.now()`はtimezone-awareなUTC日時を返す。観測年月はDomainの純粋な変換で日本時間へ揃える。共有lease期限には壁時計、実行中の取得予算には単調増加時計を使い、混同しない。
 - テストでは固定時計を注入し、時刻取得関数のpatchで時計依存を隠さない。
+
+## 型付きの失敗結果
+
+Issue #245で[結果契約](../docs/BACKEND_ARCHITECTURE.md)を定義し、#246〜#251で段階移行します。想定内失敗は原則frozen dataclassとUnionで返し、呼び出し側はmatchで明示変換します。Outbound/Inbound/HTTPで失敗型を共有しません。
+網羅分岐はassert_neverとmypy strictで確認し、HTTPは想定内失敗でResponseを返します。外部SDK/clientの必要な例外捕捉、起動時の構成エラー、想定外500、asyncio timeout/cancel cleanupは維持します。全Exception/RuntimeErrorを業務結果へ丸めません。
