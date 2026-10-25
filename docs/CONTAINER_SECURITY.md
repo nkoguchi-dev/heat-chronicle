@@ -22,7 +22,10 @@ LOW/MEDIUM/UNKNOWNもローカルreportへ残し、到達条件と修正版を�
 base digestを固定し、AL2023のOS packageを更新します。
 `--no-cache-filter base`で古い更新RUN cacheを再利用しません。
 固定digestのuvをbuilderだけで使い、uv.lockからruntime依存だけをtask rootへ導入します。
-最終imageからuv・開発依存・pip・ensurepip同梱installerを除きます。
+最終imageからuv・開発依存・pip・ensurepip同梱installer・ローカル実行用RIEを除きます。
+AWS提供のentrypointとPython Runtime Interface Clientは維持し、Lambdaでは`AWS_LAMBDA_RUNTIME_API`を通じて起動します。
+Lambda用imageの単独HTTPエミュレーター起動は提供せず、ローカル開発は既存のhost起動または開発用imageを使います。
+`tools/containers/smoke.py`は実handlerに加え、コンテナ内の模擬Runtime APIと小さな専用handlerで、実entrypoint・bootstrapの起動と応答を検査します。
 専用dockerignoreで環境ファイル・鍵・不要ファイルをcontextから除きます。
 OS repoの変化もあるため、base固定だけで完成imageの同一byteは保証しません。
 
@@ -37,3 +40,20 @@ python3 tools/containers/scan.py --trivy /private/tmp/heat-container-bin/trivy -
 Active/SuccessfulとResolvedImageUriを照合します。旧imageは切り戻し用に保持します。
 実API・通常ブラウザ・新規ログを確認し、cache参照だけで書込成功を主張しません。
 稼働digestの検査は配備時・週次・重大advisory発生時に取り直します。
+
+## ベース更新とRIE除去の検証（2026-10-25、Issue #260）
+
+Python 3.14 / Linux amd64を維持し、AWSベースdigestを
+`252cbb0879717b1c049b9f909d86d06d88e129f3208386d7ba1189d535f5f981`から
+`c9cc170aa9743cec54121c00c7192217b021df420eca9e7835ed9442156e4ebe`へ更新した。
+旧digestでOS更新後も残ったcurl・libcap・PCRE2・CA証明書の指摘は、新digestの更新済みOS inventoryでは非検出となった。
+OS更新処理は維持する。RIE内のGo/chi/x/sysはOS更新では置き換わらず、新ベースにも残っていたため、未使用のRIEを最終imageから除去した。
+
+ローカル最終候補のimage IDは`sha256:81b7ca5d7989f2f086f2e4fd410a46a28b4181fbd0c2fceb06b4375da3babb38`。
+Trivy 0.76.0、DB更新時刻`2026-10-25T07:10:41.872962161Z`でOS/Python inventoryを含む検査が完了し、
+全severityの指摘0件・秘密0件・SBOM生成成功を確認した。ゲートの8件のテスト、実handlerのhealth・都道府県一覧、
+RIEなしのAWS entrypoint/bootstrapから模擬Runtime APIへの応答も成功した。
+非該当だったWindows専用APIを含め、RIEの3指摘は部品自体の除去で解消しており、ignore追加や判定基準の緩和はしていない。
+
+この候補の結果を本番解消とは扱わない。本番は選択中digestを別途検査し、公開mainのPython依存更新も含む検査済み候補を配備して、
+稼働digestの一致・通常導線・新規ログを確認する。正確な配備対象と実機結果は配備時に記録する。
