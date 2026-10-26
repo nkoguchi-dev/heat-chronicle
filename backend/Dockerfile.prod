@@ -1,7 +1,7 @@
-FROM ghcr.io/astral-sh/uv:0.13.4@sha256:9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b AS uv
+FROM ghcr.io/astral-sh/uv:0.13.5@sha256:32a7bb39b496babbd997b0a39a4d66c126bdaf5661b302bf6f06abda8deca6ff AS uv
 
 # Digest updates are reviewed by the existing weekly Docker Dependabot job.
-FROM public.ecr.aws/lambda/python:3.14@sha256:c9cc170aa9743cec54121c00c7192217b021df420eca9e7835ed9442156e4ebe AS base
+FROM public.ecr.aws/lambda/python:3.14@sha256:fc4e15a5e09e2c9b6184810ea0fdc87afe1c1c734c98cbe27d739a35c3f15e7e AS base
 
 # AL2023 base images can lag published security fixes. Refresh packages at build
 # time; record the resulting immutable application digest after every rebuild.
