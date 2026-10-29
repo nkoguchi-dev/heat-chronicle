@@ -32,12 +32,12 @@
 ### 継続的な品質管理
 
 - バックエンドはpytestによるユニットテストと、DynamoDB Localを使用するAPI統合テストを分離
-- Black、isort、Flake8、mypyによるフォーマット・静的解析・型検査をCIで実行
+- Black、isort、Flake8、mypyによるフォーマット・静的解析・型検査をローカルで実行
 - フロントエンドはVitestとReact Testing Libraryによるテストに加え、カバレッジ閾値を設定
 - PlaywrightとChromiumでproduction用Docker/Nginxを検証し、直接アクセス、再読み込み、履歴、キーボード操作を自動確認
-- Prettier、ESLint、TypeScript、本番ビルドをCIで検証し、変更領域ごとの品質基準を継続的に確認
+- Prettier、ESLint、TypeScript、本番ビルドをローカルで検証し、変更領域ごとの品質基準を継続的に確認
 
-コードのセキュリティ検査は[継続検査と指摘の扱い](./docs/CODE_SECURITY.md)を参照してください。Python・TypeScriptをPR・main・日次で解析し、非公開のActionsに結果を保存します。
+コードのセキュリティ検査は[継続検査と指摘の扱い](./docs/CODE_SECURITY.md)を参照してください。Python・TypeScriptをデプロイ前に解析し、公開可能な件数summaryだけをActionsへ保存します。
 
 秘密情報の検査、ローカルhookの有効化、漏洩時の失効手順は[秘密情報の検査と対応](./docs/SECRET_DETECTION.md)を参照してください。
 
@@ -123,7 +123,7 @@ heat-chronicle/
 ├── database/          # DynamoDB Localのデータ
 ├── docs/              # PRレビューガイド、運用・改善ドキュメント
 ├── scripts/           # 地点マスタ生成、デプロイ補助
-├── .github/workflows/ # CI、デプロイ
+├── .github/workflows/ # デプロイ、コンテナ検査
 ├── compose.yaml       # ローカル開発環境
 └── AGENTS.md          # AIエージェント向け開発ガイド
 ```
@@ -187,12 +187,12 @@ sh tools/run-browser-smoke.sh
 
 ## CI/CD
 
-main向けのすべてのPRでfrontend、backendの静的解析・テストとBrowser Smokeを実行し、
-`Protect main` Rulesetで4つの品質ゲートの成功を必須にします。mainへのpushでもBrowser Smokeを
-再実行し、`release/prod` ブランチへのpushでAWSへデプロイします。
+品質確認はPR前に[ローカル手順](./docs/LOCAL_DEVELOPMENT.md#品質workflowを置き換えるローカル検証)で実施し、結果をPRへ記録します。`Protect main`はPR経由の変更とnon-fast-forward禁止を維持し、required status checksは設けません。
 
-- フロントエンド: `npm ci` → ESLint → 静的ビルド → S3同期 → CloudFrontキャッシュ無効化
-- バックエンド: 静的解析・ユニットテスト・統合テスト → Docker build → ECR push → Lambda更新
+Workflowはフロント配備・バック配備・コンテナ検査の3件です。配備は`release/prod`へのpushまたは手動実行で起動し、AWS権限を持たない別ジョブで配備対象commitのSemgrep検査と完全Git履歴のGitleaks検査を行います。両方が成功した場合だけ、同じcommitをAWSへ配備します。コンテナ検査は関連変更時・日次・手動で継続します。
+
+- フロントエンド: セキュリティ検査 → `npm ci` → 静的ビルド → S3同期 → CloudFrontキャッシュ無効化
+- バックエンド: セキュリティ検査 → Docker build → ECR push → Lambda更新
 
 フロントエンドの本番buildはGitHub Actions variable `VITE_API_URL`をAPI originとして埋め込み、
 `frontend/dist`を生成します。[デプロイスクリプト](./scripts/deploy-frontend.sh)はハッシュ付きの

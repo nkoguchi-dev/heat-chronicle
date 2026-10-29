@@ -5,7 +5,7 @@ Gitleaks 8.30.1でstaged差分と到達可能な全Git履歴を検査します�
 `.gitleaks.toml`は既定ルールにDiscord Webhookとage秘密鍵を追加します。
 完全なage公開recipient形式に限る誤検出例外を持ち、秘密鍵やファイル全体は除外しません。
 
-## ローカルとCI
+## ローカルとデプロイ前
 
 ```sh
 python3 tools/secrets/install.py --bin-dir "${XDG_CACHE_HOME:-$HOME/.cache}/heat-chronicle-tools/gitleaks-8.30.1"
@@ -16,13 +16,13 @@ bash tools/secrets/scan.sh history
 ```
 
 pre-commitはstaged差分、pre-pushは到達可能履歴を確認します。バイナリ未配置・版違いでも失敗します。
-PR・main・日次・手動CIは完全履歴を取得し、shallowなら失敗させます。
+各デプロイの「Deployment security」ジョブは完全履歴を取得し、shallowなら失敗させます。検査成功前にAWS権限を持つ配備ジョブへ進みません。
 baseline・allow comment・ignore fileで検出を隠しません。
 公開Actionsへ出すのは件数とrule/file/line/commitのsummaryだけで、値・Match・Author・Emailは保存しません。
 raw reportはローカルの所有者専用一時領域で扱い、不要になったら削除します。
 
 GitHub側のsecret scanning/push protectionは現在の実設定を別途確認します。
-ローカルhookは回避可能で、CIはpush後のため、サーバ側拒否と同じ保証にはしません。
+ローカルhookは回避可能で、デプロイ前検査はpush後のため、サーバ側拒否と同じ保証にはしません。
 未知形式・難読化・ignore対象の平文・dangling object・未取得refs・Issue/PR・既存artifactは別の確認対象です。
 通常検査ではSOPSを復号しません。検査成功を過去の漏洩不存在の証明にはしません。
 

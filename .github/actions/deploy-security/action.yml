@@ -1,0 +1,62 @@
+name: Deployment security
+description: Scan the deployment commit and complete Git history before AWS access
+runs:
+  using: composite
+  steps:
+    - name: Checkout pinned public rules
+      uses: actions/checkout@v7
+      with:
+        repository: semgrep/semgrep-rules
+        ref: 17e31e11ebac99fb7dfe1cd288f7a32151b6f3f9
+        path: .security-rules
+        persist-credentials: false
+    - name: Setup Python for scanner
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.12"
+    - name: Install pinned scanner
+      shell: bash
+      run: python -m pip install -r tools/security/requirements.txt
+    - name: Test security gate and detection fixtures
+      env:
+        SECURITY_RULES_DIR: ${{ github.workspace }}/.security-rules
+      shell: bash
+      run: python -m unittest discover -s tools/security/tests -v
+    - name: Analyze Python and TypeScript
+      shell: bash
+      run: >-
+        python tools/security/scan.py
+        --rules-dir .security-rules
+        --output-dir "${{ runner.temp }}/code-security"
+    - name: Preserve public scan summary
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: code-security-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/code-security/summary.json
+        retention-days: 7
+        if-no-files-found: error
+
+    - name: Install checksum-pinned Gitleaks
+      shell: bash
+      run: python tools/secrets/install.py --bin-dir "${{ runner.temp }}/secret-bin"
+    - name: Test offline detection and actual local Git hooks
+      env:
+        GITLEAKS_BIN: ${{ runner.temp }}/secret-bin/gitleaks
+      shell: bash
+      run: python -m unittest discover -s tools/secrets/tests -v
+    - name: Scan all fetched Git history
+      env:
+        GITLEAKS_BIN: ${{ runner.temp }}/secret-bin/gitleaks
+        SECRET_SCAN_OUTPUT_DIR: ${{ runner.temp }}/secret-report
+      shell: bash
+      run: bash tools/secrets/scan.sh history
+    - name: Preserve sanitized scan summary
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: secret-detection-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/secret-report/summary.json
+        retention-days: 7
+        if-no-files-found: error

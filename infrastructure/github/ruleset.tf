@@ -29,24 +29,5 @@ resource "github_repository_ruleset" "protect_main" {
       required_review_thread_resolution = false
     }
 
-    required_status_checks {
-      strict_required_status_checks_policy = false
-
-      required_check {
-        context = "Frontend quality checks"
-      }
-
-      required_check {
-        context = "Backend lint and unit tests"
-      }
-
-      required_check {
-        context = "Backend integration tests"
-      }
-
-      required_check {
-        context = "Browser smoke tests"
-      }
-    }
   }
 }
