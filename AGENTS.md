@@ -21,11 +21,11 @@ heat-chronicle は気象庁が公開している過去の気象観測データ�
 - ブランチ名は `<type>/issue-<issue-id>/<title>` 形式の小文字ケバブケースとする。`type`には`feat`、`fix`、`docs`、`test`、`refactor`、`chore`などを使用する
 - 変更は意味のある単位にまとめ、こまめにコミットする
 - `main` への変更の取り込みは必ずPRを作成して行う。PRには目的、主な変更、確認方法、`Closes #<issue-id>`または`Fixes #<issue-id>`を記載する。マージ後の適用や確認まで完了条件に含むIssueでは、自動closeを避けるため`Refs #<issue-id>`を使用する
-- `main`は`Protect main` Rulesetで保護し、Pull Requestとfrontend、backend、Browser Smokeのrequired checksをGitHub側でも強制する。Rulesetは`infrastructure/github/`のTerraformを正本とし、通常はWeb UIで直接変更しない。自己ロックからの復旧時だけ[インフラ手順](./infrastructure/README.md)のbreak-glassを使用し、復旧後にTerraformへ再同期する
+- `main`は`Protect main` Rulesetで保護し、Pull Requestとnon-fast-forward禁止をGitHub側でも強制する。品質確認はローカルで行い、required status checksは設けない。Rulesetは`infrastructure/github/`のTerraformを正本とし、通常はWeb UIで直接変更しない。自己ロックからの復旧時だけ[インフラ手順](./infrastructure/README.md)のbreak-glassを使用し、復旧後にTerraformへ再同期する
 - coding agentへIssueを指定した場合、Issueの範囲に対する実装、検証、commit、push、PR作成、自己レビューコメントまでを担当範囲とする
 - PR 作成後に [`docs/REVIEW_GUIDE.md`](./docs/REVIEW_GUIDE.md) と変更領域に対応するレビューガイドを使って自己レビューし、結果を PR コメントとして追加する
 - 人が内容を確認するまでPRをマージせず、自動マージを有効にしない。coding agentの自己レビューは人による確認を置き換えない
-- マージ後はmainのGitHub Actionsを確認する。問題が見つかった場合はmainを直接修正せず、新しいIssueから通常のPRフローで対応する
+- マージ後は変更した導線と必要なローカル検証結果を確認する。問題が見つかった場合はmainを直接修正せず、新しいIssueから通常のPRフローで対応する
 - 作業のためにローカルブランチや Git worktree を作成した場合は、作業終了時に未コミットの変更がないことを確認し、作成した worktree とローカルブランチを削除する
 
 ## 仕様書の作成と更新
@@ -72,6 +72,10 @@ uv run --locked uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 | `fetch-log` | station_id + year_month | 取得済み年月の管理 |
 
 ## コード品質基準
+
+品質Workflowは実行しない。PR前に変更領域の検査をローカルで実施し、対象commit・コマンド・結果・失敗や未実施と理由をPRへ記録する。全体検査は`make check`、画面・配信変更は`make browser-smoke`も使う。インフラ変更はTerraformのformat・validate・offline test、開発image変更は`sh tools/run-backend-development-smoke.sh`で検証する。具体的な手順は[ローカル検証](./docs/LOCAL_DEVELOPMENT.md#品質workflowを置き換えるローカル検証)を正本とする。
+
+デプロイ前のコード・秘密情報検査はAWS権限を持たないジョブで実行し、成功時だけ同じcommitの配備へ進む。コンテナの定期検査とローカルpre-commit/pre-pushは維持する。
 
 ### 共通ルール
 

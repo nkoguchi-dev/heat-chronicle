@@ -90,6 +90,7 @@ Codex による実装・レビューで使用します。
 - [ ] AWS Terraform の output を変更した場合、GitHub Terraform の入力値と暗号化済み tfvars も更新したか
 - [ ] GitHub Actions の OIDC ロールに、変更後のデプロイで必要な権限だけが追加されているか
 - [ ] Workflow の `permissions`、トリガー、対象ブランチ、対象パスが意図通りか
+- [ ] 配備対象の同じcommitを権限分離したsecurityジョブで検査し、失敗・skip時にAWS認証・公開・更新へ進まないか
 - [ ] フロントエンドの S3 同期・CloudFront invalidation、バックエンドの ECR push・Lambda update の各手順に変更が正しく伝播しているか
 - [ ] Terraform で管理する GitHub リソースを Web UI や別スクリプトでも変更し、設定ドリフトを生じさせていないか
 
@@ -116,7 +117,7 @@ terraform fmt -check -recursive infrastructure
 ```
 
 - [ ] `terraform plan` が想定した追加・変更・削除だけを含んでいるか
-- [ ] インフラ変更の影響を受けるバックエンド / フロントエンドの CI が通るか
+- [ ] インフラ変更の影響を受けるバックエンド / フロントエンドのローカル検証が通るか
 - [ ] 本番適用後の確認方法と、失敗時のロールバックまたは復旧手順が明確か
 
 ## 8. ドキュメント

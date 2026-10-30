@@ -34,8 +34,8 @@ Makeは入口であり、個別コマンドもデバッグの正規経路とし�
 
 `database/data`の既存bind mountを維持します。stopや失敗cleanupへvolume削除、データ削除、pruneを含めません。
 integrationは既存ガードに従う専用test-prefixを強制し、開発用local prefixをcleanup対象にしません。
-make checkとbackend CIではtoolsのformat/import/lint/typecheckと契約・POSIXライフサイクル検査も実行します。
-frontendの検査buildはCI同様の固定ローカルAPI originを渡し、AWSや本番への接続を必要としません。
+make checkではtoolsのformat/import/lint/typecheckと契約・POSIXライフサイクル検査も実行します。
+frontendの検査buildは固定ローカルAPI originを渡し、AWSや本番への接続を必要としません。
 
 #163ではMakeのtarget・委譲・危険な削除操作を検査します。専用fixtureで既存設定保護、正常起動、Ctrl+C、各ホストの起動失敗・実行中終了、待機失敗、終了コード、孫プロセス回収を検証します。
 新規worktreeでsetup/check/browser-smokeを実行し、専用bind mountのsentinelをstop・再起動後に照合します。既存利用者のdatabase/dataを検証fixtureとして使いません。
@@ -74,3 +74,34 @@ uv run --locked pytest ../tools/tests/ -v
 手動で起動したホストプロセスの停止は、そのターミナルのCtrl+Cで行います。make stopは他のターミナルのプロセスを探して終了しません。
 
 初回構築・反復停止・異常終了・CIの検証範囲は[確認記録](./LOCAL_DEVELOPMENT_VERIFICATION.md)を参照してください。
+
+## 品質Workflowを置き換えるローカル検証
+
+本人とAgentはPR前に変更領域を検証し、対象commit・コマンド・結果・失敗・未実施と理由をPRへ残します。文書のみはdiffとリンク・手順の照合、実装変更は該当する検査を実施します。
+
+| 対象 | ローカルの入口 |
+|---|---|
+| backend/frontend・開発tools | `make setup`後に`make check`。backend unit/integration、tools、frontend format/lint/type/test/buildを含む |
+| frontend依存 | frontendで`npm audit --audit-level=high`。`make check`には含まれない |
+| 画面・静的配信 | `make browser-smoke`。Chromiumを事前導入 |
+| frontendデプロイscript | `bash tools/test-deploy-frontend.sh` |
+| backend開発image | `sh tools/run-backend-development-smoke.sh`。隔離DynamoDBを使用 |
+| AWS Terraform | 下記のoffline検証。plan・applyは別途インフラ手順に従う |
+
+削除したInfrastructure Workflow相当は、rootで次を実行します。AWS認証・本番stateへの接続・applyは行いません。
+
+```sh
+terraform fmt -check -recursive infrastructure
+python3 infrastructure/aws/modules/backend_api/discord/package.py
+python3 -m unittest discover -s infrastructure/aws/modules/backend_api/discord -p 'test_*.py'
+terraform -chdir=infrastructure/aws/environments/prod init -backend=false -lockfile=readonly -input=false
+terraform -chdir=infrastructure/aws/environments/prod validate
+terraform -chdir=infrastructure/aws/environments/prod test -no-color
+python3 infrastructure/aws/environments/capacity-test/package.py
+python3 -m unittest discover -s infrastructure/aws/environments/capacity-test -p 'test_*.py'
+terraform -chdir=infrastructure/aws/environments/capacity-test init -backend=false -lockfile=readonly -input=false
+terraform -chdir=infrastructure/aws/environments/capacity-test validate
+terraform -chdir=infrastructure/aws/environments/capacity-test test -no-color
+```
+
+backend integrationのDBとDocker検査は既存の隔離条件を守ります。既存開発DB・本番データを代用せず、Docker未起動等で未実施ならそのまま報告します。GitHubのcheck表示をローカル結果の代用にしません。

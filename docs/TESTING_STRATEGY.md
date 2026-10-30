@@ -32,14 +32,14 @@ API通信はブラウザコンテキストで固定応答へ置き換え、未�
 ## 実行タイミング
 
 - Pull Request前に、変更領域のformat、lint、型チェック、Unit・Integration・Componentテスト、coverage、production buildを実行する
-- Pull Requestとmainへのpushで同じ決定的なBrowser Smokeを実行する
+- 画面・配信に関係する変更では、Pull Request前にローカルで同じ決定的なBrowser Smokeを実行する
 - デプロイ後は、実AWS、実API、実データとの疎通を本番サイトで手動確認する
 - 仕様、画面、スタイル、配信構成を変更した場合は、必要に応じて視覚品質、レスポンシブ表示、キーボード操作を探索的に確認する
 - 失敗、警告、未実施項目は理由と影響をPull Requestへ記録する
 
 Browser Smokeはリポジトリルートで`sh tools/run-browser-smoke.sh`を実行する。使用中のポートを避ける場合は
 `E2E_PORT`を指定する。失敗時は`frontend/test-results/`のtrace・screenshotと
-`frontend/playwright-report/`のHTML reportを確認する。GitHub Actionsでは同じ成果物を失敗時artifactとして保存する。
+`frontend/playwright-report/`のHTML reportを確認する。ローカルの成果物で失敗原因を調べ、結果と未確認事項をPRへ記録する。
 
 ## 本番手動確認
 

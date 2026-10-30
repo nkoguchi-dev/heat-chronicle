@@ -7,18 +7,18 @@ Semgrep Community EditionでPython・JavaScript/TypeScriptの危険なパター�
 
 - Semgrep 1.181.0をPython 3.12の独立環境で実行します。
 - ルールは`tools/security/config.json`の固定commitからsecurity配下を選択します。
-- PR・main・日次・手動で全対象を解析し、metricsとversion checkを無効化します。
+- フロント／バックのデプロイ前に、配備するcommitの全対象を解析し、metricsとversion checkを無効化します。
 - Semgrep AppSec Platformへソースを送らず、AWS資格情報・復号鍵・アプリsecretを使いません。
 - 未分類指摘はINFOを含め失敗。部分解析・言語未解析・版不一致も失敗にします。
 - テスト用の既知操作やparser非対応箇所はconfigのテスト除外範囲で管理します。
 - 誤検出は`exceptions.json`でrule/path/code hash/理由/所有者/期限を限定します。
   例外が消滅・変更・期限切れでも失敗します。ルール全体の抑制やnosemgrepは使いません。
 
-Actions「Code Security」は件数のみのsummary.jsonを7日間公開保存します。
+各デプロイの「Deployment security」ジョブは件数のみのsummary.jsonを7日間公開保存します。
 未加工JSON・SARIF・scanner.logは公開artifactへ保存しません。
 失敗の詳細は同じcommit・固定版でローカル再現し、所有者専用領域で確認します。
 未評価の実脆弱性は非公開の報告経路で評価し、公開Issueへ詳細を自動転載しません。
-既存required checksの名前・Rulesetは変更しません。
+共通処理は`.github/actions/deploy-security/action.yml`が所有します。検査ジョブは`contents: read`のみで、AWS OIDC権限は持ちません。配備ジョブは`needs: security`で成功を待ち、同じ`github.sha`をcheckoutしてからAWSへ公開・更新します。検査失敗・未実行では配備しません。
 
 ## ローカル再現
 

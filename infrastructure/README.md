@@ -68,7 +68,7 @@ infrastructure/docs/
 - **Actions Variable** — `S3_BUCKET_NAME`（フロントエンドデプロイ先 S3 バケット）
 - **Dependabot alerts** — 脆弱性を含む依存関係の検出
 - **Dependabot security updates** — 脆弱な依存関係を更新する Pull Request の自動作成
-- **Protect main Ruleset** — mainへのPull Request、non-fast-forward禁止、frontend・backend・Browser Smokeのrequired checks
+- **Protect main Ruleset** — mainへのPull Request、non-fast-forward禁止。品質検査はローカルで行いrequired status checksは設けない
 
 Dependabot の更新対象と実行スケジュールは `.github/dependabot.yml` で管理しています。
 
@@ -118,9 +118,9 @@ terraform plan -var-file=<(sops -d terraform.tfvars.enc)
 terraform apply -var-file=<(sops -d terraform.tfvars.enc)
 ```
 
-`Protect main` Rulesetを変更する場合は、先にworkflowとTerraformコードのPRで4つのcheckが
-成功することを確認する。人による確認とmainへのマージ後、最新mainからplanを再実行し、
-Ruleset以外の変更やdestroy・replaceがないことを確認してapplyする。apply後はoutputの
+`Protect main` Rulesetの変更は、PRでTerraform差分・ローカル検証・planを人が確認してから適用します。今回の品質Workflow廃止では、既存required checksが削除後のPRをブロックするため、承認済みPRのcommitから先にRulesetのrequired checks除去だけをapplyし、PRをマージします。PR必須・non-fast-forward禁止・active・prevent_destroyは維持し、Rulesetを無効化しません。mainへの反映後に再planして差分なしを確認します。
+
+通常の変更はmainへのマージ後、最新mainから再planします。Ruleset以外の変更やdestroy・replaceがないことを確認し、apply後はoutputの
 `main_ruleset_id`を使い、GitHub APIから実際の設定を再取得する。
 
 ```bash
