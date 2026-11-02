@@ -32,25 +32,29 @@ CSS更新も元archiveのversion/integrity・payload・ライセンスと生成�
 
 ## 継続検査
 
-Frontend quality checksで`npm audit --audit-level=high`を実行し、開発依存も含めhigh/criticalを失敗にします。
-moderate以下も確認し、例外やoverrideには理由・期限・解除条件を通常PRで記録します。
+依存更新時はローカルで`npm audit --json`と`npm audit --omit=dev --json`を実行し、開発依存を含む全依存と本番依存を比較します。
+Moderateを含む各指摘・依存経路・修正版を確認し、照会失敗や除外もPRへ記録します。
+`--audit-level=high`の終了コードだけではModerate以下の非検出を確認できないため、安全の根拠にしません。
+例外やoverrideには理由・期限・解除条件を通常PRで記録します。
 公開側の既存依存更新を維持した上で未使用CLIを取り除きます。移植元のbuild同一性や過去の件数は、この統合後の成果物の検証結果として扱いません。
 
-## minimatchの限定override（2026-11-01）
+## minimatchの限定override（2026-11-02更新）
 
 [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)は、
 未信頼のglobを`optimizationLevel >= 2`で前処理する場合のCPU・メモリ消費を扱います。
 対象は11.0.1未満で、10.2.6も修正版ではありません。
-調査時の10.2.5は次の4経路（すべてdev依存）に集約されていました。
+現在のoverride対象は次の4経路（すべてdev依存）です。
 
 - eslint 10.13.0 → minimatch
 - eslint 10.13.0 → @eslint/config-array 0.23.5 → minimatch
-- typescript-eslint 8.72.0 → @typescript-eslint/typescript-estree 8.72.0 → minimatch
+- typescript-eslint 8.72.1 → @typescript-eslint/typescript-estree 8.72.1 → minimatch
 - eslint-plugin-jsx-a11y-x 0.2.0 → minimatch
 
-各親の最新版も10系を要求しており、親更新だけでは解消しないため、上記の親に限定して
+確認した各親は10系を要求しており、親更新だけでは解消しないため、上記の親に限定して
 minimatch 11.0.1へoverrideします。推移依存の親は調査した版に限定します。
 直接依存の親はnpmのoverride制約に合わせパッケージ名で指定するため、親更新時にも再評価します。
+PR #271ではtypescript-estreeの8.72.1への更新で旧版限定のoverrideが外れ、10.2.6が再導入されました。
+#275でoverride対象を8.72.1へ更新し、lockfileを再生成しました。今後の親更新でも適用対象・全経路・互換性を再評価します。
 無条件の全体overrideや`audit fix --force`は使用しません。
 2026-12-01までに再評価し、全親が修正版を通常解決できるようになったら、overrideを除去して
 fresh install・全依存経路・audit・品質検査を再確認します。
@@ -58,7 +62,9 @@ fresh install・全依存経路・audit・品質検査を再確認します。
 11系は内部matcherを変更し、`makeRe`・`AST`等のAPIを削除しています。
 実際の4経路は`Minimatch`の生成・`match`（partialを含む）・`pattern`と名前付き`minimatch`を使用し、
 削除されたAPIは使用していません。Node要件は両版とも`18 || 20 || >=22`です。
-更新前後のESLint診断と対象ファイル集合を比較し、実際のlint・型検査・テスト・buildでも互換性を確認します。
+8.72.1のtypescript-estreeも名前付き`minimatch(filePath, pattern, { dot: true })`だけを使用し、削除されたAPIは使用していません。
+#271の修正前後でESLintのJSON診断と対象ファイル集合が完全一致することを確認しました。
+変更時は実際のlint・型検査・テスト・buildでも互換性を確認します。
 
 ESLintのCLI・設定glob、typescript-estreeのallowDefaultProject、アクセシビリティルールの
 設定パターンが入力元です。呼び出し元に`optimizationLevel >= 2`指定はなく、既定値は1です。
