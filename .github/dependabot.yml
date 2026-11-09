@@ -63,6 +63,8 @@ updates:
       # Other images, including uv, continue to receive version updates.
       - dependency-name: "python"
         versions: [">=3.15"]
+      - dependency-name: "lambda/python"
+        versions: [">=3.15"]
     groups:
       docker-images:
         patterns:
