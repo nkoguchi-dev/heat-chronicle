@@ -11,7 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
-assert sys.version_info[:2] == (3, 14)
+assert sys.version_info[:2] == (3, 15)
 for name in ("uv", "poetry", "pytest", "black", "mypy", "flake8"):
     assert importlib.util.find_spec(name) is None, name
 assert importlib.util.find_spec("pip") is None
