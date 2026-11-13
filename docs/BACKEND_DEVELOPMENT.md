@@ -1,6 +1,6 @@
 # バックエンド開発環境の契約
 
-現在の品質確認はローカルで実施します。本書のCI移行記述は導入当時の経緯です。現在の実行手順は[ローカル検証](./LOCAL_DEVELOPMENT.md#品質workflowを置き換えるローカル検証)を参照してください。
+現在の品質確認はローカルで実施します。本書のPython 3.14とCI移行の記述は導入当時の経緯です。現在のPython対象版と開発版は`backend/pyproject.toml`・`backend/.python-version`を正本とします。現在の実行手順は[ローカル検証](./LOCAL_DEVELOPMENT.md#品質workflowを置き換えるローカル検証)を参照してください。
 
 Issue #136の移行契約です。利用者向けAPI・データモデルは変えず、Python 3.14系のパッチ版を固定しません。
 ホスト・CI・両imageのuv移行とDB専用Composeは実装済みです。下表は各段階の中間状態を残す移行順の記録です。
