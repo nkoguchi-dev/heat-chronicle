@@ -30,5 +30,5 @@ done
 for path in /health /api/prefectures/ '/api/stations/?prec_no=44' /api/temperature/4; do
   curl -fsS "http://127.0.0.1:$port$path" >/dev/null
 done
-docker exec "$app_name" python -c 'import sys, importlib.util; assert sys.version_info[:2] == (3,14); assert importlib.util.find_spec("poetry") is None; assert importlib.util.find_spec("pytest") is not None'
-echo 'Development image: Python 3.14, initialization, seed and four API routes passed'
+docker exec "$app_name" python -c 'import sys, importlib.util; assert sys.version_info[:2] == (3,15); assert importlib.util.find_spec("poetry") is None; assert importlib.util.find_spec("pytest") is not None'
+echo 'Development image: Python 3.15, initialization, seed and four API routes passed'

@@ -4,7 +4,7 @@ Python / FastAPI によるバックエンド API サーバーです。気象庁�
 
 ## 技術構成
 
-- **Python 3.14** / **FastAPI**
+- **Python 3.15** / **FastAPI**
 - **boto3** — DynamoDB アクセス
 - **httpx + BeautifulSoup4 (lxml)** — 気象庁 HTML ページからの観測データ取得・解析
 - **Mangum** — AWS Lambda 上での FastAPI 実行アダプタ
@@ -104,7 +104,7 @@ uv run --locked mypy .
 uv run --locked pytest tests/
 ```
 
-.python-versionは3.14を選択し、パッチ版は固定しません。runtime依存とdev groupは標準pyproject、解決版はuv.lockが正本です。
+.python-versionは3.15.2を選択します。対応範囲は>=3.15.2,<3.16です。runtime依存とdev groupは標準pyproject、解決版はuv.lockが正本です。
 ホスト・CI・両imageは標準metadataとuv.lockを使用し、Poetry互換資源はありません。
 既存ローカルDBのデータは変更しません。
 
@@ -154,11 +154,6 @@ rootで`sh tools/run-backend-development-smoke.sh`を実行すると、専用の
 
 ## CIと依存更新
 
-backendのPR/main CIは固定版setup-uv Actionとuv 0.12.0でPython 3.14を選択し、locked環境から既存の静的検査・unit/integrationを実行します。
-required check名とRulesetを維持し、開発imageの専用DB smokeも実行します。
+品質確認は[ローカル検証](../docs/LOCAL_DEVELOPMENT.md#品質workflowを置き換えるローカル検証)に従い、Python 3.15.2とlocked依存で実行します。
 Lambda imageは既存Container Securityでbuild・隔離handler・脆弱性/秘密検査を継続します。
-Dependabotのbackendはuv ecosystemへ切り替えます。CI成功や候補buildを本番配備と扱いません。
-
-専用portで確認する場合は、frontendのoriginをCORS_ALLOW_ORIGINSへ明示し、frontendのHEAT_CHRONICLE_API_PROXY_TARGETをホストAPIのportへ合わせます。既定手順はfrontend localhost:3000、API 127.0.0.1:8000です。
-
-移行完了時の新worktree・host/DB/frontend・両image・CIの確認範囲は[結合確認](../docs/BACKEND_VERIFICATION.md)を参照してください。
+Dependabotによるuv依存とimage digestの更新を維持します。候補buildを本番配備と扱いません。

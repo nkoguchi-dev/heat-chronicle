@@ -107,7 +107,7 @@
 | レイヤー | 技術 |
 |---|---|
 | フロントエンド | Vite / React 19 / TypeScript / Tailwind CSS v4 / Canvas 2D API |
-| バックエンド | Python 3.14 / FastAPI / Pydantic / httpx / BeautifulSoup4 / Mangum |
+| バックエンド | Python 3.15 / FastAPI / Pydantic / httpx / BeautifulSoup4 / Mangum |
 | データストア | Amazon DynamoDB / DynamoDB Local |
 | インフラ | AWS Lambda / API Gateway / ECR / S3 / CloudFront / Route 53 / Terraform |
 | CI/CD | GitHub Actions / AWS OIDC |
@@ -130,7 +130,7 @@ heat-chronicle/
 
 ## ローカル開発
 
-前提: GNU Make、Docker / Docker Compose、uv 0.12.0、Node.js 24 + npm（Python 3.14はuvが選択）
+前提: GNU Make、Docker / Docker Compose、uv 0.12.0、Node.js 24 + npm（Python 3.15はuvが選択）
 
 ```bash
 make setup          # locked依存と初回設定を準備。既存.env.localは保持

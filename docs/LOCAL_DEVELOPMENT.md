@@ -5,7 +5,7 @@ Issue #138の技術契約です。#161は契約、#162はMakefileとプロセス
 
 ## targetと正規コマンド
 
-rootでGNU Make、Docker Compose、uv 0.12.0、Node.js 24とnpmを使います。Pythonはbackendの3.14指定をuvが解決し、patchは固定しません。OSのツール導入は行いません。
+rootでGNU Make、Docker Compose、uv 0.12.0、Node.js 24とnpmを使います。Pythonはbackend/.python-versionの3.15.2をuvが選択します。OSのツール導入は行いません。
 
 | target | 委譲先と成功条件 | 失敗・停止後の状態 |
 | --- | --- | --- |
