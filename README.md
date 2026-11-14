@@ -130,7 +130,7 @@ heat-chronicle/
 
 ## ローカル開発
 
-前提: GNU Make、Docker / Docker Compose、uv 0.12.0、Node.js 24 + npm（Python 3.15はuvが選択）
+前提: GNU Make、Docker / Docker Compose、uv 0.12.0、Node.js 26.13.1以上の26系 + npm（Python 3.15はuvが選択）
 
 ```bash
 make setup          # locked依存と初回設定を準備。既存.env.localは保持

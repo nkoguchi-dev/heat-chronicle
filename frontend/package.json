@@ -97,5 +97,8 @@
       "issue": 287,
       "removeWhen": "親パッケージが修正版を通常解決できるようになったら除去し、fresh install・audit・品質検査を再実行する。"
     }
+  },
+  "engines": {
+    "node": "^26.13.1"
   }
 }
