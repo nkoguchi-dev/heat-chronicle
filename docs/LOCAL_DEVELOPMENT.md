@@ -1,11 +1,13 @@
 # ローカル開発コマンドの契約
 
+リポジトリ直下の`.nvmrc`で26系を選択します。nvmを使う場合はルートで`nvm use`（未導入なら`nvm install`）を実行し、`node --version`が26.13.1以上の26系であることを確認してからnpmコマンドを実行してください。
+
 Issue #138の技術契約です。#161は契約、#162はMakefileとプロセス管理、#163は契約の自動検査・実動作・利用手順を所有します。
 #135と#136のホスト実行を前提に、#137の内部再配置に先行します。ASGI入口`app.main:app`を利用し、Port／Adapter構成を変更しません。
 
 ## targetと正規コマンド
 
-rootでGNU Make、Docker Compose、uv 0.12.0、Node.js 24とnpmを使います。Pythonはbackend/.python-versionの3.15.2をuvが選択します。OSのツール導入は行いません。
+rootでGNU Make、Docker Compose、uv 0.12.0、Node.js 26.13.1以上の26系とnpmを使います。Pythonはbackend/.python-versionの3.15.2をuvが選択します。OSのツール導入は行いません。
 
 | target | 委譲先と成功条件 | 失敗・停止後の状態 |
 | --- | --- | --- |

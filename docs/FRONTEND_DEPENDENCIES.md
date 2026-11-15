@@ -45,9 +45,9 @@ Moderateを含む各指摘・依存経路・修正版を確認し、照会失敗
 対象は11.0.1未満で、10.2.6も修正版ではありません。
 現在のoverride対象は次の4経路（すべてdev依存）です。
 
-- eslint 10.13.0 → minimatch
-- eslint 10.13.0 → @eslint/config-array 0.23.5 → minimatch
-- typescript-eslint 8.72.1 → @typescript-eslint/typescript-estree 8.72.1 → minimatch
+- eslint 10.15.0 → minimatch
+- eslint 10.15.0 → @eslint/config-array 0.23.6 → minimatch
+- typescript-eslint 8.72.2 → @typescript-eslint/typescript-estree 8.72.2 → minimatch
 - eslint-plugin-jsx-a11y-x 0.2.0 → minimatch
 
 確認した各親は10系を要求しており、親更新だけでは解消しないため、上記の親に限定して
@@ -73,3 +73,7 @@ ESLintのCLI・設定glob、typescript-estreeのallowDefaultProject、アクセ�
 本番frontendは`dist/`だけを静的配信し、Dockerの最終段にもnode_modulesをコピーしません。
 そのため、調査したコードと配信構成では公開入力から該当処理への経路は確認されませんでした。
 これは稼働中の本番成果物を照合した結果ではなく、本番配備・実環境照合は対象外です。
+
+## TypeScriptのcompilerとlint
+
+型検査の`tsc`は既存の`@typescript/native` alias（TypeScript 7.0.2）、型付きESLintのJavaScript APIは`typescript` alias（`@typescript/typescript6` 6.0.2）を使います。後者は公式alias packageの最新安定版です。typescript-eslint 8.72.2のpeer範囲は`>=4.8.4 <6.1.0`のため、この役割分担を維持します。
