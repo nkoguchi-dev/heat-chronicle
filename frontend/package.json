@@ -21,7 +21,7 @@
     "@fontsource-variable/geist-mono": "^5.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.73.0",
+    "lucide-react": "^1.75.0",
     "radix-ui": "^1.8.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
@@ -33,15 +33,14 @@
     "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "^4.3.5",
     "@testing-library/dom": "^10.4.2",
-    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.10",
+    "@testing-library/user-event": "^14.6.13",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "@vitejs/plugin-react": "^6.3.0",
-    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/coverage-v8": "^5.1.1",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y-x": "^0.2.0",
@@ -49,52 +48,25 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.14.0",
     "jsdom": "^31.0.1",
-    "msw": "^3.0.5",
+    "msw": "^3.0.7",
     "prettier": "^3.10.1",
     "tailwindcss": "^4.3.5",
     "tw-animate-css": "^1.4.0",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "^8.72.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.73.0",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "overrides": {
-    "@eslint/config-array@0.23.6": {
-      "minimatch": "11.0.1"
-    },
-    "@typescript-eslint/typescript-estree@8.72.2": {
-      "minimatch": "11.0.1"
-    },
-    "eslint": {
-      "minimatch": "11.0.1"
-    },
     "eslint-plugin-jsx-a11y-x": {
-      "minimatch": "11.0.1"
+      "minimatch": "11.0.9"
     }
   },
   "//overrides": {
-    "@eslint/config-array@0.23.6": {
-      "reason": "GHSA-g3hv-75wg-m249の対象版を避け、更新後の親にもminimatch 11.0.1を適用する。",
-      "added": "2026-11-15",
-      "issue": 287,
-      "removeWhen": "親パッケージが修正版を通常解決できるようになったら除去し、fresh install・audit・品質検査を再実行する。"
-    },
-    "@typescript-eslint/typescript-estree@8.72.2": {
-      "reason": "GHSA-g3hv-75wg-m249の対象版を避け、更新後の親にもminimatch 11.0.1を適用する。",
-      "added": "2026-11-15",
-      "issue": 287,
-      "removeWhen": "親パッケージが修正版を通常解決できるようになったら除去し、fresh install・audit・品質検査を再実行する。"
-    },
-    "eslint": {
-      "reason": "GHSA-g3hv-75wg-m249の対象版を避け、更新後の親にもminimatch 11.0.1を適用する。",
-      "added": "2026-11-15",
-      "issue": 287,
-      "removeWhen": "親パッケージが修正版を通常解決できるようになったら除去し、fresh install・audit・品質検査を再実行する。"
-    },
     "eslint-plugin-jsx-a11y-x": {
-      "reason": "GHSA-g3hv-75wg-m249の対象版を避け、更新後の親にもminimatch 11.0.1を適用する。",
-      "added": "2026-11-15",
-      "issue": 287,
+      "reason": "GHSA-g3hv-75wg-m249の対象版を避け、minimatchの最新安定版11.0.9を適用する。",
+      "added": "2026-11-19",
+      "issue": 294,
       "removeWhen": "親パッケージが修正版を通常解決できるようになったら除去し、fresh install・audit・品質検査を再実行する。"
     }
   },
