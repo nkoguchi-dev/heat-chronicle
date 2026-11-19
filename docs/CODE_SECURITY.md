@@ -5,7 +5,7 @@ Semgrep Community EditionでPython・JavaScript/TypeScriptの危険なパター�
 
 ## 構成と判定
 
-- Semgrep 1.181.0をPython 3.12の独立環境で実行します。
+- Semgrep 1.186.0をPython 3.12の独立環境で実行します。
 - ルールは`tools/security/config.json`の固定commitからsecurity配下を選択します。
 - フロント／バックのデプロイ前に、配備するcommitの全対象を解析し、metricsとversion checkを無効化します。
 - Semgrep AppSec Platformへソースを送らず、AWS資格情報・復号鍵・アプリsecretを使いません。
