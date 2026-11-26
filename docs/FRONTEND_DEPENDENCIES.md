@@ -49,6 +49,6 @@ ESLint、@eslint/config-array、typescript-eslintは修正版を通常解決す�
 
 ## TypeScriptのcompilerとlint
 
-`tsc`と型付きESLintはTypeScript 6.0.3へ統一します。typescript-eslint 8.73.0のpeer範囲は`>=4.8.4 <6.1.0`です。
+`tsc`と型付きESLintはTypeScript 6.0.3へ統一します。typescript-eslint 8.74.0のpeer範囲は`>=4.8.4 <6.1.0`です。
 TypeScript 7.0.2の別名依存はこの範囲外で、typescript-eslintの任意peerが要求する7.1系にも適合しないため除去します。
 7系への更新はlint側の対応後に行い、peer制約を無視するインストールは行いません。
